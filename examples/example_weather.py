@@ -8,9 +8,7 @@ Shows how to detect when a forecast model becomes miscalibrated.
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import norm
-import sys
-sys.path.append('..')
-from monitor import PITMonitor
+from pitmon import PITMonitor
 
 
 def simulate_weather_forecasts(n_days=365, changepoint=None):

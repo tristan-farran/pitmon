@@ -8,9 +8,7 @@ Run this to see everything it can do.
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import norm, t as student_t
-import sys
-sys.path.append('..')
-from monitor import PITMonitor
+from pitmon import PITMonitor
 
 
 def print_section(title):

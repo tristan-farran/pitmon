@@ -8,9 +8,7 @@ Shows detection of regime change when market volatility shifts.
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import t as student_t
-import sys
-sys.path.append('..')
-from monitor import PITMonitor
+from pitmon import PITMonitor
 
 
 def simulate_returns_with_volatility_shift(n_days=500, changepoint=250):

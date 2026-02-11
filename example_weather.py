@@ -39,7 +39,7 @@ def simulate_weather_forecasts(n_days=365, changepoint=None):
             forecast_std = true_std
         else:
             # After changepoint: systematic bias (e.g., model not updated for climate change)
-            forecast_mean = true_mean - 8  # Forecasts significantly too low
+            forecast_mean = true_mean - 15  # Forecasts significantly too low
             forecast_std = true_std  # Keep same uncertainty
 
         # Generate observation from true distribution

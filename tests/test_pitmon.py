@@ -1,9 +1,3 @@
-"""
-Unit tests for PITMon
-
-Run with: pytest test_pitmon.py -v
-"""
-
 import pytest
 import numpy as np
 from scipy.stats import norm, uniform
@@ -124,8 +118,8 @@ class TestPITMonitor:
 
         # Initial state
         state = monitor.get_state()
-        assert state['t'] == 0
-        assert not state['baseline_locked']
+        assert state["t"] == 0
+        assert not state["baseline_locked"]
 
         # After some updates
         np.random.seed(42)
@@ -133,10 +127,10 @@ class TestPITMonitor:
             monitor.update_pit(np.random.uniform(0, 1))
 
         state = monitor.get_state()
-        assert state['t'] == 40
-        assert state['baseline_locked']
-        assert state['baseline_size'] == 30
-        assert state['monitoring_size'] == 10
+        assert state["t"] == 40
+        assert state["baseline_locked"]
+        assert state["baseline_size"] == 30
+        assert state["monitoring_size"] == 10
 
     def test_get_baseline_diagnostics(self):
         """Test baseline diagnostics reporting."""
@@ -145,16 +139,16 @@ class TestPITMonitor:
 
         # Before baseline complete
         diag = monitor.get_baseline_diagnostics()
-        assert not diag['complete']
+        assert not diag["complete"]
 
         # Complete baseline
         for _ in range(30):
             monitor.update_pit(np.random.uniform(0, 1))
 
         diag = monitor.get_baseline_diagnostics()
-        assert diag['complete']
-        assert 'ks_from_uniform' in diag
-        assert 'quality' in diag
+        assert diag["complete"]
+        assert "ks_from_uniform" in diag
+        assert "quality" in diag
 
     def test_get_summary(self):
         """Test comprehensive summary method."""
@@ -166,10 +160,10 @@ class TestPITMonitor:
             monitor.update_pit(np.random.uniform(0, 1))
 
         summary = monitor.get_summary()
-        assert summary['status'] == 'monitoring'
-        assert summary['observations_processed'] == 20
-        assert 'baseline' in summary
-        assert 'monitoring' in summary
+        assert summary["status"] == "monitoring"
+        assert summary["observations_processed"] == 20
+        assert "baseline" in summary
+        assert "monitoring" in summary
 
     def test_export_data(self):
         """Test data export functionality."""
@@ -180,11 +174,11 @@ class TestPITMonitor:
             monitor.update_pit(np.random.uniform(0, 1))
 
         data = monitor.export_data()
-        assert 'metadata' in data
-        assert 'baseline_pits' in data
-        assert 'monitoring_pits' in data
-        assert len(data['baseline_pits']) == 20
-        assert len(data['monitoring_pits']) == 10
+        assert "metadata" in data
+        assert "baseline_pits" in data
+        assert "monitoring_pits" in data
+        assert len(data["baseline_pits"]) == 20
+        assert len(data["monitoring_pits"]) == 10
 
     def test_localize_changepoint(self):
         """Test changepoint localization."""
@@ -241,7 +235,7 @@ class TestPITMonitor:
         seq = PITMonitor._geometric_sequence(1, 100, base=2)
         assert seq[0] == 1
         assert seq[-1] == 100
-        assert all(seq[i] < seq[i+1] for i in range(len(seq)-1))
+        assert all(seq[i] < seq[i + 1] for i in range(len(seq) - 1))
 
     def test_pits_property(self):
         """Test that pits property returns all PITs."""
@@ -302,7 +296,7 @@ class TestEdgeCases:
 
         assert monitor.baseline_locked
         diag = monitor.get_baseline_diagnostics()
-        assert diag['quality'] == 'good'
+        assert diag["quality"] == "good"
 
     def test_extreme_miscalibration_baseline(self):
         """Test baseline with very poor calibration."""
@@ -315,7 +309,7 @@ class TestEdgeCases:
 
         assert monitor.baseline_locked
         diag = monitor.get_baseline_diagnostics()
-        assert diag['quality'] == 'poor'
+        assert diag["quality"] == "poor"
 
 
 class TestPlotting:

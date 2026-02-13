@@ -1,3 +1,5 @@
+import bisect
+
 import numpy as np
 from dataclasses import dataclass
 
@@ -7,10 +9,8 @@ class AlarmInfo:
     """Information about a triggered alarm."""
 
     triggered: bool
-    baseline_complete: bool = False
     alarm_time: object = None
-    changepoint_estimate: object = None
-    ks_distance: object = None
+    martingale: object = None
     threshold: object = None
     diagnosis: object = None
 
@@ -20,54 +20,42 @@ class AlarmInfo:
 
 class PITMonitor:
     """
-    Monitor for changes in probabilistic model calibration via PIT analysis.
+    Sequential calibration monitor using conformal exchangeability testing.
 
-    Establishes a baseline calibration during initial observations, then monitors
-    for significant changes from that baseline using two-sample testing of PIT
-    distributions.
+    Detects distributional changes in PITs without requiring a baseline period.
+    Each new PIT is ranked among all previous PITs; under stable calibration
+    (exchangeability), these ranks are uniform regardless of the underlying
+    distribution. A conformal test martingale accumulates evidence against
+    exchangeability, alarming when it exceeds 1/alpha.
 
-    This approach allows imperfect but stable models to pass monitoring, only
-    alarming when calibration degrades or shifts. Unlike absolute uniformity
-    testing, it won't eventually reject every slightly miscalibrated model.
+    This tolerates imperfect but stable calibration — a consistently
+    miscalibrated model produces exchangeable PITs and will not alarm.
+    Only changes in calibration trigger alarms.
 
     Parameters
     ----------
     false_alarm_rate : float, default=0.05
-        Maximum probability of false alarm during monitoring period.
-    baseline_size : int, default=50
-        Number of initial observations to establish baseline calibration.
-        Larger values give better baseline characterization but delay monitoring.
-    changepoint_budget : float, default=0.5
-        Fraction of false_alarm_rate reserved for changepoint localization.
+        Maximum probability of false alarm over the entire monitoring period.
+        Guarantee is anytime-valid (holds at all stopping times).
 
     Attributes
     ----------
     t : int
-        Total observations processed (baseline + monitoring)
-    baseline_locked : bool
-        Whether baseline collection is complete
-    baseline_pits : list
-        PITs from baseline period
-    monitoring_pits : list
-        PITs from monitoring period
+        Total observations processed.
+    pits : list
+        All PIT values observed.
     alarm_triggered : bool
-        Whether calibration change was detected
+        Whether a calibration change was detected.
     alarm_time : int or None
-        Time when alarm was triggered
+        Time step when alarm was triggered.
 
     Examples
     --------
-    >>> monitor = PITMonitor(false_alarm_rate=0.05, baseline_size=50)
+    >>> from scipy.stats import norm
+    >>> monitor = PITMonitor(false_alarm_rate=0.05)
     >>>
-    >>> # Baseline phase
-    >>> for prediction, outcome in data_stream[:50]:
-    ...     info = monitor.update(prediction, outcome)
-    ...     if info.baseline_complete:
-    ...         print(f"Baseline established")
-    >>>
-    >>> # Monitoring phase
-    >>> for prediction, outcome in data_stream[50:]:
-    ...     alarm = monitor.update(prediction, outcome)
+    >>> for prediction, outcome in data_stream:
+    ...     alarm = monitor.update(prediction.cdf, outcome)
     ...     if alarm:
     ...         print(f"Calibration changed at t={monitor.t}")
     ...         cp = monitor.localize_changepoint()
@@ -76,39 +64,27 @@ class PITMonitor:
 
     Notes
     -----
-    The monitor uses a two-phase approach:
-    1. Baseline (first baseline_size observations): Establish reference calibration
-    2. Monitoring (subsequent observations): Detect changes from baseline
-
-    This is fundamentally different from testing absolute calibration quality.
-    A poorly calibrated but stable model will not alarm, only changes trigger alarms.
+    The monitor uses a conformal mixture e-process: for each PIT u_t, it
+    computes the rank of u_t among all PITs seen so far. Under exchangeability,
+    these ranks are uniform. A two-sided power betting function (epsilon=0.5)
+    converts rank-based p-values into e-values. These are aggregated via a
+    mixture over possible changepoint times with a slowly-decaying prior,
+    forming a valid e-process. By Ville's inequality, P(sup M_t >= 1/alpha)
+    <= alpha, giving exact anytime-valid false alarm control.
     """
 
-    def __init__(self, false_alarm_rate=0.05, baseline_size=50, changepoint_budget=0.5):
+    def __init__(self, false_alarm_rate=0.05):
         if not 0 < false_alarm_rate < 1:
             raise ValueError("false_alarm_rate must be in (0, 1)")
-        if baseline_size < 1:
-            raise ValueError("baseline_size must be >= 1")
-        if baseline_size < 30:
-            import warnings
-
-            warnings.warn(
-                f"baseline_size={baseline_size} is small and may have low power. "
-                "Consider baseline_size >= 30 for reliable change detection."
-            )
-        if not 0 < changepoint_budget < 1:
-            raise ValueError("changepoint_budget must be in (0, 1)")
 
         self.alpha = false_alarm_rate
-        self.baseline_size = baseline_size
-        self.changepoint_budget = changepoint_budget
 
         # State
         self.t = 0
-        self.baseline_pits = []
-        self.baseline_locked = False
-        self.monitoring_pits = []
-        self._baseline_ks_dist = None
+        self.pits = []
+        self._sorted_pits = []
+        self._mixture = 0.0  # mixture e-process value
+        self._mixture_history = []
         self.alarm_triggered = False
         self.alarm_time = None
         self._alarm_info = None
@@ -128,28 +104,16 @@ class PITMonitor:
         -------
         AlarmInfo
             Information about alarm status. Evaluates to True if alarm triggered.
-
-        Examples
-        --------
-        >>> from scipy.stats import norm
-        >>> monitor = PITMonitor()
-        >>> predicted_dist = norm(loc=0, scale=1)
-        >>> alarm = monitor.update(predicted_dist.cdf, outcome=2.5)
         """
         if self.alarm_triggered:
             return self._alarm_info
 
-        # Compute PIT value
         u = predicted_cdf(outcome)
-
         return self._process_pit(u)
 
     def update_pit(self, pit_value):
         """
         Process one new observation using a pre-computed PIT value.
-
-        Useful when you've already computed the PIT externally or when
-        working with quantile-based forecasts.
 
         Parameters
         ----------
@@ -160,12 +124,6 @@ class PITMonitor:
         -------
         AlarmInfo
             Information about alarm status. Evaluates to True if alarm triggered.
-
-        Examples
-        --------
-        >>> monitor = PITMonitor()
-        >>> # If you already have PIT values
-        >>> alarm = monitor.update_pit(pit_value=0.23)
         """
         if self.alarm_triggered:
             return self._alarm_info
@@ -174,70 +132,55 @@ class PITMonitor:
 
     def _process_pit(self, u):
         """Internal method to process a PIT value."""
-        # Validate PIT is in [0,1]
         if not 0 <= u <= 1:
             raise ValueError(
-                f"PIT value {u} outside [0,1]. Check that predicted_cdf is a valid CDF or that pit_value is valid."
+                f"PIT value {u} outside [0,1]. Check that predicted_cdf "
+                "is a valid CDF or that pit_value is valid."
             )
 
         self.t += 1
+        self.pits.append(u)
+        bisect.insort(self._sorted_pits, u)
 
-        # Phase 1: Baseline Collection
-        if not self.baseline_locked:
-            self.baseline_pits.append(u)
+        threshold = 1 / self.alpha
 
-            if len(self.baseline_pits) >= self.baseline_size:
-                # Lock baseline and compute quality metrics
-                self.baseline_locked = True
-                sorted_baseline = np.sort(self.baseline_pits)
-                k = np.arange(1, len(self.baseline_pits) + 1)
-                self._baseline_ks_dist = float(
-                    np.max(np.abs(k / len(self.baseline_pits) - sorted_baseline))
-                )
-
-                # Warn if baseline appears poorly calibrated
-                if self._baseline_ks_dist > 0.2:
-                    import warnings
-
-                    warnings.warn(
-                        f"Baseline PITs show poor calibration (KS={self._baseline_ks_dist:.3f}). "
-                        f"Monitor will detect CHANGES from this baseline, but baseline itself "
-                        f"may not represent good calibration."
-                    )
-
-                return AlarmInfo(
-                    triggered=False,
-                    baseline_complete=True,
-                    ks_distance=self._baseline_ks_dist,
-                    threshold=None,
-                )
-
-            # Still collecting baseline
+        if self.t == 1:
+            self._mixture_history.append(0.0)
             return AlarmInfo(
-                triggered=False,
-                baseline_complete=False,
-                ks_distance=None,
-                threshold=None,
+                triggered=False, martingale=0.0, threshold=threshold
             )
 
-        # Phase 2: Monitoring for changes from baseline
-        self.monitoring_pits.append(u)
+        # Conformal p-value: rank among all observations
+        # Using (t+1) denominator keeps p strictly in (0, 1)
+        rank = bisect.bisect_right(self._sorted_pits, u)
+        p = rank / (self.t + 1)
 
-        # Compute two-sample test statistic and threshold
-        ks_dist = self._compute_ks_distance()
-        threshold = self._compute_threshold()
+        # Two-sided power e-value (epsilon = 0.5)
+        # f(p) = 0.25/sqrt(p) + 0.25/sqrt(1-p)
+        e = 0.25 / np.sqrt(p) + 0.25 / np.sqrt(1 - p)
 
-        # Check for alarm
-        if ks_dist > threshold:
+        # Mixture e-process with prior over changepoint times.
+        # w_s = (1/log(2)) / ((s+2) * log^2(s+2)), which sums to 1
+        # and decays slowly (~1/(s*log^2(s))), giving meaningful weight
+        # to late changepoints.
+        # M_t = e_t * (M_{t-1} + w_{t-1}) is a valid e-process:
+        # the augmented process M_t + sum_{s>=t} w_s is a supermartingale,
+        # so P(sup M_t >= 1/alpha) <= alpha by Ville's inequality.
+        s = self.t - 1  # changepoint index (0-based)
+        log_s2 = np.log(s + 2)
+        w = 1.0 / (np.log(2) * (s + 2) * log_s2 ** 2)
+        self._mixture = e * (self._mixture + w)
+        self._mixture_history.append(self._mixture)
+
+        if self._mixture >= threshold:
             self.alarm_triggered = True
             self.alarm_time = self.t
             diagnosis = self._diagnose_deviation()
 
             self._alarm_info = AlarmInfo(
                 triggered=True,
-                baseline_complete=True,
                 alarm_time=self.t,
-                ks_distance=ks_dist,
+                martingale=self._mixture,
                 threshold=threshold,
                 diagnosis=diagnosis,
             )
@@ -245,45 +188,50 @@ class PITMonitor:
 
         return AlarmInfo(
             triggered=False,
-            baseline_complete=True,
-            ks_distance=ks_dist,
+            martingale=self._mixture,
             threshold=threshold,
         )
 
-    def _compute_ks_distance(self):
-        """Compute KS distance (baseline vs monitoring in change detection mode)."""
-        if not self.baseline_locked:
-            # During baseline: compute one-sample KS for diagnostics
-            if len(self.baseline_pits) == 0:
-                return 0.0
-            sorted_pits = np.sort(self.baseline_pits)
-            k = np.arange(1, len(self.baseline_pits) + 1)
-            return float(np.max(np.abs(k / len(self.baseline_pits) - sorted_pits)))
-
-        # During monitoring: two-sample KS
-        if len(self.monitoring_pits) == 0:
-            return 0.0
-        return self._compute_ks_two_sample(
-            np.array(self.baseline_pits), np.array(self.monitoring_pits)
-        )
-
-    @staticmethod
-    def _compute_ks_two_sample(pits1, pits2):
+    def localize_changepoint(self):
         """
-        Compute two-sample Kolmogorov-Smirnov distance: max |F1(u) - F2(u)|
+        Estimate when calibration started changing.
 
-        Parameters
-        ----------
-        pits1 : np.ndarray
-            First sample of PITs
-        pits2 : np.ndarray
-            Second sample of PITs
+        Uses binary segmentation: finds the split point that maximizes
+        the scaled two-sample KS statistic between PITs before and after
+        the candidate point. Pure estimation — no significance level needed.
 
         Returns
         -------
-        float
-            Maximum difference between empirical CDFs
+        int or None
+            Estimated changepoint time (1-indexed), or None if no alarm.
         """
+        if not self.alarm_triggered:
+            return None
+
+        n = len(self.pits)
+        if n < 2:
+            return 1
+
+        pits_array = np.array(self.pits)
+        best_stat = 0.0
+        best_k = 1
+
+        for k in range(1, n):
+            left = pits_array[:k]
+            right = pits_array[k:]
+            ks_dist = self._compute_ks_two_sample(left, right)
+            n_eff = (k * (n - k)) / n
+            scaled_stat = np.sqrt(n_eff) * ks_dist
+
+            if scaled_stat > best_stat:
+                best_stat = scaled_stat
+                best_k = k
+
+        return best_k
+
+    @staticmethod
+    def _compute_ks_two_sample(pits1, pits2):
+        """Compute two-sample KS distance. Used for changepoint localization."""
         n1, n2 = len(pits1), len(pits2)
         if n1 == 0 or n2 == 0:
             return 0.0
@@ -291,10 +239,8 @@ class PITMonitor:
         sorted1 = np.sort(pits1)
         sorted2 = np.sort(pits2)
 
-        # Combined unique values where we evaluate CDFs
         all_vals = np.unique(np.concatenate([sorted1, sorted2]))
 
-        # Compute max difference between empirical CDFs
         max_dist = 0.0
         for u in all_vals:
             F1_u = np.sum(sorted1 <= u) / n1
@@ -303,183 +249,43 @@ class PITMonitor:
 
         return float(max_dist)
 
-    def _compute_threshold(self):
-        """Compute two-sample sequential threshold."""
-        if not self.baseline_locked:
-            return np.inf  # No threshold during baseline
-
-        t_monitor = len(self.monitoring_pits)
-        if t_monitor == 0:
-            return np.inf
-
-        n_baseline = len(self.baseline_pits)
-        # Effective sample size for two-sample test (harmonic mean)
-        n_eff = (n_baseline * t_monitor) / (n_baseline + t_monitor)
-
-        # Alpha spending on monitoring time steps
-        alpha_t = self.alpha / (np.pi**2 * t_monitor**2)
-        return np.sqrt(np.log(2 / alpha_t) / (2 * n_eff))
-
     def _diagnose_deviation(self):
-        """Diagnose how monitoring distribution differs from baseline."""
-        baseline_sorted = np.sort(self.baseline_pits)
-        monitoring_sorted = np.sort(self.monitoring_pits)
+        """Diagnose how the PIT distribution changed."""
+        cp = self.localize_changepoint()
+        if cp is None or cp >= len(self.pits):
+            return "unknown"
 
-        # Find where maximum deviation occurs
-        all_vals = np.unique(np.concatenate([baseline_sorted, monitoring_sorted]))
-        max_dev = 0
-        u_star = 0.5
+        before = np.array(self.pits[:cp])
+        after = np.array(self.pits[cp:])
 
-        for u in all_vals:
-            F_base = np.sum(baseline_sorted <= u) / len(baseline_sorted)
-            F_mon = np.sum(monitoring_sorted <= u) / len(monitoring_sorted)
-            dev = F_mon - F_base
-            if abs(dev) > abs(max_dev):
-                max_dev = dev
-                u_star = u
+        if len(before) == 0 or len(after) == 0:
+            return "unknown"
 
-        location = (
-            "lower tail"
-            if u_star < 0.1
-            else ("upper tail" if u_star > 0.9 else "central")
-        )
-        direction = "more extremes" if max_dev > 0 else "fewer extremes"
-        return f"{location} - {direction} vs baseline"
+        shift = np.mean(after) - np.mean(before)
+        if abs(shift) > 0.1:
+            direction = "higher" if shift > 0 else "lower"
+            return f"PITs shifted {direction} after t={cp}"
 
-    def get_baseline_diagnostics(self):
-        """
-        Get baseline collection status and quality.
+        var_ratio = np.var(after) / max(np.var(before), 1e-10)
+        if var_ratio > 1.5:
+            return f"PITs became more dispersed after t={cp}"
+        elif var_ratio < 1 / 1.5:
+            return f"PITs became more concentrated after t={cp}"
 
-        Returns
-        -------
-        dict
-            Dictionary with baseline status and quality metrics
-        """
-        if not self.baseline_locked:
-            return {
-                "complete": False,
-                "collected": len(self.baseline_pits),
-                "target": self.baseline_size,
-            }
-
-        return {
-            "complete": True,
-            "size": len(self.baseline_pits),
-            "ks_from_uniform": self._baseline_ks_dist,
-            "mean_pit": float(np.mean(self.baseline_pits)),
-            "quality": "good" if self._baseline_ks_dist < 0.15 else "poor",
-        }
-
-    def localize_changepoint(self, method="backward_scan"):
-        """
-        Estimate when calibration started changing from baseline.
-
-        Scans through monitoring phase to find earliest detectable change.
-
-        Parameters
-        ----------
-        method : str, default='backward_scan'
-            Method for localization ('backward_scan' or 'binary_search')
-
-        Returns
-        -------
-        int or None
-            Estimated changepoint time (absolute time step), or None if no alarm triggered
-        """
-        if not self.alarm_triggered or not self.baseline_locked:
-            return None
-
-        if method == "backward_scan":
-            return self._localize_backward_scan()
-        elif method == "binary_search":
-            return self._localize_binary_search()
-        else:
-            raise ValueError(f"Unknown method: {method}")
-
-    def _localize_backward_scan(self):
-        """Backward scan for changepoint in monitoring phase."""
-        if self.alarm_time is None:
-            return self.baseline_size + 1
-
-        alpha_cp = self.alpha * self.changepoint_budget
-        baseline_array = np.array(self.baseline_pits)
-        n_baseline = len(baseline_array)
-
-        # Scan forward through monitoring phase
-        n_monitor = len(self.monitoring_pits)
-        segment_lengths = self._geometric_sequence(1, n_monitor)
-
-        for k in segment_lengths:
-            # Test if first k monitoring observations differ from baseline
-            monitoring_segment = np.array(self.monitoring_pits[:k])
-
-            # Two-sample KS test
-            ks_dist = self._compute_ks_two_sample(baseline_array, monitoring_segment)
-
-            # Threshold for this segment size
-            n_eff = (n_baseline * k) / (n_baseline + k)
-            alpha_k = (
-                alpha_cp / (np.pi**2 * int(np.log2(k) + 1) ** 2)
-                if k > 1
-                else alpha_cp / 2
-            )
-            threshold_k = np.sqrt(np.log(2 / alpha_k) / (2 * n_eff))
-
-            if ks_dist > threshold_k:
-                # Change detected in first k monitoring steps
-                return self.baseline_size + k
-
-        # Default to start of monitoring if no earlier detection
-        return self.baseline_size + 1
-
-    def _localize_binary_search(self):
-        """Binary search for changepoint (simple approximation)."""
-        if self.alarm_time is None:
-            return self.baseline_size + 1
-
-        # Estimate midpoint of monitoring phase
-        n_monitor = len(self.monitoring_pits)
-        return self.baseline_size + max(1, n_monitor // 2)
-
-    @staticmethod
-    def _compute_ks_on_segment(pits):
-        """Compute KS distance on a segment of PITs."""
-        n = len(pits)
-        if n == 0:
-            return 0.0
-        sorted_pits = np.sort(pits)
-        k = np.arange(1, n + 1)
-        deviations = np.abs(k / n - sorted_pits)
-        return float(np.max(deviations))
-
-    @staticmethod
-    def _geometric_sequence(start, end, base=1.5):
-        """Generate geometrically spaced integers."""
-        if start >= end:
-            return [end]
-        sequence = []
-        current = start
-        while current < end:
-            sequence.append(int(current))
-            current *= base
-        sequence.append(end)
-        return sorted(set(sequence))
+        return f"PIT distribution shape changed after t={cp}"
 
     @property
-    def pits(self):
-        """Get all PITs (baseline + monitoring)."""
-        return self.baseline_pits + self.monitoring_pits
+    def evidence(self):
+        """Current mixture e-process value (evidence against exchangeability)."""
+        return self._mixture
 
     def get_state(self):
         """Get current monitor state."""
         return {
             "t": self.t,
-            "baseline_locked": self.baseline_locked,
-            "baseline_size": len(self.baseline_pits),
-            "monitoring_size": len(self.monitoring_pits),
-            "pits": self.baseline_pits + self.monitoring_pits,  # All PITs
-            "ks_distance": self._compute_ks_distance() if self.t > 0 else None,
-            "threshold": self._compute_threshold() if self.baseline_locked else None,
+            "pits": list(self.pits),
+            "evidence": self._mixture,
+            "threshold": 1 / self.alpha,
             "alarm_triggered": self.alarm_triggered,
             "alarm_time": self.alarm_time,
             "alpha": self.alpha,
@@ -494,40 +300,21 @@ class PITMonitor:
         dict
             Dictionary with monitoring summary statistics and status.
         """
-        state = self.get_state()
         summary = {
-            "status": "alarm" if self.alarm_triggered else ("monitoring" if self.baseline_locked else "baseline_collection"),
+            "status": "alarm" if self.alarm_triggered else "monitoring",
             "observations_processed": self.t,
-            "baseline": {
-                "size": len(self.baseline_pits),
-                "locked": self.baseline_locked,
-            },
-            "monitoring": {
-                "size": len(self.monitoring_pits),
-                "active": self.baseline_locked,
-            },
+            "evidence": self._mixture,
+            "threshold": 1 / self.alpha,
             "parameters": {
                 "false_alarm_rate": self.alpha,
-                "baseline_size": self.baseline_size,
             },
         }
-
-        if self.baseline_locked:
-            baseline_diag = self.get_baseline_diagnostics()
-            summary["baseline"]["quality"] = baseline_diag.get("quality", "unknown")
-            summary["baseline"]["ks_from_uniform"] = baseline_diag.get("ks_from_uniform")
-
-        if self.baseline_locked and len(self.monitoring_pits) > 0:
-            summary["monitoring"]["ks_distance"] = state["ks_distance"]
-            summary["monitoring"]["threshold"] = state["threshold"]
-            summary["monitoring"]["margin"] = state["threshold"] - state["ks_distance"] if state["threshold"] and state["ks_distance"] else None
 
         if self.alarm_triggered and self._alarm_info:
             summary["alarm"] = {
                 "triggered_at": self.alarm_time,
                 "estimated_changepoint": self.localize_changepoint(),
-                "ks_distance": self._alarm_info.ks_distance,
-                "threshold": self._alarm_info.threshold,
+                "cusum": self._alarm_info.martingale,
                 "diagnosis": self._alarm_info.diagnosis,
             }
 
@@ -542,35 +329,16 @@ class PITMonitor:
         print("=" * 70)
         print(f"Status: {summary['status'].upper()}")
         print(f"Observations processed: {summary['observations_processed']}")
+        print(f"Evidence: {summary['evidence']:.4f}")
+        print(f"Threshold: {summary['threshold']:.1f}")
         print()
-
-        print("Baseline:")
-        print(f"  Size: {summary['baseline']['size']}/{self.baseline_size}")
-        print(f"  Locked: {summary['baseline']['locked']}")
-        if 'quality' in summary['baseline']:
-            print(f"  Quality: {summary['baseline']['quality']}")
-            print(f"  KS from uniform: {summary['baseline'].get('ks_from_uniform', 'N/A'):.4f}")
-        print()
-
-        if summary['monitoring']['active']:
-            print("Monitoring:")
-            print(f"  Observations: {summary['monitoring']['size']}")
-            if 'ks_distance' in summary['monitoring']:
-                print(f"  KS distance: {summary['monitoring']['ks_distance']:.4f}")
-                print(f"  Threshold: {summary['monitoring']['threshold']:.4f}")
-                margin = summary['monitoring'].get('margin')
-                if margin is not None:
-                    print(f"  Margin: {margin:.4f} ({'SAFE' if margin > 0 else 'ALARM'})")
-            print()
 
         if self.alarm_triggered:
-            print("🚨 ALARM:")
-            alarm = summary['alarm']
+            alarm = summary["alarm"]
+            print("ALARM:")
             print(f"  Triggered at: t={alarm['triggered_at']}")
             print(f"  Estimated changepoint: t={alarm['estimated_changepoint']}")
             print(f"  Diagnosis: {alarm['diagnosis']}")
-            print(f"  KS distance: {alarm['ks_distance']:.4f}")
-            print(f"  Threshold: {alarm['threshold']:.4f}")
 
         print("=" * 70)
 
@@ -581,19 +349,17 @@ class PITMonitor:
         Returns
         -------
         dict
-            Dictionary with all PITs, timestamps, and metadata.
+            Dictionary with all PITs, martingale history, and metadata.
         """
         return {
             "metadata": {
-                "version": "0.2.0",
+                "version": "0.3.0",
                 "parameters": {
                     "false_alarm_rate": self.alpha,
-                    "baseline_size": self.baseline_size,
-                    "changepoint_budget": self.changepoint_budget,
                 },
             },
-            "baseline_pits": self.baseline_pits,
-            "monitoring_pits": self.monitoring_pits,
+            "pits": list(self.pits),
+            "evidence_history": list(self._mixture_history),
             "state": self.get_state(),
             "summary": self.get_summary(),
         }
@@ -605,12 +371,12 @@ class PITMonitor:
         Parameters
         ----------
         figsize : tuple, default=(12, 8)
-            Figure size
+            Figure size.
 
         Returns
         -------
         matplotlib.figure.Figure
-            Figure with diagnostic plots
+            Figure with diagnostic plots.
         """
         try:
             import matplotlib.pyplot as plt
@@ -625,39 +391,26 @@ class PITMonitor:
             fig.suptitle("No data yet")
             return fig
 
-        baseline_array = np.array(self.baseline_pits)
-        monitoring_array = np.array(self.monitoring_pits)
+        pits_array = np.array(self.pits)
+        evidence = np.array(self._mixture_history)
+        times = np.arange(1, self.t + 1)
 
-        # Plot 1: PIT histogram (baseline vs monitoring)
+        # Plot 1: PIT histogram
         ax = axes[0, 0]
-        if self.baseline_locked and len(monitoring_array) > 0:
+        if self.alarm_triggered:
+            cp = self.localize_changepoint()
             ax.hist(
-                baseline_array,
-                bins=15,
-                density=True,
-                alpha=0.5,
-                label="Baseline",
-                color="blue",
-                edgecolor="black",
+                pits_array[:cp], bins=15, density=True, alpha=0.5,
+                label=f"Before t={cp}", color="blue", edgecolor="black",
             )
             ax.hist(
-                monitoring_array,
-                bins=15,
-                density=True,
-                alpha=0.5,
-                label="Monitoring",
-                color="orange",
-                edgecolor="black",
+                pits_array[cp:], bins=15, density=True, alpha=0.5,
+                label=f"After t={cp}", color="orange", edgecolor="black",
             )
         else:
             ax.hist(
-                baseline_array,
-                bins=20,
-                density=True,
-                alpha=0.7,
-                label="Baseline" if not self.baseline_locked else "PITs",
-                color="blue",
-                edgecolor="black",
+                pits_array, bins=20, density=True, alpha=0.7,
+                label="PITs", color="blue", edgecolor="black",
             )
         ax.axhline(1.0, color="red", linestyle="--", label="Uniform", alpha=0.7)
         ax.set_xlabel("PIT value")
@@ -665,33 +418,26 @@ class PITMonitor:
         ax.set_title("PIT Distribution")
         ax.legend()
 
-        # Plot 2: Empirical CDFs (baseline vs monitoring)
+        # Plot 2: Empirical CDFs
         ax = axes[0, 1]
-        sorted_baseline = np.sort(baseline_array)
-        baseline_cdf = np.arange(1, len(baseline_array) + 1) / len(baseline_array)
-        ax.plot(
-            sorted_baseline,
-            baseline_cdf,
-            "b-",
-            label="Baseline CDF",
-            linewidth=2,
-            alpha=0.8,
-        )
-
-        if self.baseline_locked and len(monitoring_array) > 0:
-            sorted_monitoring = np.sort(monitoring_array)
-            monitoring_cdf = np.arange(1, len(monitoring_array) + 1) / len(
-                monitoring_array
+        if self.alarm_triggered:
+            cp = self.localize_changepoint()
+            before = np.sort(pits_array[:cp])
+            after = np.sort(pits_array[cp:])
+            ax.plot(
+                before, np.arange(1, len(before) + 1) / len(before),
+                "b-", label=f"Before t={cp}", linewidth=2, alpha=0.8,
             )
             ax.plot(
-                sorted_monitoring,
-                monitoring_cdf,
-                "orange",
-                label="Monitoring CDF",
-                linewidth=2,
-                alpha=0.8,
+                after, np.arange(1, len(after) + 1) / len(after),
+                color="orange", label=f"After t={cp}", linewidth=2, alpha=0.8,
             )
-
+        else:
+            sorted_pits = np.sort(pits_array)
+            ax.plot(
+                sorted_pits, np.arange(1, len(sorted_pits) + 1) / len(sorted_pits),
+                "b-", label="Empirical CDF", linewidth=2, alpha=0.8,
+            )
         ax.plot([0, 1], [0, 1], "r--", label="Uniform CDF", linewidth=2, alpha=0.7)
         ax.set_xlabel("u")
         ax.set_ylabel("F(u)")
@@ -700,115 +446,53 @@ class PITMonitor:
         ax.set_xlim([0, 1])
         ax.set_ylim([0, 1])
 
-        # Plot 3: Two-sample KS distance over monitoring time
+        # Plot 3: Evidence over time
         ax = axes[1, 0]
-
-        if self.baseline_locked and len(monitoring_array) > 0:
-            # Compute two-sample KS at each monitoring step
-            ks_history = []
-            threshold_history = []
-
-            for k in range(1, len(monitoring_array) + 1):
-                monitoring_segment = monitoring_array[:k]
-                ks_dist = self._compute_ks_two_sample(
-                    baseline_array, monitoring_segment
-                )
-                ks_history.append(ks_dist)
-
-                # Threshold at monitoring step k
-                n_baseline = len(baseline_array)
-                n_eff = (n_baseline * k) / (n_baseline + k)
-                alpha_t = self.alpha / (np.pi**2 * k**2)
-                threshold = np.sqrt(np.log(2 / alpha_t) / (2 * n_eff))
-                threshold_history.append(threshold)
-
-            monitoring_times = np.arange(self.baseline_size + 1, self.t + 1)
-            ax.plot(
-                monitoring_times, ks_history, "b-", label="Two-sample KS", linewidth=2
+        ax.plot(times, evidence, "b-", label="Evidence", linewidth=2)
+        ax.axhline(
+            1 / self.alpha, color="red", linestyle="--",
+            label=f"Threshold (1/\u03b1)", linewidth=2,
+        )
+        if self.alarm_triggered:
+            ax.axvline(
+                self.alarm_time, color="orange", linestyle=":",
+                label=f"Alarm (t={self.alarm_time})", linewidth=2,
             )
-            ax.plot(
-                monitoring_times,
-                threshold_history,
-                "r--",
-                label="Threshold",
-                linewidth=2,
+            cp = self.localize_changepoint()
+            ax.axvline(
+                cp, color="green", linestyle="--",
+                label=f"Changepoint (t={cp})", linewidth=2, alpha=0.7,
             )
-
-            if self.alarm_triggered:
-                ax.axvline(
-                    self.alarm_time,
-                    color="orange",
-                    linestyle=":",
-                    label=f"Alarm (t={self.alarm_time})",
-                    linewidth=2,
-                )
-
-            ax.set_xlabel("Time")
-            ax.set_ylabel("Two-sample KS distance")
-            ax.set_title("Change Detection Monitoring")
-            ax.legend()
-            ax.set_yscale("log")
-        else:
-            ax.text(
-                0.5,
-                0.5,
-                "Baseline collection in progress",
-                ha="center",
-                va="center",
-                transform=ax.transAxes,
-                fontsize=12,
-            )
-            ax.set_xlabel("Time")
-            ax.set_ylabel("KS distance")
-            ax.set_title("Monitoring (Not Started)")
+        ax.set_xlabel("Time")
+        ax.set_ylabel("Mixture e-process")
+        ax.set_title("Evidence Against Exchangeability")
+        ax.legend()
 
         # Plot 4: PIT sequence over time
         ax = axes[1, 1]
-
-        # Plot baseline PITs
-        baseline_times = np.arange(1, len(baseline_array) + 1)
-        ax.scatter(
-            baseline_times,
-            baseline_array,
-            alpha=0.5,
-            s=20,
-            color="blue",
-            label="Baseline",
-        )
-
-        # Plot monitoring PITs if available
-        if self.baseline_locked and len(monitoring_array) > 0:
-            monitoring_times = np.arange(len(baseline_array) + 1, self.t + 1)
+        if self.alarm_triggered:
+            cp = self.localize_changepoint()
             ax.scatter(
-                monitoring_times,
-                monitoring_array,
-                alpha=0.5,
-                s=20,
-                color="orange",
-                label="Monitoring",
+                times[:cp], pits_array[:cp], alpha=0.5, s=20,
+                color="blue", label=f"Before t={cp}",
             )
-
-        # Mark baseline completion
-        if self.baseline_locked:
+            ax.scatter(
+                times[cp:], pits_array[cp:], alpha=0.5, s=20,
+                color="orange", label=f"After t={cp}",
+            )
             ax.axvline(
-                self.baseline_size,
-                color="green",
-                linestyle="--",
-                alpha=0.7,
-                linewidth=2,
-                label="Baseline complete",
+                cp, color="green", linestyle="--",
+                label=f"Changepoint (t={cp})", linewidth=2, alpha=0.7,
             )
-
-        # Mark alarm
+        else:
+            ax.scatter(
+                times, pits_array, alpha=0.5, s=20, color="blue", label="PITs",
+            )
         if self.alarm_triggered:
             ax.axvline(
-                self.alarm_time,
-                color="red",
-                linestyle=":",
-                label=f"Alarm (t={self.alarm_time})",
-                linewidth=2,
+                self.alarm_time, color="red", linestyle=":",
+                label=f"Alarm (t={self.alarm_time})", linewidth=2,
             )
-
         ax.axhline(0.5, color="gray", linestyle="--", alpha=0.5)
         ax.axhline(0.0, color="gray", linestyle="-", alpha=0.3)
         ax.axhline(1.0, color="gray", linestyle="-", alpha=0.3)
@@ -819,9 +503,8 @@ class PITMonitor:
         ax.legend()
 
         fig.suptitle(
-            f"PIT Monitor Diagnostics (α={self.alpha}, baseline={self.baseline_size})",
-            fontsize=14,
-            y=1.00,
+            f"PIT Monitor Diagnostics (\u03b1={self.alpha})",
+            fontsize=14, y=1.00,
         )
         plt.tight_layout()
         return fig

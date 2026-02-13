@@ -146,7 +146,6 @@ def run_real_stock_example():
     monitor = PITMonitor(
         false_alarm_rate=0.05,
         baseline_size=60,  # ~3 months of trading days
-        changepoint_budget=0.4
     )
 
     # Storage for analysis

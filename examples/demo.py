@@ -212,14 +212,8 @@ def demo_comparison():
         print(f"  True changepoint: step 100")
         print()
 
-        cp_backward = monitor.localize_changepoint(method="backward_scan")
-        cp_binary = monitor.localize_changepoint(method="binary_search")
-
-        print(f"  Backward scan estimate: step {cp_backward}")
-        print(f"  Binary search estimate: step {cp_binary}")
-        print()
-        print("  Note: Backward scan is more accurate but slower")
-        print("        Binary search is faster but less precise")
+        cp = monitor.localize_changepoint()
+        print(f"  Changepoint estimate: step {cp}")
 
 
 def demo_visualization():

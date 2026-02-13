@@ -116,7 +116,6 @@ def run_real_weather_example():
     monitor = PITMonitor(
         false_alarm_rate=0.05,
         baseline_size=50,  # ~7 weeks of daily forecasts
-        changepoint_budget=0.3
     )
 
     # Storage for visualization

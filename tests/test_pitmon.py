@@ -24,8 +24,6 @@ class TestPITMonitor:
             PITMonitor(false_alarm_rate=1.5)
         with pytest.raises(ValueError):
             PITMonitor(baseline_size=0)
-        with pytest.raises(ValueError):
-            PITMonitor(changepoint_budget=-0.1)
 
     def test_baseline_warning_small_size(self):
         """Test warning for small baseline sizes."""
@@ -229,13 +227,6 @@ class TestPITMonitor:
         # Identical distributions should have KS=0
         ks_same = PITMonitor._compute_ks_two_sample(pits1, pits1)
         assert ks_same == 0
-
-    def test_geometric_sequence(self):
-        """Test geometric sequence generation."""
-        seq = PITMonitor._geometric_sequence(1, 100, base=2)
-        assert seq[0] == 1
-        assert seq[-1] == 100
-        assert all(seq[i] < seq[i + 1] for i in range(len(seq) - 1))
 
     def test_pits_property(self):
         """Test that pits property returns all PITs."""

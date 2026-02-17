@@ -11,7 +11,6 @@ class AlarmInfo:
     alarm_time: object = None
     martingale: object = None
     threshold: object = None
-    diagnosis: object = None
 
     def __bool__(self):
         return self.triggered
@@ -106,33 +105,32 @@ class PITMonitor:
             self._mixture_history.append(0.0)
             return AlarmInfo(triggered=False, martingale=0.0, threshold=threshold)
 
-        # Conformal p-value: rank of u among all observations
-        rank = bisect.bisect_right(self._sorted_pits, u)
+        # Conformal p-value with randomized tie-breaking for exact uniformity.
+        left = bisect.bisect_left(self._sorted_pits, u)
+        right = bisect.bisect_right(self._sorted_pits, u)
+        rank = left + np.random.uniform(0, right - left + 1)
         p = rank / (self.t + 1)
 
-        # Two-sided power e-value (epsilon = 0.5)
-        e = 0.25 / np.sqrt(p) + 0.25 / np.sqrt(1 - p)
+        # Two-sided e-value from Jeffreys prior: Beta(1/2, 1/2) vs Uniform.
+        # This is a canonical, parameter-free choice with E[e]=1 under H0.
+        e = 1.0 / (np.pi * np.sqrt(p * (1 - p)))
 
-        # Mixture e-process with slowly-decaying prior over changepoint times.
-        # w_s = 1/(ln2 * (s+2) * ln^2(s+2)) sums to 1, giving meaningful
-        # weight to late changepoints. M_t = e_t * (M_{t-1} + w_{t-1}) is a
-        # valid e-process; P(sup M_t >= 1/alpha) <= alpha by Ville's inequality.
+        # Mixture e-process with a universal prior over changepoint times.
+        # w_s = 1/((s+1)(s+2)) is a canonical summable prior on integers (sums to 1).
+        # M_t = e_t * (M_{t-1} + w_{t-1}) is valid; P(sup M_t >= 1/alpha) <= alpha.
         s = self.t - 1
-        log_s2 = np.log(s + 2)
-        w = 1.0 / (np.log(2) * (s + 2) * log_s2**2)
+        w = 1.0 / ((s + 1) * (s + 2))
         self._mixture = e * (self._mixture + w)
         self._mixture_history.append(self._mixture)
 
         if self._mixture >= threshold:
             self.alarm_triggered = True
             self.alarm_time = self.t
-            diagnosis = self._diagnose_deviation()
             self._alarm_info = AlarmInfo(
                 triggered=True,
                 alarm_time=self.t,
                 martingale=self._mixture,
                 threshold=threshold,
-                diagnosis=diagnosis,
             )
             return self._alarm_info
 
@@ -170,34 +168,20 @@ class PITMonitor:
         na, nb = len(a), len(b)
         return max(abs(np.sum(a <= v) / na - np.sum(b <= v) / nb) for v in all_vals)
 
-    def _diagnose_deviation(self):
-        cp = self.localize_changepoint()
-        if cp is None or cp >= len(self.pits):
-            return "unknown"
-
-        before, after = np.array(self.pits[:cp]), np.array(self.pits[cp:])
-        if len(before) == 0 or len(after) == 0:
-            return "unknown"
-
-        shift = np.mean(after) - np.mean(before)
-        if abs(shift) > 0.1:
-            return f"PITs shifted {'higher' if shift > 0 else 'lower'} after t={cp}"
-
-        var_ratio = np.var(after) / max(np.var(before), 1e-10)
-        if var_ratio > 1.5:
-            return f"PITs became more dispersed after t={cp}"
-        if var_ratio < 1 / 1.5:
-            return f"PITs became more concentrated after t={cp}"
-
-        return f"PIT distribution shape changed after t={cp}"
-
     @property
     def evidence(self):
         """Current e-process value (evidence against exchangeability)."""
         return self._mixture
 
-    def plot(self, figsize=(12, 8)):
-        """Create 4-panel diagnostic plot. Returns matplotlib Figure."""
+    @staticmethod
+    def _ecdf(data):
+        """Compute empirical CDF."""
+        x = np.sort(data)
+        y = np.arange(1, len(x) + 1) / len(x)
+        return x, y
+
+    def plot(self, figsize=(14, 8), evidence_log_scale=True):
+        """Create 4-panel diagnostic plot with principled statistical display."""
         try:
             import matplotlib.pyplot as plt
         except ImportError:
@@ -214,68 +198,98 @@ class PITMonitor:
         times = np.arange(1, self.t + 1)
         cp = self.localize_changepoint() if self.alarm_triggered else None
 
-        # 1: PIT histogram
+        # 1: PIT histogram or ECDF based on sample size
         ax = axes[0, 0]
-        if cp:
-            ax.hist(
-                pits[:cp],
-                bins=15,
-                density=True,
-                alpha=0.5,
-                label=f"Before t={cp}",
-                color="blue",
-                edgecolor="black",
+        if self.t >= 30:
+            # Use histogram with uncertainty band
+            if cp:
+                ax.hist(
+                    pits[:cp],
+                    bins=15,
+                    density=True,
+                    alpha=0.5,
+                    label=f"Before t={cp}",
+                    color="blue",
+                    edgecolor="black",
+                )
+                ax.hist(
+                    pits[cp:],
+                    bins=15,
+                    density=True,
+                    alpha=0.5,
+                    label=f"After t={cp}",
+                    color="orange",
+                    edgecolor="black",
+                )
+            else:
+                ax.hist(
+                    pits,
+                    bins=20,
+                    density=True,
+                    alpha=0.7,
+                    color="blue",
+                    edgecolor="black",
+                )
+            ax.axhline(
+                1.0,
+                color="red",
+                linestyle="--",
+                alpha=0.7,
+                linewidth=2,
+                label="Uniform",
             )
-            ax.hist(
-                pits[cp:],
-                bins=15,
-                density=True,
-                alpha=0.5,
-                label=f"After t={cp}",
-                color="orange",
-                edgecolor="black",
-            )
+            ax.set(xlabel="PIT value", ylabel="Density", title="PIT Distribution")
         else:
-            ax.hist(
-                pits, bins=20, density=True, alpha=0.7, color="blue", edgecolor="black"
+            # Use ECDF for small samples
+            if cp and len(pits[:cp]) > 0 and len(pits[cp:]) > 0:
+                x1, y1 = self._ecdf(pits[:cp])
+                x2, y2 = self._ecdf(pits[cp:])
+                ax.plot(x1, y1, "b-", lw=2, alpha=0.8, label=f"Before t={cp}")
+                ax.plot(x2, y2, color="orange", lw=2, alpha=0.8, label=f"After t={cp}")
+            else:
+                x, y = self._ecdf(pits)
+                ax.plot(x, y, "b-", lw=2, alpha=0.8)
+            ax.plot([0, 1], [0, 1], "r--", lw=2, alpha=0.7, label="Uniform CDF")
+            ax.set(
+                xlabel="u",
+                ylabel="F(u)",
+                title=f"Empirical CDF (n < 30)",
+                xlim=[0, 1],
+                ylim=[0, 1],
             )
-        ax.axhline(1.0, color="red", linestyle="--", alpha=0.7, label="Uniform")
-        ax.set(xlabel="PIT value", ylabel="Density", title="PIT Distribution")
         ax.legend()
 
-        # 2: Empirical CDFs
+        # 2: Empirical CDFs with KS confidence band
         ax = axes[0, 1]
-        if cp:
-            before, after = np.sort(pits[:cp]), np.sort(pits[cp:])
-            ax.plot(
-                before,
-                np.linspace(0, 1, len(before), endpoint=False) + 1 / len(before),
-                "b-",
-                label=f"Before t={cp}",
-                lw=2,
-                alpha=0.8,
-            )
-            ax.plot(
-                after,
-                np.linspace(0, 1, len(after), endpoint=False) + 1 / len(after),
-                color="orange",
-                label=f"After t={cp}",
-                lw=2,
-                alpha=0.8,
-            )
+        band_x = np.linspace(0, 1, 200)
+        eps = 1.36 / np.sqrt(self.t)
+        band_lower = np.clip(band_x - eps, 0, 1)
+        band_upper = np.clip(band_x + eps, 0, 1)
+
+        if cp and len(pits[:cp]) > 0 and len(pits[cp:]) > 0:
+            x1, y1 = self._ecdf(pits[:cp])
+            x2, y2 = self._ecdf(pits[cp:])
+            ax.plot(x1, y1, "b-", lw=2, alpha=0.8, label=f"Before t={cp}")
+            ax.plot(x2, y2, color="orange", lw=2, alpha=0.8, label=f"After t={cp}")
         else:
-            s = np.sort(pits)
-            ax.plot(s, np.arange(1, len(s) + 1) / len(s), "b-", lw=2, alpha=0.8)
+            x, y = self._ecdf(pits)
+            ax.plot(x, y, "b-", lw=2, alpha=0.8)
         ax.plot([0, 1], [0, 1], "r--", lw=2, alpha=0.7, label="Uniform CDF")
         ax.set(
-            xlabel="u", ylabel="F(u)", title="Empirical CDFs", xlim=[0, 1], ylim=[0, 1]
+            xlabel="u",
+            ylabel="F(u)",
+            title="Empirical CDFs with KS band",
+            xlim=[0, 1],
+            ylim=[0, 1],
         )
         ax.legend()
 
         # 3: Evidence over time
         ax = axes[1, 0]
         ax.plot(times, evidence, "b-", lw=2, label="Evidence")
-        ax.axhline(1 / self.alpha, color="red", linestyle="--", lw=2, label="Threshold")
+        ax.axhline(
+            1 / self.alpha, color="red", linestyle="--", lw=2, label=f"Threshold (1/α)"
+        )
         if cp:
             ax.axvline(
                 self.alarm_time,
@@ -287,16 +301,22 @@ class PITMonitor:
             ax.axvline(
                 cp, color="green", ls="--", lw=2, alpha=0.7, label=f"Changepoint t={cp}"
             )
+        y_label = "e-process (log scale)" if evidence_log_scale else "e-process"
         ax.set(
             xlabel="Time",
-            ylabel="Mixture e-process",
+            ylabel=y_label,
             title="Evidence Against Exchangeability",
         )
+        if evidence_log_scale:
+            ax.set_yscale("log")
         ax.legend()
+        ax.grid(True, which="both", alpha=0.3)
 
-        # 4: PIT sequence
+        # 4: PIT sequence with post-changepoint shading
         ax = axes[1, 1]
         if cp:
+            # Shade post-changepoint region
+            ax.axvspan(cp, self.t, color="orange", alpha=0.05)
             ax.scatter(
                 times[:cp],
                 pits[:cp],
@@ -316,14 +336,23 @@ class PITMonitor:
             ax.axvline(cp, color="green", ls="--", lw=2, alpha=0.7)
         else:
             ax.scatter(times, pits, alpha=0.5, s=20, color="blue")
+
+        # Add running mean
+        running_mean = np.cumsum(pits) / times
+        ax.plot(
+            times, running_mean, color="black", lw=2, alpha=0.6, label="Running mean"
+        )
         ax.axhline(0.5, color="gray", ls="--", alpha=0.5)
         ax.set(
-            xlabel="Time", ylabel="PIT value", title="PIT Sequence", ylim=[-0.05, 1.05]
+            xlabel="Time",
+            ylabel="PIT value",
+            title="PIT Sequence with Running Mean",
+            ylim=[-0.05, 1.05],
         )
         ax.legend()
 
         fig.suptitle(
-            f"PIT Monitor Diagnostics (alpha={self.alpha})", fontsize=14, y=1.00
+            f"PIT Monitor Diagnostics (α={self.alpha}, n={self.t})", fontsize=14, y=1.00
         )
         plt.tight_layout()
         return fig

@@ -54,7 +54,9 @@ class TestPITMonitorInit:
         with pytest.raises(ValueError):
             PITMonitor(n_bins=1)
         with pytest.raises(ValueError):
-            PITMonitor(n_bins=101)
+            PITMonitor(n_bins=4)
+        with pytest.raises(ValueError):
+            PITMonitor(n_bins=501)
 
 
 class TestPITMonitorUpdate:
@@ -260,18 +262,6 @@ class TestPITMonitorSummary:
         monitor.update(0.9)
         score = monitor.calibration_score()
         assert 0 <= score <= 1
-
-    def test_get_status(self):
-        """Test status getter."""
-        monitor = PITMonitor()
-        assert monitor.get_status() == "not_started"
-
-        monitor.update(0.5)
-        assert monitor.get_status() == "monitoring"
-
-        monitor.alarm_triggered = True
-        assert monitor.get_status() == "alarm"
-
 
 class TestPITMonitorReset:
     """Test reset functionality."""

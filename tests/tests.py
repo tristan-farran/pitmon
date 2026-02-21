@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 import tempfile
 from pathlib import Path
-from pitmon import PITMonitor, Alarm
+from pitmon import PITMonitor, Alarm, PlotResult
 
 
 class TestAlarm:
@@ -143,6 +143,21 @@ class TestPITMonitorUpdate:
         assert not result
         assert monitor.t == 1
 
+    def test_rng_reproducibility(self):
+        """Test that per-instance RNG makes updates reproducible."""
+        pits = np.array([0.1, 0.7, 0.7, 0.2, 0.4, 0.4, 0.9], dtype=float)
+
+        monitor_a = PITMonitor(rng=123)
+        monitor_b = PITMonitor(rng=123)
+
+        for pit in pits:
+            monitor_a.update(float(pit))
+            monitor_b.update(float(pit))
+
+        np.testing.assert_allclose(monitor_a.pvalues, monitor_b.pvalues)
+        np.testing.assert_allclose(monitor_a.pits, monitor_b.pits)
+        assert monitor_a.evidence == pytest.approx(monitor_b.evidence)
+
 
 class TestPITMonitorProperties:
     """Test PITMonitor properties and accessors."""
@@ -262,6 +277,7 @@ class TestPITMonitorSummary:
         monitor.update(0.9)
         score = monitor.calibration_score()
         assert 0 <= score <= 1
+
 
 class TestPITMonitorReset:
     """Test reset functionality."""
@@ -426,7 +442,10 @@ class TestPITMonitorPlot:
         monitor = PITMonitor()
         # Should handle gracefully
         result = monitor.plot()
-        assert result is None
+        assert isinstance(result, PlotResult)
+        assert not result
+        assert result.figure is None
+        assert result.message is not None
 
     def test_plot_with_data(self):
         """Test plot with data."""
@@ -438,8 +457,11 @@ class TestPITMonitorPlot:
         for _ in range(30):
             monitor.update(np.random.uniform(0, 1))
 
-        fig = monitor.plot()
-        assert fig is not None
+        result = monitor.plot()
+        assert isinstance(result, PlotResult)
+        assert result
+        assert result.figure is not None
+        assert result.message is None
 
 
 if __name__ == "__main__":

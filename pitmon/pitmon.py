@@ -22,6 +22,18 @@ class Alarm:
         return self.triggered
 
 
+@dataclass
+class PlotResult:
+    """Result of calling plot()."""
+
+    created: bool
+    figure: Optional[plt.Figure]
+    message: Optional[str] = None
+
+    def __bool__(self) -> bool:
+        return self.created
+
+
 class PITMonitor:
     """
     Monitor for detecting calibration changes in probabilistic predictions.
@@ -40,7 +52,12 @@ class PITMonitor:
         but more variance. 10 is an MDL-reasonable choice for most settings.
     """
 
-    def __init__(self, alpha: float = 0.05, n_bins: int = 10):
+    def __init__(
+        self,
+        alpha: float = 0.05,
+        n_bins: int = 10,
+        rng: Optional[Union[int, np.random.Generator]] = None,
+    ):
         if not 0 < alpha < 1:
             raise ValueError("alpha must be in (0, 1)")
         if not 5 <= n_bins <= 500:
@@ -49,6 +66,7 @@ class PITMonitor:
         self.alpha = alpha
         self.n_bins = n_bins
         self.threshold = 1.0 / alpha
+        self._rng = np.random.default_rng(rng)
 
         self.t = 0
         self._sorted_pits: List[float] = []
@@ -65,7 +83,7 @@ class PITMonitor:
         bisect.insort(self._sorted_pits, pit)
         left = bisect.bisect_left(self._sorted_pits, pit)
         right = bisect.bisect_right(self._sorted_pits, pit)
-        U = np.random.uniform(0, right - left)
+        U = self._rng.uniform(0, right - left)
         p = (left + U) / self.t
         return float(np.clip(p, 1e-10, 1 - 1e-10))
 
@@ -398,6 +416,7 @@ class PITMonitor:
                 "sorted_pits": self._sorted_pits,
                 "bin_counts": self._bin_counts.tolist(),
                 "M": self._M,
+                "rng_state": self._rng.bit_generator.state,
                 "history": [
                     {"pit": float(pit), "pval": float(pval), "M": float(M)}
                     for pit, pval, M in self._history
@@ -416,6 +435,7 @@ class PITMonitor:
                 "_sorted_pits": self._sorted_pits,
                 "_bin_counts": self._bin_counts,
                 "_M": self._M,
+                "_rng_state": self._rng.bit_generator.state,
                 "_history": self._history,
                 "alarm_triggered": self.alarm_triggered,
                 "alarm_time": self.alarm_time,
@@ -449,6 +469,8 @@ class PITMonitor:
             monitor._sorted_pits = state["sorted_pits"]
             monitor._bin_counts = np.array(state["bin_counts"])
             monitor._M = state["M"]
+            if "rng_state" in state:
+                monitor._rng.bit_generator.state = state["rng_state"]
             monitor._history = [(h["pit"], h["pval"], h["M"]) for h in state["history"]]
             monitor.alarm_triggered = state["alarm_triggered"]
             monitor.alarm_time = state["alarm_time"]
@@ -462,13 +484,15 @@ class PITMonitor:
             monitor._sorted_pits = state["_sorted_pits"]
             monitor._bin_counts = state["_bin_counts"]
             monitor._M = state["_M"]
+            if "_rng_state" in state:
+                monitor._rng.bit_generator.state = state["_rng_state"]
             monitor._history = state["_history"]
             monitor.alarm_triggered = state["alarm_triggered"]
             monitor.alarm_time = state["alarm_time"]
 
         return monitor
 
-    def plot(self, figsize: Tuple[float, float] = (12, 4)) -> Optional[plt.Figure]:
+    def plot(self, figsize: Tuple[float, float] = (12, 4)) -> PlotResult:
         """
         Create diagnostic plot.
 
@@ -479,12 +503,15 @@ class PITMonitor:
 
         Returns
         -------
-        Figure or None
-            Matplotlib figure object, or None if insufficient data.
+        PlotResult
+            Structured plot result with creation status, figure, and message.
         """
         if self.t < 2:
-            print("Need ≥2 observations")
-            return
+            return PlotResult(
+                created=False,
+                figure=None,
+                message="Need ≥2 observations",
+            )
 
         fig, axes = plt.subplots(1, 2, figsize=figsize)
 
@@ -542,4 +569,4 @@ class PITMonitor:
         )
 
         plt.tight_layout()
-        return fig
+        return PlotResult(created=True, figure=fig, message=None)

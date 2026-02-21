@@ -46,6 +46,9 @@ htmlcov/
 *.csv
 *.json
 *.log
+examples/data/CIFAR-10/
+examples/data/CIFAR-10-C/
+*.npy
 
 # OS
 .DS_Store

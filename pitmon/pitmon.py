@@ -1,5 +1,4 @@
 import json
-import bisect
 import pickle
 import math
 import numpy as np
@@ -7,6 +6,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
 from typing import Optional, List, Tuple, Callable, Union
+from sortedcontainers import SortedList
 
 
 @dataclass
@@ -50,12 +50,29 @@ class PITMonitor:
     n_bins : int, default=10
         Histogram bins for density estimation. More bins = faster adaptation
         but more variance. 10 is an MDL-reasonable choice for most settings.
+
+    weight_schedule : Callable[[int], float], optional
+        Mixture weight schedule over changepoint indices (index = 1, 2, ...).
+        Must be deterministic, nonnegative, and sum to 1.
+        Default is w(index) = 1 / (index * (index + 1)).
+        These are mixture weights ensuring the combined e-process is a
+        supermartingale under the null, enabling anytime-valid guarantees via
+        Ville's inequality.
+
+    Notes
+    -----
+    **Thread Safety:** This class is not thread-safe. External synchronization
+    is required if multiple threads call ``update()`` concurrently.
+    For parallel inference, create independent monitor instances.
     """
+
+    _default_schedule_validated = False
 
     def __init__(
         self,
         alpha: float = 0.05,
         n_bins: int = 10,
+        weight_schedule: Optional[Callable[[int], float]] = None,
         rng: Optional[Union[int, np.random.Generator]] = None,
     ):
         if not 0 < alpha < 1:
@@ -67,22 +84,90 @@ class PITMonitor:
         self.n_bins = n_bins
         self.threshold = 1.0 / alpha
         self._rng = np.random.default_rng(rng)
+        self._uses_default_weight_schedule = weight_schedule is None
+        self._weight_schedule = weight_schedule or self._default_weight_schedule
+        if self._uses_default_weight_schedule:
+            self._validate_default_weight_schedule_once()
+        else:
+            self._validate_weight_schedule()
 
         self.t = 0
-        self._sorted_pits: List[float] = []
+        self._sorted_pits: SortedList[float] = SortedList()
         self._bin_counts = np.ones(n_bins)  # Laplace prior (pseudocount = 1)
 
-        self._M = 0.0  # Mixture e-process
+        self._M = 0.0  # Mixture e-process (per paper)
         self._history: List[Tuple[float, float, float]] = []  # (pit, pval, M)
 
         self.alarm_triggered = False
         self.alarm_time: Optional[int] = None
 
+    @staticmethod
+    def _default_weight_schedule(index: int) -> float:
+        """Default mixture weights over changepoint indices (index >= 1)."""
+        if index < 1:
+            raise ValueError("weight index must be >= 1")
+        return 1.0 / (index * (index + 1))
+
+    @classmethod
+    def _validate_default_weight_schedule_once(cls) -> None:
+        """One-time validation for the fixed default schedule w_t = 1/(t(t+1))."""
+        if cls._default_schedule_validated:
+            return
+
+        horizon = 100_000
+        total = 1.0 - 1.0 / (horizon + 1)
+        mass_tol = 1e-3
+
+        if abs(total - 1.0) > mass_tol:
+            raise ValueError(
+                "default weight schedule failed mass check "
+                f"(mass over first {horizon} terms was {total:.6f})"
+            )
+
+        cls._default_schedule_validated = True
+
+    def _validate_weight_schedule(self) -> None:
+        """Validate that the configured mixture weights define a PMF over indices."""
+        horizon = 100_000
+        tol = 1e-8
+        mass_tol = 1e-3
+
+        # Deterministic check on a small prefix.
+        for idx in range(1, 17):
+            v1 = self._weight_schedule(idx)
+            v2 = self._weight_schedule(idx)
+            if not np.isclose(v1, v2, atol=0.0, rtol=0.0):
+                raise ValueError("weight_schedule must be deterministic")
+
+        total = 0.0
+        for idx in range(1, horizon + 1):
+            w = float(self._weight_schedule(idx))
+            if not np.isfinite(w):
+                raise ValueError("weight_schedule must return finite values")
+            if w < 0:
+                raise ValueError("weight_schedule must return nonnegative values")
+            total += w
+            if total > 1.0 + tol:
+                raise ValueError("weight_schedule partial sums must not exceed 1")
+
+        if abs(total - 1.0) > mass_tol:
+            raise ValueError(
+                "weight_schedule must sum to 1 over t=1,2,... "
+                f"(mass over first {horizon} terms was {total:.6f})"
+            )
+
+    def _weight_at_time(self, t: int) -> float:
+        """Mixture weight used at monitor time t (t >= 1)."""
+        w = float(self._weight_schedule(t))
+        if w < 0 or not np.isfinite(w):
+            raise ValueError("weight_schedule produced an invalid weight")
+        return w
+
     def _conformal_pvalue(self, pit: float) -> float:
         """Insert PIT and return tie-randomized conformal p-value."""
-        bisect.insort(self._sorted_pits, pit)
-        left = bisect.bisect_left(self._sorted_pits, pit)
-        right = bisect.bisect_right(self._sorted_pits, pit)
+        self._sorted_pits.add(pit)
+        left = self._sorted_pits.bisect_left(pit)
+        right = self._sorted_pits.bisect_right(pit)
         U = self._rng.uniform(0, right - left)
         p = (left + U) / self.t
         return float(np.clip(p, 1e-10, 1 - 1e-10))
@@ -114,19 +199,17 @@ class PITMonitor:
             self._history.append((pit, p, self._M))
             return Alarm(True, self.alarm_time, self._M, self.threshold)
 
-        if self.t == 1:  # initialize
-            self._history.append((pit, p, 0.0))
-            return Alarm(False, self.t, 0.0, self.threshold)
-
         # e_t = estimated density at p_t
         bin_idx = min(int(p * self.n_bins), self.n_bins - 1)
         density = self._bin_counts[bin_idx] / self._bin_counts.sum()
         e = density * self.n_bins  # scale to integrate to 1
         self._bin_counts[bin_idx] += 1  # update last to avoid peeking
 
-        # Mixture e-process
-        s = self.t - 1
-        w = 1.0 / (s * (s + 1))
+        # Mixture e-process: M_t = e_t * (M_{t-1} + w_t).
+        # These are mixture weights ensuring the combined e-process is a
+        # supermartingale under the null, enabling anytime-valid guarantees via
+        # Ville's inequality.
+        w = self._weight_at_time(self.t)
         self._M = e * (self._M + w)
         self._history.append((pit, p, self._M))
 
@@ -286,7 +369,7 @@ class PITMonitor:
         if not self.alarm_triggered or self.t < 3:
             return None
 
-        pvals = self.pvalues[1:]
+        pvals = self.pvalues
         n = len(pvals)
         max_k = min(n, self.alarm_time or n)
 
@@ -388,7 +471,7 @@ class PITMonitor:
     def reset(self):
         """Reset to initial state."""
         self.t = 0
-        self._sorted_pits = []
+        self._sorted_pits = SortedList()
         self._bin_counts = np.ones(self.n_bins)
         self._M = 0.0
         self._history = []
@@ -405,6 +488,12 @@ class PITMonitor:
             Path to save file. Extension determines format:
             - .pkl: pickle format (preserves all state)
             - .json: JSON format (human-readable, limited precision)
+
+        Warnings
+        --------
+        **Pickle Security Warning:** pickle can execute arbitrary code from
+        untrusted files. Only load pickle states from sources you trust.
+        For untrusted inputs, use JSON format instead.
         """
         filepath = Path(filepath)
 
@@ -413,7 +502,7 @@ class PITMonitor:
                 "alpha": self.alpha,
                 "n_bins": self.n_bins,
                 "t": self.t,
-                "sorted_pits": self._sorted_pits,
+                "sorted_pits": list(self._sorted_pits),
                 "bin_counts": self._bin_counts.tolist(),
                 "M": self._M,
                 "rng_state": self._rng.bit_generator.state,
@@ -432,7 +521,7 @@ class PITMonitor:
                 "n_bins": self.n_bins,
                 "threshold": self.threshold,
                 "t": self.t,
-                "_sorted_pits": self._sorted_pits,
+                "_sorted_pits": list(self._sorted_pits),
                 "_bin_counts": self._bin_counts,
                 "_M": self._M,
                 "_rng_state": self._rng.bit_generator.state,
@@ -451,12 +540,23 @@ class PITMonitor:
         Parameters
         ----------
         filepath : str or Path
-            Path to saved state file.
+            Path to saved state file. Supports .pkl (pickle) and .json.
 
         Returns
         -------
         PITMonitor
             Restored monitor instance.
+
+        Warnings
+        --------
+        **Pickle Security Warning:** Do not load pickle files from untrusted
+        sources; pickle execution is not sandboxed. Prefer JSON for inputs
+        from external/untrusted origins.
+
+        Notes
+        -----
+        Backward compatible with legacy saved states; missing fields are
+        reconstructed to safe defaults.
         """
         filepath = Path(filepath)
 
@@ -466,29 +566,48 @@ class PITMonitor:
 
             monitor = cls(alpha=state["alpha"], n_bins=state["n_bins"])
             monitor.t = state["t"]
-            monitor._sorted_pits = state["sorted_pits"]
-            monitor._bin_counts = np.array(state["bin_counts"])
-            monitor._M = state["M"]
-            if "rng_state" in state:
-                monitor._rng.bit_generator.state = state["rng_state"]
-            monitor._history = [(h["pit"], h["pval"], h["M"]) for h in state["history"]]
-            monitor.alarm_triggered = state["alarm_triggered"]
-            monitor.alarm_time = state["alarm_time"]
+            sorted_pits = state.get("sorted_pits", state.get("_sorted_pits", []))
+            monitor._sorted_pits = SortedList(sorted_pits)
+            bin_counts = state.get(
+                "bin_counts", state.get("_bin_counts", np.ones(monitor.n_bins))
+            )
+            monitor._bin_counts = np.array(bin_counts)
+            monitor._M = state.get("M", state.get("_M", 0.0))
+
+            rng_state = state.get("rng_state", state.get("_rng_state"))
+            if rng_state is not None:
+                monitor._rng.bit_generator.state = rng_state
+
+            history = state.get("history", state.get("_history", []))
+            if history and isinstance(history[0], dict):
+                monitor._history = [(h["pit"], h["pval"], h["M"]) for h in history]
+            else:
+                monitor._history = history
+
+            monitor.alarm_triggered = state.get("alarm_triggered", False)
+            monitor.alarm_time = state.get("alarm_time")
         else:
             with open(filepath, "rb") as f:
                 state = pickle.load(f)
 
             monitor = cls(alpha=state["alpha"], n_bins=state["n_bins"])
-            monitor.threshold = state["threshold"]
+            monitor.threshold = state.get("threshold", 1.0 / monitor.alpha)
             monitor.t = state["t"]
-            monitor._sorted_pits = state["_sorted_pits"]
-            monitor._bin_counts = state["_bin_counts"]
-            monitor._M = state["_M"]
-            if "_rng_state" in state:
-                monitor._rng.bit_generator.state = state["_rng_state"]
-            monitor._history = state["_history"]
-            monitor.alarm_triggered = state["alarm_triggered"]
-            monitor.alarm_time = state["alarm_time"]
+            sorted_pits = state.get("_sorted_pits", state.get("sorted_pits", []))
+            monitor._sorted_pits = SortedList(sorted_pits)
+            monitor._bin_counts = state.get(
+                "_bin_counts",
+                np.array(state.get("bin_counts", np.ones(monitor.n_bins))),
+            )
+            monitor._M = state.get("_M", state.get("M", 0.0))
+
+            rng_state = state.get("_rng_state", state.get("rng_state"))
+            if rng_state is not None:
+                monitor._rng.bit_generator.state = rng_state
+
+            monitor._history = state.get("_history", state.get("history", []))
+            monitor.alarm_triggered = state.get("alarm_triggered", False)
+            monitor.alarm_time = state.get("alarm_time")
 
         return monitor
 

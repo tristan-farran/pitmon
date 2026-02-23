@@ -1,5 +1,7 @@
 """Test suite for PITMonitor."""
 
+import json
+import pickle
 import numpy as np
 import pytest
 import tempfile
@@ -57,6 +59,44 @@ class TestPITMonitorInit:
             PITMonitor(n_bins=4)
         with pytest.raises(ValueError):
             PITMonitor(n_bins=501)
+
+    def test_custom_weight_schedule(self):
+        """Test that a valid custom mixture weight schedule is accepted."""
+
+        def geometric_weights(index: int) -> float:
+            return 0.5**index  # sums to 1 over index = 1,2,...
+
+        monitor = PITMonitor(weight_schedule=geometric_weights)
+        assert monitor.threshold == pytest.approx(20.0)
+
+    def test_invalid_weight_schedule_negative(self):
+        """Test that negative mixture weights are rejected."""
+
+        def negative_weights(index: int) -> float:
+            return -0.1 if index == 1 else 0.0
+
+        with pytest.raises(ValueError, match="nonnegative"):
+            PITMonitor(weight_schedule=negative_weights)
+
+    def test_invalid_weight_schedule_nondeterministic(self):
+        """Test that non-deterministic mixture weights are rejected."""
+        rng = np.random.default_rng(123)
+
+        def random_weights(index: int) -> float:
+            _ = index
+            return float(rng.uniform(0.0, 1.0))
+
+        with pytest.raises(ValueError, match="deterministic"):
+            PITMonitor(weight_schedule=random_weights)
+
+    def test_invalid_weight_schedule_mass(self):
+        """Test that schedules with total mass != 1 are rejected."""
+
+        def underweighted(index: int) -> float:
+            return 0.25**index  # sums to 1/3
+
+        with pytest.raises(ValueError, match="sum to 1"):
+            PITMonitor(weight_schedule=underweighted)
 
 
 class TestPITMonitorUpdate:
@@ -158,6 +198,47 @@ class TestPITMonitorUpdate:
         np.testing.assert_allclose(monitor_a.pits, monitor_b.pits)
         assert monitor_a.evidence == pytest.approx(monitor_b.evidence)
 
+    def test_false_alarm_rate_tracks_alpha_under_null(self):
+        """Test that empirical null false-alarm rate respects α guarantee.
+
+        By Ville's inequality, P(ever alarm | H₀) ≤ α. The empirical
+        false-alarm rate should fall within α ± tolerance, where tolerance
+        accounts for Monte Carlo variability.
+        """
+
+        def estimate_false_alarm_rate(
+            alpha: float, *, trials: int = 500, horizon: int = 200
+        ) -> float:
+            alarms = 0
+            for trial_idx in range(trials):
+                monitor = PITMonitor(alpha=alpha, rng=trial_idx)
+                pit_rng = np.random.default_rng(10_000 + trial_idx)
+                for pit in pit_rng.uniform(0.0, 1.0, size=horizon):
+                    if monitor.update(float(pit)):
+                        alarms += 1
+                        break
+            return alarms / trials
+
+        alpha_low = 0.01
+        alpha_high = 0.10
+
+        rate_low = estimate_false_alarm_rate(alpha_low)
+        rate_high = estimate_false_alarm_rate(alpha_high)
+
+        # Empirical rates should respect the FPR guarantee with Monte Carlo tolerance
+        tolerance = 0.025  # ≈ ±2.5% to account for variability across 500 trials
+        assert (
+            rate_low <= alpha_low + tolerance
+        ), f"Low-α empirical rate {rate_low:.3f} exceeds {alpha_low} + {tolerance}"
+        assert (
+            rate_high <= alpha_high + tolerance
+        ), f"High-α empirical rate {rate_high:.3f} exceeds {alpha_high} + {tolerance}"
+
+        # Higher α should have higher empirical false-alarm rate
+        assert (
+            rate_high >= rate_low
+        ), f"Expected higher-α rate {rate_high:.3f} ≥ lower-α rate {rate_low:.3f}"
+
 
 class TestPITMonitorProperties:
     """Test PITMonitor properties and accessors."""
@@ -192,11 +273,11 @@ class TestPITMonitorProperties:
         assert monitor.evidence == 0.0
 
         monitor.update(0.5)
-        # After first update, evidence is still 0
-        assert monitor.evidence == 0.0
+        # Paper recursion: M_1 = e_1 * (M_0 + w_1) = 1 * (0 + 1/2)
+        assert monitor.evidence == pytest.approx(0.5)
 
         monitor.update(0.5)
-        # After second update, evidence > 0
+        # Evidence remains nonnegative and updates recursively
         assert monitor.evidence >= 0.0
 
 
@@ -205,9 +286,10 @@ class TestPITMonitorChangepoint:
 
     def test_changepoint_no_alarm(self):
         """Test that changepoint returns None without alarm."""
-        monitor = PITMonitor()
+        monitor = PITMonitor(alpha=1e-6, rng=0)
+        rng = np.random.default_rng(0)
         for _ in range(10):
-            monitor.update(np.random.uniform(0, 1))
+            monitor.update(float(rng.uniform(0.0, 1.0)))
 
         assert monitor.changepoint() is None
 
@@ -430,6 +512,67 @@ class TestPITMonitorSaveLoad:
             assert loaded.t == 11
             assert isinstance(result, Alarm)
 
+        finally:
+            filepath.unlink()
+
+    def test_load_malformed_json_raises(self):
+        """Test that malformed JSON files raise decode errors."""
+        with tempfile.NamedTemporaryFile(suffix=".json", mode="w", delete=False) as f:
+            filepath = Path(f.name)
+            f.write("{ this is not valid json }")
+
+        try:
+            with pytest.raises(json.JSONDecodeError):
+                PITMonitor.load(filepath)
+        finally:
+            filepath.unlink()
+
+    def test_load_corrupt_pickle_raises(self):
+        """Test that corrupt pickle files raise unpickling errors."""
+        with tempfile.NamedTemporaryFile(suffix=".pkl", mode="wb", delete=False) as f:
+            filepath = Path(f.name)
+            f.write(b"not-a-valid-pickle-stream")
+
+        try:
+            with pytest.raises(
+                (
+                    pickle.UnpicklingError,
+                    EOFError,
+                    AttributeError,
+                    ValueError,
+                    TypeError,
+                )
+            ):
+                PITMonitor.load(filepath)
+        finally:
+            filepath.unlink()
+
+    def test_load_legacy_pickle_state(self):
+        """Test loading a legacy pickle state missing newer fields."""
+        legacy_state = {
+            "alpha": 0.05,
+            "n_bins": 10,
+            "t": 3,
+            "_sorted_pits": [0.1, 0.4, 0.8],
+            "_bin_counts": np.ones(10),
+            "_M": 1.23,
+            "_history": [(0.1, 0.2, 1.0), (0.4, 0.5, 1.1), (0.8, 0.7, 1.23)],
+            "alarm_triggered": False,
+            "alarm_time": None,
+        }
+
+        with tempfile.NamedTemporaryFile(suffix=".pkl", mode="wb", delete=False) as f:
+            filepath = Path(f.name)
+            pickle.dump(legacy_state, f)
+
+        try:
+            loaded = PITMonitor.load(filepath)
+            assert loaded.alpha == legacy_state["alpha"]
+            assert loaded.n_bins == legacy_state["n_bins"]
+            assert loaded.threshold == pytest.approx(1.0 / legacy_state["alpha"])
+            assert loaded.t == legacy_state["t"]
+            assert loaded.evidence == pytest.approx(legacy_state["_M"])
+            np.testing.assert_allclose(loaded.pits, legacy_state["_sorted_pits"])
         finally:
             filepath.unlink()
 

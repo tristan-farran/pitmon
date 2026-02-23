@@ -4,9 +4,11 @@ An anytime-valid monitor for Probability Integral Transform (PIT) values. It det
 
 Installation
 ------------
+Base library:
 ```bash
 pip install -e .
 ```
+
 
 Quick start
 -----------
@@ -37,7 +39,7 @@ e-process that accumulates evidence against exchangeability:
 Examples
 --------
 - `examples/cifar_demo.ipynb`: CIFAR-10 → CIFAR-10-C monitoring walkthrough.
-- `examples/delivery_demo.ipynb`: delivery-time synthetic shift walkthrough.
+- `examples/delivery_demo.ipynb`: synthetic delivery-time monitoring walkthrough.
 
 Run the CIFAR demo:
 ```bash

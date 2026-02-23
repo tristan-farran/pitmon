@@ -2,3 +2,101 @@
 \providecommand\hyper@newdestlabel[2]{}
 \providecommand\HyField@AuxAddToFields[1]{}
 \providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{guo2017calibration,minderer2021revisiting}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{2}{section.1}\protected@file@percent }
+\citation{dawid1984statistical,diebold1998evaluating}
+\citation{czado2009predictive}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Background}{3}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Calibration and Probability Integral Transforms}{3}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Exchangeability: The Key Insight}{3}{subsection.2.2}\protected@file@percent }
+\citation{vovk2005algorithmic}
+\citation{vovk2021values,grunwald2024safe}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Conformal P-values from Ranks}{4}{subsection.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}E-values and Anytime-Valid Inference}{4}{subsection.2.4}\protected@file@percent }
+\citation{shafer2021testing,grunwald2024safe}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces PITMonitor}}{5}{algorithm.1}\protected@file@percent }
+\newlabel{alg:pitmonitor}{{1}{5}{Algorithm Overview}{algorithm.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Method}{5}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Algorithm Overview}{5}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}E-values via Density Betting}{5}{subsection.3.2}\protected@file@percent }
+\newlabel{prop:density}{{3}{5}{Density Betting Yields Valid E-values}{proposition.3}{}}
+\citation{shiryaev1963,pollak1985optimal}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}The Mixture E-process}{6}{subsection.3.3}\protected@file@percent }
+\citation{shin2022detectors}
+\citation{krizhevsky2009learning}
+\citation{hendrycks2019benchmarking}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Type I Error Control}{7}{subsection.3.4}\protected@file@percent }
+\newlabel{thm:type1}{{2}{7}{Anytime-Valid False Alarm Control}{theorem.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Changepoint Estimation}{7}{subsection.3.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Experiments}{7}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Experimental Setup}{7}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Dataset.}{7}{section*.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Model.}{7}{section*.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Monitoring Protocol.}{8}{section*.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Metrics.}{8}{section*.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Results}{8}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Type I Error Control.}{8}{section*.5}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces False positive rate under $H_0$ (no distribution shift). PITMonitor controls FPR below the nominal $\alpha = 0.05$ level as guaranteed by Ville's inequality.}}{8}{table.1}\protected@file@percent }
+\newlabel{tab:h0}{{1}{8}{False positive rate under $H_0$ (no distribution shift). PITMonitor controls FPR below the nominal $\alpha = 0.05$ level as guaranteed by Ville's inequality}{table.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Detection Power.}{8}{section*.6}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Detection performance across CIFAR-10-C Gaussian noise severities. Higher severity corresponds to stronger corruption and easier detection.}}{8}{table.2}\protected@file@percent }
+\newlabel{tab:power}{{2}{8}{Detection performance across CIFAR-10-C Gaussian noise severities. Higher severity corresponds to stronger corruption and easier detection}{table.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{Qualitative Behavior.}{8}{section*.7}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces PITMonitor detection on CIFAR-10 $\to $ CIFAR-10-C (Gaussian noise, severity 3). Top left: model confidence and accuracy degrade after the shift. Top right: PITs shift from roughly uniform to concentrated. Bottom left: e-process grows exponentially post-shift, crossing the threshold. Bottom right: PIT histograms show the distributional change.}}{9}{figure.1}\protected@file@percent }
+\newlabel{fig:detection}{{1}{9}{PITMonitor detection on CIFAR-10 $\to $ CIFAR-10-C (Gaussian noise, severity 3). Top left: model confidence and accuracy degrade after the shift. Top right: PITs shift from roughly uniform to concentrated. Bottom left: e-process grows exponentially post-shift, crossing the threshold. Bottom right: PIT histograms show the distributional change}{figure.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{9}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{When to Use PITMonitor.}{9}{section*.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Limitations.}{9}{section*.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Practical Recommendations.}{9}{section*.10}\protected@file@percent }
+\citation{naeini2015obtaining}
+\citation{degroot1983comparison}
+\citation{gneiting2007strictly}
+\citation{diebold1998evaluating}
+\citation{gneiting2014probabilistic}
+\citation{rabanser2019failing}
+\citation{lipton2018detecting}
+\citation{podkopaev2021distribution}
+\citation{arnold2023sequentially}
+\citation{vovk2021values,ramdas2023game,grunwald2024safe}
+\citation{johari2022always}
+\citation{wassmer2016group}
+\citation{vovk2005algorithmic}
+\citation{shin2022detectors}
+\citation{page1954continuous}
+\citation{shiryaev1963,pollak1985optimal}
+\bibstyle{plainnat}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Related Work}{10}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Calibration Assessment.}{10}{section*.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Distribution Shift Detection.}{10}{section*.12}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Sequential Calibration Testing.}{10}{section*.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{E-values and Anytime-Valid Inference.}{10}{section*.14}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Changepoint Detection.}{10}{section*.15}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Conclusion}{10}{section.7}\protected@file@percent }
+\bibcite{arnold2023sequentially}{{1}{2023}{{Arnold et al.}}{{}}}
+\bibcite{czado2009predictive}{{2}{2009}{{Czado et al.}}{{}}}
+\bibcite{dawid1984statistical}{{3}{1984}{{Dawid}}{{}}}
+\bibcite{degroot1983comparison}{{4}{1983}{{DeGroot \& Fienberg}}{{}}}
+\bibcite{diebold1998evaluating}{{5}{1998}{{Diebold et al.}}{{}}}
+\bibcite{gneiting2014probabilistic}{{6}{2014}{{Gneiting \& Katzfuss}}{{}}}
+\bibcite{gneiting2007strictly}{{7}{2007}{{Gneiting \& Raftery}}{{}}}
+\bibcite{grunwald2024safe}{{8}{2024}{{Gr{\"u}nwald et al.}}{{}}}
+\bibcite{guo2017calibration}{{9}{2017}{{Guo et al.}}{{}}}
+\bibcite{hendrycks2019benchmarking}{{10}{2019}{{Hendrycks \& Dietterich}}{{}}}
+\bibcite{johari2022always}{{11}{2022}{{Johari et al.}}{{}}}
+\bibcite{krizhevsky2009learning}{{12}{2009}{{Krizhevsky}}{{}}}
+\bibcite{lipton2018detecting}{{13}{2018}{{Lipton et al.}}{{}}}
+\bibcite{minderer2021revisiting}{{14}{2021}{{Minderer et al.}}{{}}}
+\bibcite{naeini2015obtaining}{{15}{2015}{{Naeini et al.}}{{}}}
+\bibcite{page1954continuous}{{16}{1954}{{Page}}{{}}}
+\bibcite{podkopaev2021distribution}{{17}{2021}{{Podkopaev \& Ramdas}}{{}}}
+\bibcite{pollak1985optimal}{{18}{1985}{{Pollak}}{{}}}
+\bibcite{rabanser2019failing}{{19}{2019}{{Rabanser et al.}}{{}}}
+\@writefile{toc}{\contentsline {paragraph}{Code Availability.}{11}{section*.16}\protected@file@percent }
+\bibcite{ramdas2023game}{{20}{2023}{{Ramdas et al.}}{{}}}
+\bibcite{shafer2021testing}{{21}{2021}{{Shafer et al.}}{{}}}
+\bibcite{shin2022detectors}{{22}{2022}{{Shin et al.}}{{}}}
+\bibcite{shiryaev1963}{{23}{1963}{{Shiryaev}}{{}}}
+\bibcite{vovk2005algorithmic}{{24}{2005}{{Vovk et al.}}{{}}}
+\bibcite{vovk2021values}{{25}{2021}{{Vovk \& Wang}}{{}}}
+\bibcite{wassmer2016group}{{26}{2016}{{Wassmer \& Brannath}}{{}}}
+\gdef \@abspage@last{12}

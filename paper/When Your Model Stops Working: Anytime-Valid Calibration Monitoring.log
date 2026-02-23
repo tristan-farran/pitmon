@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.9.19)  23 FEB 2026 20:51
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.9.19)  23 FEB 2026 21:35
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -422,6 +422,16 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 [1
 
 {/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}]
+Overfull \hbox (54.82785pt too wide) in paragraph at lines 94--98
+[][]\T1/cmr/bx/n/10.95 Proposition 1 \T1/cmr/m/n/10.95 (PIT Uni-for-mity)\T1/cmr/bx/n/10.95 . []\T1/cmr/m/it/10.95 If $\OML/cmm/m/it/10.95 Y$ \T1/cmr/m/it/10.95 has con-tin-u-ous CDF $\OML/cmm/m/it/10.95 F$\T1/cmr/m/it/10.95 , then $\OML/cmm/m/it/10.95 U \OT1/cmr/m/n/10.95 = \OML/cmm/m/it/10.95 F\OT1/cmr/m/n/10.95 (\OML/cmm/m/it/10.95 Y\OT1/cmr/m/n/10.95 ) \OMS/cmsy/m/n/10.95 ^^X []\OT1/cmr/m/n/10.95 (0\OML/cmm/m/it/10.95 ; \OT1/cmr/m/n/10.95 1)$\T1/cmr/m/it/10.95 .https://iclr.cc/
+ []
+
+
+Overfull \hbox (41.31657pt too wide) in paragraph at lines 94--98
+\T1/cmr/m/it/10.95 https://icml.cc/ https://imstat. org/journals-and-publications/annals-of-applied-statistics/ https://jmlr.org/
+ []
+
+
 
 [2]
 
@@ -432,10 +442,10 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 [5]
 
 [6]
-Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on input line 316.
-
 
 [7]
+Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on input line 336.
+
 
 [8]
 
@@ -445,13 +455,15 @@ Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on inp
 
 [11]
 
-[12] (./When Your Model Stops Working: Anytime-Valid Calibration Monitoring.bbl
+[12]
 
-[13]
+[13] (./When Your Model Stops Working: Anytime-Valid Calibration Monitoring.bbl
 
-[14])
+[14]
 
-[15] (./When Your Model Stops Working: Anytime-Valid Calibration Monitoring.aux)
+[15])
+
+[16] (./When Your Model Stops Working: Anytime-Valid Calibration Monitoring.aux)
  ***********
 LaTeX2e <2025-06-01> patch level 1
 L3 programming layer <2025-09-02>
@@ -460,18 +472,18 @@ Package rerunfilecheck Info: File `"When Your Model Stops Working: Anytime-Valid
 (rerunfilecheck)             Checksum: D98AC4D2E129351E045D0BD1BA8D5EA3;2808.
  ) 
 Here is how much of TeX's memory you used:
- 12343 strings out of 467797
- 187049 string characters out of 5431803
- 615771 words of memory out of 5000000
- 40687 multiletter control sequences out of 15000+600000
- 650382 words of font info for 99 fonts, out of 8000000 for 9000
+ 12348 strings out of 467797
+ 187106 string characters out of 5431803
+ 620942 words of memory out of 5000000
+ 40688 multiletter control sequences out of 15000+600000
+ 650317 words of font info for 99 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,9n,79p,1344b,596s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1728.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm0500.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm0600.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm0800.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm0900.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfti1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfti1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfti1200.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sftt1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sftt1200.pfb>
-Output written on "When Your Model Stops Working: Anytime-Valid Calibration Monitoring.pdf" (15 pages, 586378 bytes).
+ 75i,9n,79p,936b,596s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbi1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1728.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm0600.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm0800.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm0900.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfti1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfti1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfti1200.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sftt1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sftt1200.pfb>
+Output written on "When Your Model Stops Working: Anytime-Valid Calibration Monitoring.pdf" (16 pages, 550154 bytes).
 PDF statistics:
- 510 PDF objects out of 1000 (max. 8388607)
- 423 compressed objects within 5 object streams
- 125 named destinations out of 1000 (max. 500000)
+ 494 PDF objects out of 1000 (max. 8388607)
+ 416 compressed objects within 5 object streams
+ 129 named destinations out of 1000 (max. 500000)
  145 words of extra memory for PDF output out of 10000 (max. 10000000)
 

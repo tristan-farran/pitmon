@@ -1,6 +1,5 @@
-from __future__ import annotations
-
 from dataclasses import asdict, dataclass, field
+from __future__ import annotations
 from pathlib import Path
 
 

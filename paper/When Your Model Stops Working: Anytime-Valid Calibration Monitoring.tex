@@ -48,7 +48,10 @@
 \maketitle
 
 \begin{abstract}
-\noindent Deployed probabilistic models often experience concept drift as the data distribution changes over time. We present PITMonitor, a sequential method for detecting departures from exchangeability in probability integral transforms (PITs), which is a useful proxy for concept drift. Unlike traditional calibration tests that require fixed evaluation windows, PITMonitor provides \emph{anytime-valid} false alarm control: the probability of ever raising a spurious alarm is bounded by $\alpha$, regardless of when monitoring stops. Under i.i.d. behaviour behavior (including stable miscalibration), PITs remain exchangeable and no alarm fires. When the PIT generating mechanism changes, exchangeability breaks and evidence accumulates. This includes calibration changes, but can also include case-mix or dependence changes even when the reliability mapping is unchanged. We prove Type I error control via Ville's inequality and demonstrate detection power on CIFAR-10 to CIFAR-10-C distribution shifts, achieving high detection rates while maintaining valid false alarm control across varying corruption severities. Code is available at \url{https://github.com/tristan-farran/pitmon}.
+
+\noindent 
+
+Deployed machine learning models often experience calibration drift as the data distribution shifts over time. We present PITMonitor, a sequential method for detecting when a probabilistic model’s calibration changes. Unlike traditional calibration tests that require fixed evaluation windows, PITMonitor provides \emph{anytime-valid} false alarm control: the probability of ever raising a spurious alarm is bounded by $\alpha$, regardless of when monitoring stops. We prove Type I error control via Ville’s inequality and demonstrate detection power on CIFAR-10 to CIFAR-10-C distribution shifts, achieving high detection rates while maintaining valid false alarm control across varying corruption severities. Code is available at \url{https://github.com/tristan-farran/pitmon}.
 
 \end{abstract}
 
@@ -56,10 +59,10 @@
 \section{Introduction}
 %------------------------------------------------------------------------------
 
-Machine learning models deployed in production face a fundamental challenge: the world changes. Models encounter distribution shifts such as changes in input distributions, label frequencies, or the relationship between features and targets. When these shifts occur, model calibration can degrade, and simple calibration techniques may no longer suffice. Prior work has shown that modern neural networks can be miscalibrated on standard benchmarks and that calibration behavior under distribution shift can vary by architecture and shift type \citep{guo2017calibration, minderer2021revisiting}.
+Probabilistic models deployed in production face a fundamental challenge: the world changes. Models encounter distribution shifts such as changes in input distributions, label frequencies, or the relationship between features and targets. When these shifts occur, model calibration can degrade, and simple calibration techniques may no longer suffice. Prior work has shown that modern neural networks can be miscalibrated on standard benchmarks and that calibration behavior under distribution shift can vary by architecture and shift type \citep{guo2017calibration, minderer2021revisiting}.
 
 
-Detecting calibration drift is critical for maintaining trustworthy AI systems. A medical diagnostic model that becomes overconfident after a sensor upgrade, or a financial risk model that underestimates tail probabilities after a market regime change, can lead to consequential errors. Yet practitioners often rely on ad-hoc monitoring techniques; periodic recalibration schedules, threshold-based alerts on rolling metrics, manual inspection of residuals etc.
+Detecting degrading calibration is critical for maintaining trustworthy AI systems. A medical diagnostic model that becomes overconfident after a sensor upgrade, or a financial risk model that underestimates tail probabilities after a market regime shift, can lead to consequential errors. Yet practitioners often rely on ad-hoc monitoring techniques; periodic recalibration schedules, threshold-based alerts on rolling metrics, manual inspection of residuals etc.
 
 These approaches suffer from a fundamental statistical problem: \emph{they do not control the false alarm rate over continuous monitoring}. A practitioner who checks calibration daily with a $p < 0.05$ threshold will, over a year of monitoring, almost certainly observe spurious alarms even if the model remains stable. Classical hypothesis tests assume a fixed sample size determined before seeing data; continuous monitoring violates this assumption.
 
@@ -75,8 +78,6 @@ We propose PITMonitor, a method providing \emph{anytime-valid} monitoring of PIT
     \item \textbf{Practical efficiency:} the exact algorithm runs in $O(t \log t)$ time and $O(t)$ space for $t$ observations, with a simple recursive update.
 \end{enumerate}
 
-Accordingly, the guarantee should be read precisely as follows: PITMonitor is guaranteed to stay silent under exchangeable PITs (including static miscalibration), but it may alarm for any non-exchangeability source, not only reliability-curve drift.
-
 %------------------------------------------------------------------------------
 \section{Background}
 %------------------------------------------------------------------------------
@@ -90,7 +91,10 @@ For a continuous predictive CDF $F$ and realized outcome $y$, the PIT is $U = F(
 A classical result states that if $F$ is the true distribution of $Y$, then $U \sim \Unif(0,1)$.
 
 \begin{proposition}[PIT Uniformity]
-If $Y$ has continuous CDF $F$, then $U = F(Y) \sim \Unif(0,1)$.
+If $Y$ has continuous CDF $F$, then $U = F(Y) \sim \Unif(0,1)$.https://iclr.cc/
+https://icml.cc/ https://imstat.
+org/journals-and-publications/annals-of-applied-statistics/ https://jmlr.org/
+https://neurips.cc/ https://virtual.aistats.org/
 \end{proposition}
 
 For discrete outcomes (e.g., classification), randomization yields a continuous PIT \citep{brockwell2007}.
@@ -100,6 +104,10 @@ Given predicted class probabilities $(\hat{p}_1, \ldots, \hat{p}_K)$ and true cl
 \end{equation}
 Placing $U$ uniformly within the cumulative probability interval corresponding to the true class.
 
+
+\begin{remark}
+\textbf{Caveat for confident multi-class classification:} In $K$-class classification with highly confident predictions (i.e., when $\hat{p}_y$ is close to 1), a substantial fraction of the PIT variability can arise from the auxiliary randomization variable $V$ rather than from predictive quality. This can reduce monitoring sensitivity in this regime, as the PITs may reflect randomization noise more than model changes.
+\end{remark}
 
 Alternative PIT formulations are also valid. For instance, an empirical-CDF PIT can be constructed by computing the rank of the true class probability $\hat{p}_y$ against a reference distribution from clean calibration data: $U = \frac{\text{rank}(\hat{p}_y)}{n_{\text{ref}}} + V \cdot \Delta$, where $\Delta$ accounts for ties. Both formulations produce $U \sim \Unif(0,1)$ under calibration stability, and the theoretical guarantees of PITMonitor apply to any method satisfying this property. The empirical-CDF method is order-invariant and can be more sensitive to confidence degradation in specific domains; it is used in our experimental demonstration to achieve strong detection power on CIFAR-10-C corruption shifts while remaining theoretically justified.
 
@@ -560,6 +568,12 @@ Users can increase power by accepting a larger $\alpha$ or waiting longer before
 The randomized PIT for classification injects noise, especially for binary outcomes or low-confidence predictions.
 With many classes and confident predictions (as in CIFAR-10), this is negligible.
 
+\paragraph{Classification with confident predictions.}
+The randomized PIT construction works cleanly and well for continuous outcomes. However, in multi-class classification settings with highly confident predictions (i.e., when the predicted probability for the true class is close to 1), the randomization noise introduced by $V$ can dominate the PIT signal. This leads to a low signal-to-noise ratio for change detection, as much of the PIT variability is due to randomization rather than predictive quality. Importantly, this is a limitation of the standard classification PIT itself, not of the monitoring or betting procedure. In such regimes, ECDF-based or rank-based PIT alternatives may provide greater sensitivity and are recommended for practitioners seeking improved detection power.
+
+\textit{Classification randomization.}
+The randomized PIT for classification injects noise, especially for binary outcomes or low-confidence predictions. With many classes and confident predictions (as in CIFAR-10), this is negligible for most practical purposes, but see the above paragraph for limitations in the highly confident regime.
+
 \textit{Changepoint localization.}
 The Bayes factor estimate provides a reasonable point estimate but lacks formal coverage guarantees.
 Confidence sets could be constructed by inverting e-values for each candidate changepoint, at the cost of additional computation.
@@ -627,4 +641,11 @@ PITMonitor is available at \url{https://github.com/tristan-farran/pitmon}.
 
 \bibliography{pitmon_references}
 \end{document}
+
 % Correct Shafer reference year: Statistical Science 2011, not 2021
+https://iclr.cc/
+https://icml.cc/
+https://imstat.org/journals-and-publications/annals-of-applied-statistics/
+https://jmlr.org/
+https://neurips.cc/
+https://virtual.aistats.org/

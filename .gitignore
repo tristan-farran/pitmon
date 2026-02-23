@@ -40,12 +40,7 @@ env/
 htmlcov/
 .tox/
 
-# Data and outputs
-*.png
-*.pdf
-*.csv
-*.json
-*.log
+# Data
 examples/data/CIFAR-10/
 examples/data/CIFAR-10-C/
 *.npy

@@ -456,18 +456,14 @@ Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on inp
 LaTeX2e <2025-06-01> patch level 1
 L3 programming layer <2025-09-02>
  ***********
-
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
 Package rerunfilecheck Info: File `"When Your Model Stops Working: Anytime-Valid Calibration Monitoring".out' has not changed.
 (rerunfilecheck)             Checksum: D98AC4D2E129351E045D0BD1BA8D5EA3;2808.
  ) 
 Here is how much of TeX's memory you used:
- 12347 strings out of 467797
- 187075 string characters out of 5431803
- 612975 words of memory out of 5000000
- 40690 multiletter control sequences out of 15000+600000
+ 12346 strings out of 467797
+ 187047 string characters out of 5431803
+ 612817 words of memory out of 5000000
+ 40689 multiletter control sequences out of 15000+600000
  650317 words of font info for 99 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  75i,9n,79p,907b,592s stack positions out of 10000i,1000n,20000p,200000b,200000s

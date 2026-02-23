@@ -128,28 +128,31 @@ def predict_proba_safe(
     return sanitize_probabilities(probs)
 
 
-def build_true_prob_reference(probs: np.ndarray, y_true: np.ndarray) -> np.ndarray:
-    index = np.arange(len(y_true))
-    p_true = np.clip(probs[index, y_true], 0.0, 1.0)
-    return np.sort(p_true.astype(np.float32, copy=False))
-
-
-def confidence_pits_from_reference(
+def randomized_classification_pit(
     probs: np.ndarray,
     y_true: np.ndarray,
-    reference_sorted: np.ndarray,
     rng: np.random.Generator,
 ) -> np.ndarray:
-    ref = np.asarray(reference_sorted, dtype=np.float32)
-    if ref.ndim != 1 or len(ref) == 0:
-        raise ValueError("reference_sorted must be a non-empty 1D array")
+    """Standard randomized PIT for classification (Eq. 1 in the paper).
 
-    index = np.arange(len(y_true))
-    p_true = np.clip(probs[index, y_true], 0.0, 1.0)
-    left = np.searchsorted(ref, p_true, side="left")
-    right = np.searchsorted(ref, p_true, side="right")
-    uniform_noise = rng.random(len(y_true), dtype=np.float32)
-    pits = (left + uniform_noise * (right - left)) / float(len(ref))
+    For each sample i with predicted class probabilities (p_1, ..., p_K)
+    and true class y:
+        U = sum_{j < y} p_j  +  V * p_y,   V ~ Uniform(0, 1)
+
+    Under perfect calibration, U ~ Uniform(0, 1).
+    No reference pool required.
+    """
+    probs = np.asarray(probs, dtype=np.float64)
+    y = np.asarray(y_true, dtype=np.int64)
+    n = len(y)
+
+    cumsum = np.cumsum(probs, axis=1)
+    idx = np.arange(n)
+    cdf_below = np.where(y > 0, cumsum[idx, y - 1], 0.0)
+    p_true = probs[idx, y]
+
+    v = rng.random(n)
+    pits = cdf_below + v * p_true
     return np.clip(pits, 0.0, 1.0).astype(np.float32, copy=False)
 
 
@@ -198,16 +201,14 @@ def summarize_trials(rows: list[dict], n_trials: int) -> dict:
 def run_pitmonitor_trial(
     probs: np.ndarray,
     y_all: np.ndarray,
-    pit_reference: np.ndarray,
     alpha: float,
     n_bins: int,
     n_stable: int,
     pit_seed: int,
 ) -> dict:
-    pits = confidence_pits_from_reference(
+    pits = randomized_classification_pit(
         probs,
         y_all,
-        pit_reference,
         np.random.default_rng(pit_seed),
     )
     monitor = PITMonitor(alpha=alpha, n_bins=n_bins)

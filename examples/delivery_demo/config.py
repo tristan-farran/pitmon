@@ -7,7 +7,7 @@ from pathlib import Path
 @dataclass
 class DeliveryDemoConfig:
     seed: int = 0
-    output_dir: Path = Path("./examples/delivery_demo/out")
+    output_dir: Path = Path(__file__).parent / "out"
     artifact_name: str = "delivery_demo_artifacts.pkl"
 
     n_train: int = 2_000

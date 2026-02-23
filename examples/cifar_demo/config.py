@@ -7,8 +7,8 @@ from pathlib import Path
 @dataclass
 class CifarDemoConfig:
     seed: int = 0
-    data_dir: Path = Path("./examples/cifar_demo/data")
-    output_dir: Path = Path("./examples/cifar_demo/out")
+    data_dir: Path = Path(__file__).parent / "data"
+    output_dir: Path = Path(__file__).parent / "out"
 
     corruption: str = "gaussian_noise"
     severity_demo: int = 3
@@ -27,7 +27,6 @@ class CifarDemoConfig:
     n_trials: int = 1_000
 
     max_workers: int = 8
-    n_ref_cal: int = 2_000
 
     artifact_name: str = "cifar_demo_artifacts.pkl"
 
@@ -35,7 +34,6 @@ class CifarDemoConfig:
         cfg = CifarDemoConfig(**asdict(self))
         cfg.data_dir = Path(cfg.data_dir)
         cfg.output_dir = Path(cfg.output_dir)
-        cfg.n_ref_cal = max(100, cfg.n_ref_cal)
         cfg.max_workers = max(1, cfg.max_workers)
         return cfg
 

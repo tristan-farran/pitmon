@@ -3,14 +3,14 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from .config import CifarDemoConfig
-from .pipeline import (
+from config import CifarDemoConfig
+from pipeline import (
     augment_artifacts_with_baseline_h0,
     compute_all,
     load_artifacts,
     save_artifacts,
 )
-from .plots import (
+from plots import (
     plot_baseline_h0_panels,
     plot_comparison_panels,
     plot_power_panels,

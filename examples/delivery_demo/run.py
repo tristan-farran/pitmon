@@ -3,9 +3,9 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from .config import DeliveryDemoConfig
-from .pipeline import compute_all, load_artifacts, save_artifacts
-from .plots import plot_comparison_panels, plot_power_panels, plot_single_run_panels
+from config import DeliveryDemoConfig
+from pipeline import compute_all, load_artifacts, save_artifacts
+from plots import plot_comparison_panels, plot_power_panels, plot_single_run_panels
 
 
 def parse_args() -> argparse.Namespace:

@@ -95,7 +95,7 @@ class PITMonitor:
         self._sorted_pits: SortedList[float] = SortedList()
         self._bin_counts = np.ones(n_bins)  # Laplace prior (pseudocount = 1)
 
-        self._M = 0.0  # Mixture e-process (per paper)
+        self._M = 0.0  # Mixture e-process
         self._history: List[Tuple[float, float, float]] = []  # (pit, pval, M)
 
         self.alarm_triggered = False
@@ -128,7 +128,7 @@ class PITMonitor:
 
     def _validate_weight_schedule(self) -> None:
         """Validate that the configured mixture weights define a PMF over indices."""
-        horizon = 100_000
+        horizon = 10_000
         tol = 1e-8
         mass_tol = 1e-3
 
@@ -170,7 +170,7 @@ class PITMonitor:
         right = self._sorted_pits.bisect_right(pit)
         U = self._rng.uniform(0, right - left)
         p = (left + U) / self.t
-        return float(np.clip(p, 1e-10, 1 - 1e-10))
+        return float(np.clip(p, 1e-10, 1 - 1e-10))  # clip to avoid numerical issues
 
     def update(self, pit: float) -> Alarm:
         """
@@ -193,8 +193,7 @@ class PITMonitor:
 
         p = self._conformal_pvalue(pit)
 
-        # Still track PIT/p-values after alarm (for complete diagnostics),
-        # but freeze evidence process.
+        # Still track p-values after alarm but freeze evidence
         if self.alarm_triggered:
             self._history.append((pit, p, self._M))
             return Alarm(True, self.alarm_time, self._M, self.threshold)
@@ -205,10 +204,7 @@ class PITMonitor:
         e = density * self.n_bins  # scale to integrate to 1
         self._bin_counts[bin_idx] += 1  # update last to avoid peeking
 
-        # Mixture e-process: M_t = e_t * (M_{t-1} + w_t).
-        # These are mixture weights ensuring the combined e-process is a
-        # supermartingale under the null, enabling anytime-valid guarantees via
-        # Ville's inequality.
+        # Mixture e-process
         w = self._weight_at_time(self.t)
         self._M = e * (self._M + w)
         self._history.append((pit, p, self._M))
@@ -269,7 +265,7 @@ class PITMonitor:
 
     def trial_summary(self, n_stable: int) -> dict:
         """
-        Standardized trial diagnostics for a stable-then-shift stream.
+        Standardized trial diagnostics for a stable-then-shift stream - useful for demos.
 
         Parameters
         ----------
@@ -326,14 +322,6 @@ class PITMonitor:
             for t, (_, _, M) in enumerate(self._history, 1)
         ]
 
-    def __repr__(self) -> str:
-        """Detailed representation."""
-        status = "ALARM" if self.alarm_triggered else "monitoring"
-        return (
-            f"PITMonitor(alpha={self.alpha}, n_bins={self.n_bins}, "
-            f"t={self.t}, status={status}, evidence={self._M:.2f})"
-        )
-
     def __str__(self) -> str:
         """Human-readable status."""
         if self.t == 0:
@@ -355,9 +343,6 @@ class PITMonitor:
         - H1: unknown categorical probabilities with symmetric Dirichlet prior
               (Jeffreys prior: alpha = 1/2 per bin)
 
-          Jeffreys prior is used as an objective, reparameterization-invariant
-          default for multinomial probabilities.
-
         The selected changepoint maximizes the log Bayes factor
         log p(data_after | H1) - log p(data_after | H0).
 
@@ -373,8 +358,7 @@ class PITMonitor:
         n = len(pvals)
         max_k = min(n, self.alarm_time or n)
 
-        # Score each admissible split with a log Bayes factor.
-        # Candidate k means the post-change segment starts at index k+1.
+        # Score each admissible split with a log Bayes factor
         scores = []
         B = self.n_bins
         alpha = 0.5
@@ -393,19 +377,13 @@ class PITMonitor:
 
             counts, _ = np.histogram(after, bins=B, range=(0, 1))
 
-            # log p(data | H1): Dirichlet-multinomial marginal likelihood
-            #   log Γ(Bα) - log Γ(N + Bα) + Σ_j [log Γ(c_j + α) - log Γ(α)]
-            # where c_j are post-split bin counts and α=1/2 (Jeffreys prior).
             log_p_h1 = log_gamma_alpha0 - math.lgamma(N + alpha0)
             log_p_h1 += sum(
                 math.lgamma(int(c) + alpha) - log_gamma_alpha for c in counts
             )
 
-            # log p(data | H0): fixed uniform categorical model (p_j = 1/B)
-            #   Σ_j c_j log(1/B) = -N log(B)
             log_p_h0 = -N * log_B
 
-            # Log Bayes factor in favor of "post-split is non-uniform".
             score = log_p_h1 - log_p_h0
             scores.append((k + 1, score))
 
@@ -437,13 +415,8 @@ class PITMonitor:
             "evidence": self._M,
             "threshold": self.threshold,
             "changepoint": self.changepoint() if self.alarm_triggered else None,
+            "calibration_score": self.calibration_score(),
         }
-
-        if self.t > 0:
-            summary["calibration_score"] = self.calibration_score()
-        else:
-            summary["calibration_score"] = None
-
         return summary
 
     def calibration_score(self) -> float:
@@ -451,7 +424,7 @@ class PITMonitor:
         Compute calibration score (Kolmogorov-Smirnov statistic).
 
         Measures maximum deviation of empirical CDF from uniform.
-        Returns value in [0, 1], where 0 = perfect calibration.
+        Returns value in [0, 1], where 1 = perfect calibration.
 
         Returns
         -------
@@ -466,7 +439,7 @@ class PITMonitor:
         ecdf = np.arange(1, self.t + 1) / self.t
         # KS statistic: max deviation between ECDF and uniform CDF
         ks_stat = np.max(np.abs(ecdf - pits_sorted))
-        return float(ks_stat)
+        return float(1 - ks_stat)
 
     def reset(self):
         """Reset to initial state."""

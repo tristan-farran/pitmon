@@ -10,8 +10,8 @@ from sklearn.preprocessing import StandardScaler
 
 from pitmon import PITMonitor
 
-from .config import DeliveryDemoConfig
-from .core import (
+from config import DeliveryDemoConfig
+from core import (
     batch_predictive_cdf,
     build_bin_edges,
     generate_features,
@@ -227,11 +227,11 @@ def compute_all(cfg: DeliveryDemoConfig) -> dict:
         with ThreadPoolExecutor(max_workers=cfg.max_workers) as executor:
             trials = list(
                 executor.map(
-                    lambda idx: _power_trial(
+                    lambda idx, sf=shift_fraction: _power_trial(
                         cfg,
                         model,
-                        shift_fraction,
-                        cfg.seed + int(shift_fraction * 10_000) * 10_000 + idx,
+                        sf,
+                        cfg.seed + int(sf * 10_000) * 10_000 + idx,
                     ),
                     range(cfg.n_trials),
                 )
@@ -245,11 +245,11 @@ def compute_all(cfg: DeliveryDemoConfig) -> dict:
         with ThreadPoolExecutor(max_workers=cfg.max_workers) as executor:
             trial_outputs = list(
                 executor.map(
-                    lambda idx: _comparison_trial(
+                    lambda idx, sf=shift_fraction: _comparison_trial(
                         cfg,
                         model,
-                        shift_fraction,
-                        700_000 + int(shift_fraction * 10_000) * 10_000 + idx,
+                        sf,
+                        700_000 + int(sf * 10_000) * 10_000 + idx,
                     ),
                     range(cfg.n_trials_compare),
                 )

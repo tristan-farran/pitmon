@@ -8,35 +8,17 @@ from pathlib import Path
 import numpy as np
 from pitmon import PITMonitor
 
-from .config import CifarDemoConfig
-from .core import (
-    build_true_prob_reference,
-    confidence_pits_from_reference,
+from config import CifarDemoConfig
+from core import (
     load_cifar10_train_test,
     load_cifar10c_corruption,
     predict_proba_safe,
+    randomized_classification_pit,
     run_baselines_one_pass,
     run_pitmonitor_trial,
     summarize_trials,
     train_classifier,
 )
-
-
-def _build_reference_pool(
-    x_test: np.ndarray,
-    y_test: np.ndarray,
-    n_ref_cal: int,
-    seed: int,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    rng = np.random.default_rng(seed)
-    ref_idx = rng.choice(len(x_test), size=n_ref_cal, replace=False)
-    test_pool_idx = np.setdiff1d(np.arange(len(x_test)), ref_idx)
-    return (
-        x_test[ref_idx],
-        y_test[ref_idx],
-        x_test[test_pool_idx],
-        y_test[test_pool_idx],
-    )
 
 
 def _h0_trial(
@@ -47,7 +29,6 @@ def _h0_trial(
     y_pool: np.ndarray,
     classifier,
     scaler,
-    pit_reference: np.ndarray,
 ) -> dict:
     base_seed = cfg.seed + severity_level * 1_000_000
     rng = np.random.default_rng(base_seed + 50_000 + trial_idx)
@@ -66,7 +47,6 @@ def _h0_trial(
     return run_pitmonitor_trial(
         probs,
         y_all,
-        pit_reference,
         alpha=cfg.alpha_power,
         n_bins=cfg.n_bins,
         n_stable=cfg.n_stable_power,
@@ -84,7 +64,6 @@ def _h1_trial(
     y_corr: np.ndarray,
     classifier,
     scaler,
-    pit_reference: np.ndarray,
 ) -> dict:
     rng = np.random.default_rng(cfg.seed + severity_level * 10_000 + trial_idx)
     stable_idx = rng.choice(len(x_pool), size=cfg.n_stable_power, replace=False)
@@ -105,7 +84,6 @@ def _h1_trial(
     pit_trial = run_pitmonitor_trial(
         probs,
         y_all,
-        pit_reference,
         alpha=cfg.alpha_power,
         n_bins=cfg.n_bins,
         n_stable=cfg.n_stable_power,
@@ -127,12 +105,7 @@ def _baseline_h0_error_stream_trial(
     classifier,
     scaler,
 ) -> np.ndarray:
-    """Generate an error stream for a clean→clean (H0) run.
-
-    Both the "stable" and "shifted" segments are sampled from the same clean pool,
-    so there is no distribution shift; any alarm from a baseline detector is a false alarm
-    in this experiment.
-    """
+    """Generate an error stream for a clean->clean (H0) run."""
     rng = np.random.default_rng(cfg.seed + 90_000 + trial_idx)
     stable_idx = rng.choice(len(x_pool), size=cfg.n_stable_power, replace=False)
     shifted_idx = rng.choice(len(x_pool), size=cfg.n_shifted_power, replace=False)
@@ -162,14 +135,8 @@ def compute_all(cfg: CifarDemoConfig) -> dict:
 
     classifier, scaler = train_classifier(x_train_sub, y_train_sub, cfg.seed)
 
-    n_ref = min(cfg.n_ref_cal, len(x_test) // 2)
-    x_ref, y_ref, x_pool, y_pool = _build_reference_pool(
-        x_test, y_test, n_ref, cfg.seed + 40_000
-    )
-    probs_ref = predict_proba_safe(classifier, x_ref, scaler).astype(
-        np.float32, copy=False
-    )
-    pit_reference = build_true_prob_reference(probs_ref, y_ref)
+    # Use entire test set as evaluation pool (no reference split needed).
+    x_pool, y_pool = x_test, y_test
 
     x_corr_demo, y_corr_demo = load_cifar10c_corruption(
         cfg.data_dir,
@@ -200,17 +167,15 @@ def compute_all(cfg: CifarDemoConfig) -> dict:
     single_summary = run_pitmonitor_trial(
         probs_demo,
         y_demo_all,
-        pit_reference,
         alpha=cfg.alpha,
         n_bins=cfg.n_bins,
         n_stable=cfg.n_stable,
         pit_seed=cfg.seed + 3_333,
     )
 
-    pits_stream_values = confidence_pits_from_reference(
+    pits_stream_values = randomized_classification_pit(
         probs_demo,
         y_demo_all,
-        pit_reference,
         np.random.default_rng(cfg.seed + 3_333),
     ).astype(np.float32, copy=False)
     monitor_demo = PITMonitor(alpha=cfg.alpha, n_bins=cfg.n_bins)
@@ -228,15 +193,14 @@ def compute_all(cfg: CifarDemoConfig) -> dict:
         with ThreadPoolExecutor(max_workers=cfg.max_workers) as executor:
             h0_trials = list(
                 executor.map(
-                    lambda idx: _h0_trial(
-                        severity_level,
+                    lambda idx, sev=severity_level: _h0_trial(
+                        sev,
                         idx,
                         cfg,
                         x_pool,
                         y_pool,
                         classifier,
                         scaler,
-                        pit_reference,
                     ),
                     range(cfg.n_trials),
                 )
@@ -249,8 +213,8 @@ def compute_all(cfg: CifarDemoConfig) -> dict:
         with ThreadPoolExecutor(max_workers=cfg.max_workers) as executor:
             h1_trials = list(
                 executor.map(
-                    lambda idx: _h1_trial(
-                        severity_level,
+                    lambda idx, sev=severity_level: _h1_trial(
+                        sev,
                         idx,
                         cfg,
                         x_pool,
@@ -259,7 +223,6 @@ def compute_all(cfg: CifarDemoConfig) -> dict:
                         y_corr,
                         classifier,
                         scaler,
-                        pit_reference,
                     ),
                     range(cfg.n_trials),
                 )
@@ -270,9 +233,7 @@ def compute_all(cfg: CifarDemoConfig) -> dict:
             cfg.n_trials,
         )
 
-    # Baseline detectors under H0: clean → clean (no distribution shift).
-    # This evaluates how often DDM/EDDM/ADWIN/KSWIN raise (early) alarms when
-    # there is in fact no change, on the same horizon used for power trials.
+    # Baseline detectors under H0: clean -> clean (no distribution shift).
     compare_methods = ["PITMonitor", "DDM", "EDDM", "ADWIN", "KSWIN"]
     compare_baselines = ["DDM", "EDDM", "ADWIN", "KSWIN"]
 
@@ -299,8 +260,6 @@ def compute_all(cfg: CifarDemoConfig) -> dict:
             baseline_h0_trials[name].append(
                 {
                     "alarm_fired": result.alarm_time is not None,
-                    # Under H0 (clean→clean), *any* alarm is a false alarm,
-                    # regardless of when it occurs.
                     "false_alarm": result.alarm_time is not None,
                     "detection_delay": None,
                     "final_evidence": float("nan"),
@@ -377,7 +336,7 @@ def compute_all(cfg: CifarDemoConfig) -> dict:
             "n_shifted": cfg.n_shifted_power,
             "n_trials": cfg.n_trials,
             "severities": list(cfg.severity_levels),
-            "pit_method": "confidence_ecdf_reference",
+            "pit_method": "standard_randomized",
         },
         "elapsed_seconds": time.time() - t0,
     }
@@ -398,13 +357,7 @@ def augment_artifacts_with_baseline_h0(
     artifacts: dict,
     cfg: CifarDemoConfig,
 ) -> dict:
-    """Reuse an existing artifact and only compute missing baseline H0 results.
-
-    This avoids re-running the expensive PITMonitor H0/H1 trials when they are
-    already present. We only simulate clean→clean error streams and run the
-    river detectors to obtain their empirical H0 false-alarm rates.
-    """
-    # Basic compatibility check: same corruption and trial count.
+    """Reuse an existing artifact and only compute missing baseline H0 results."""
     art_cfg = artifacts.get("config", {})
     if (
         art_cfg.get("corruption") != cfg.corruption
@@ -412,12 +365,9 @@ def augment_artifacts_with_baseline_h0(
     ):
         return artifacts
 
-    # Reload minimal state needed to simulate new H0 error streams.
     try:
         x_train, y_train, x_test, y_test = load_cifar10_train_test(cfg.data_dir)
     except FileNotFoundError:
-        # If CIFAR-10 data is not available, skip adding baseline H0 results
-        # but still allow reuse of the existing artifact.
         return artifacts
 
     rng_train = np.random.default_rng(cfg.seed)
@@ -426,10 +376,7 @@ def augment_artifacts_with_baseline_h0(
     y_train_sub = y_train[train_idx]
     classifier, scaler = train_classifier(x_train_sub, y_train_sub, cfg.seed)
 
-    n_ref = min(cfg.n_ref_cal, len(x_test) // 2)
-    _, _, x_pool, y_pool = _build_reference_pool(
-        x_test, y_test, n_ref, cfg.seed + 40_000
-    )
+    x_pool, y_pool = x_test, y_test
 
     baseline_h0_trials: dict[str, list[dict]] = {
         name: [] for name in ["DDM", "EDDM", "ADWIN", "KSWIN"]
@@ -449,8 +396,6 @@ def augment_artifacts_with_baseline_h0(
             )
         )
 
-    from .core import run_baselines_one_pass  # local import to avoid cycles
-
     for error_stream in error_streams_h0:
         det_runs = run_baselines_one_pass(error_stream, cfg.n_stable_power)
         for name in baseline_h0_trials:
@@ -458,7 +403,6 @@ def augment_artifacts_with_baseline_h0(
             baseline_h0_trials[name].append(
                 {
                     "alarm_fired": result.alarm_time is not None,
-                    # Under H0 (clean→clean), any alarm is a false alarm.
                     "false_alarm": result.alarm_time is not None,
                     "detection_delay": None,
                     "final_evidence": float("nan"),

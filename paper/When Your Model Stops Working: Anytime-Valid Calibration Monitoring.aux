@@ -31,42 +31,32 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Complete Algorithm}{7}{subsection.3.5}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {4}Experiments}{7}{section.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Secondary Robustness Benchmark Setup (CIFAR)}{7}{subsection.4.1}\protected@file@percent }
-\citation{vergara2012chemical}
 \@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces PITMonitor}}{8}{algorithm.1}\protected@file@percent }
 \newlabel{alg:pitmonitor}{{1}{8}{Complete Algorithm}{algorithm.1}{}}
 \@writefile{toc}{\contentsline {paragraph}{Dataset.}{8}{section*.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Model.}{8}{section*.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Monitoring Protocol.}{8}{section*.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Metrics.}{8}{section*.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Real-World Concept-Drift Benchmark Protocol (Gas Sensor)}{9}{subsection.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Protocol.}{9}{section*.5}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Gas Sensor benchmark: $H_0$ false positive control on near-stationary windows.}}{9}{table.1}\protected@file@percent }
-\newlabel{tab:gas_h0_template}{{1}{9}{Gas Sensor benchmark: $H_0$ false positive control on near-stationary windows}{table.1}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Gas Sensor benchmark: PITMonitor detection performance across drift transitions.}}{9}{table.2}\protected@file@percent }
-\newlabel{tab:gas_power_template}{{2}{9}{Gas Sensor benchmark: PITMonitor detection performance across drift transitions}{table.2}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Gas Sensor benchmark: PITMonitor-centric comparison to classical drift detectors.}}{9}{table.3}\protected@file@percent }
-\newlabel{tab:gas_compare_template}{{3}{9}{Gas Sensor benchmark: PITMonitor-centric comparison to classical drift detectors}{table.3}{}}
-\@writefile{toc}{\contentsline {paragraph}{Table Templates for Reporting.}{9}{table.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Results}{9}{subsection.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Type I Error Control.}{10}{section*.7}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces False positive rate under $H_0$ (no distribution shift). PITMonitor controls FPR below the nominal $\alpha = 0.05$ level as guaranteed by Ville's inequality.}}{10}{table.4}\protected@file@percent }
-\newlabel{tab:h0}{{4}{10}{False positive rate under $H_0$ (no distribution shift). PITMonitor controls FPR below the nominal $\alpha = 0.05$ level as guaranteed by Ville's inequality}{table.4}{}}
-\@writefile{toc}{\contentsline {paragraph}{Detection Power.}{10}{section*.8}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Detection performance across CIFAR-10-C Gaussian noise severities. Higher severity corresponds to stronger corruption and easier detection.}}{10}{table.5}\protected@file@percent }
-\newlabel{tab:power}{{5}{10}{Detection performance across CIFAR-10-C Gaussian noise severities. Higher severity corresponds to stronger corruption and easier detection}{table.5}{}}
-\@writefile{toc}{\contentsline {paragraph}{Part 3 Baseline Comparisons (CIFAR).}{10}{section*.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Part 3 Baseline Comparisons (Delivery Demo).}{10}{section*.10}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces CIFAR Part 3 comparison (clean $\to $ CIFAR-10-C Gaussian noise) using 1{,}000 trials per severity.}}{11}{table.6}\protected@file@percent }
-\newlabel{tab:cifar_part3_compare}{{6}{11}{CIFAR Part 3 comparison (clean $\to $ CIFAR-10-C Gaussian noise) using 1{,}000 trials per severity}{table.6}{}}
-\@writefile{toc}{\contentsline {paragraph}{Qualitative Behavior.}{11}{section*.11}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Scope of What Is Detected.}{11}{section*.12}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces PITMonitor detection on CIFAR-10 $\to $ CIFAR-10-C (Gaussian noise, severity 3). Top left: model confidence and accuracy degrade after the shift. Top right: PITs shift from roughly uniform to concentrated. Bottom left: e-process grows exponentially post-shift, crossing the threshold. Bottom right: PIT histograms show the distributional change.}}{11}{figure.1}\protected@file@percent }
-\newlabel{fig:detection}{{1}{11}{PITMonitor detection on CIFAR-10 $\to $ CIFAR-10-C (Gaussian noise, severity 3). Top left: model confidence and accuracy degrade after the shift. Top right: PITs shift from roughly uniform to concentrated. Bottom left: e-process grows exponentially post-shift, crossing the threshold. Bottom right: PIT histograms show the distributional change}{figure.1}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Delivery demo Part 3 comparison using 1{,}000 trials per shift level.}}{12}{table.7}\protected@file@percent }
-\newlabel{tab:delivery_part3_compare}{{7}{12}{Delivery demo Part 3 comparison using 1{,}000 trials per shift level}{table.7}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{12}{section.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{When to Use PITMonitor.}{12}{section*.13}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Limitations.}{12}{section*.14}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Results}{8}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Type I Error Control.}{9}{section*.5}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces False positive rate under $H_0$ (no distribution shift). PITMonitor controls FPR below the nominal $\alpha = 0.05$ level as guaranteed by Ville's inequality.}}{9}{table.1}\protected@file@percent }
+\newlabel{tab:h0}{{1}{9}{False positive rate under $H_0$ (no distribution shift). PITMonitor controls FPR below the nominal $\alpha = 0.05$ level as guaranteed by Ville's inequality}{table.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Detection Power.}{9}{section*.6}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Detection performance across CIFAR-10-C Gaussian noise severities. Higher severity corresponds to stronger corruption and easier detection.}}{9}{table.2}\protected@file@percent }
+\newlabel{tab:power}{{2}{9}{Detection performance across CIFAR-10-C Gaussian noise severities. Higher severity corresponds to stronger corruption and easier detection}{table.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{Part 3 Baseline Comparisons (CIFAR).}{9}{section*.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Part 3 Baseline Comparisons (Delivery Demo).}{9}{section*.8}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces CIFAR Part 3 comparison (clean $\to $ CIFAR-10-C Gaussian noise) using 1{,}000 trials per severity.}}{10}{table.3}\protected@file@percent }
+\newlabel{tab:cifar_part3_compare}{{3}{10}{CIFAR Part 3 comparison (clean $\to $ CIFAR-10-C Gaussian noise) using 1{,}000 trials per severity}{table.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{Qualitative Behavior.}{10}{section*.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Scope of What Is Detected.}{10}{section*.10}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces PITMonitor detection on CIFAR-10 $\to $ CIFAR-10-C (Gaussian noise, severity 3). Top left: model confidence and accuracy degrade after the shift. Top right: PITs shift from roughly uniform to concentrated. Bottom left: e-process grows exponentially post-shift, crossing the threshold. Bottom right: PIT histograms show the distributional change.}}{10}{figure.1}\protected@file@percent }
+\newlabel{fig:detection}{{1}{10}{PITMonitor detection on CIFAR-10 $\to $ CIFAR-10-C (Gaussian noise, severity 3). Top left: model confidence and accuracy degrade after the shift. Top right: PITs shift from roughly uniform to concentrated. Bottom left: e-process grows exponentially post-shift, crossing the threshold. Bottom right: PIT histograms show the distributional change}{figure.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Delivery demo Part 3 comparison using 1{,}000 trials per shift level.}}{11}{table.4}\protected@file@percent }
+\newlabel{tab:delivery_part3_compare}{{4}{11}{Delivery demo Part 3 comparison using 1{,}000 trials per shift level}{table.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{11}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{When to Use PITMonitor.}{11}{section*.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Limitations.}{11}{section*.12}\protected@file@percent }
 \citation{naeini2015obtaining}
 \citation{degroot1983comparison}
 \citation{gneiting2007strictly}
@@ -75,9 +65,9 @@
 \citation{rabanser2019failing}
 \citation{lipton2018detecting}
 \citation{podkopaev2021distribution}
-\@writefile{toc}{\contentsline {paragraph}{Practical Recommendations.}{13}{section*.15}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Baseline and Negative-Control Evaluation.}{13}{section*.16}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6}Related Work}{13}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Practical Recommendations.}{12}{section*.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Baseline and Negative-Control Evaluation.}{12}{section*.14}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Related Work}{12}{section.6}\protected@file@percent }
 \citation{arnold2023sequentially}
 \citation{vovk2021values,ramdas2023game,grunwald2024safe}
 \citation{johari2022always}
@@ -89,8 +79,8 @@
 \bibstyle{plainnat}
 \bibdata{pitmon_references}
 \bibcite{arnold2023sequentially}{{1}{2023}{{Arnold et~al.}}{{Arnold, Henzi, and Ziegel}}}
-\@writefile{toc}{\contentsline {section}{\numberline {7}Conclusion}{14}{section.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Code Availability.}{14}{section*.22}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Conclusion}{13}{section.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Code Availability.}{13}{section*.20}\protected@file@percent }
 \bibcite{brockwell2007}{{2}{2007}{{Brockwell}}{{}}}
 \bibcite{dawid1984statistical}{{3}{1984}{{Dawid}}{{}}}
 \bibcite{degroot1983comparison}{{4}{1983}{{DeGroot and Fienberg}}{{}}}
@@ -115,9 +105,8 @@
 \bibcite{shafer2021testing}{{23}{2021}{{Shafer et~al.}}{{Shafer, Shen, Vereshchagin, and Vovk}}}
 \bibcite{shin2022detectors}{{24}{2022}{{Shin et~al.}}{{Shin, Ramdas, and Rinaldo}}}
 \bibcite{shiryaev1963}{{25}{1963}{{Shiryaev}}{{}}}
-\bibcite{vergara2012chemical}{{26}{2012}{{Vergara et~al.}}{{Vergara, Vembu, Ayhan, Ryan, Homer, and Huerta}}}
-\bibcite{ville1939}{{27}{1939}{{Ville}}{{}}}
-\bibcite{vovk2021values}{{28}{2021}{{Vovk and Wang}}{{}}}
-\bibcite{vovk2005algorithmic}{{29}{2005}{{Vovk et~al.}}{{Vovk, Gammerman, and Shafer}}}
-\bibcite{wassmer2016group}{{30}{2016}{{Wassmer and Brannath}}{{}}}
-\gdef \@abspage@last{16}
+\bibcite{ville1939}{{26}{1939}{{Ville}}{{}}}
+\bibcite{vovk2021values}{{27}{2021}{{Vovk and Wang}}{{}}}
+\bibcite{vovk2005algorithmic}{{28}{2005}{{Vovk et~al.}}{{Vovk, Gammerman, and Shafer}}}
+\bibcite{wassmer2016group}{{29}{2016}{{Wassmer and Brannath}}{{}}}
+\gdef \@abspage@last{15}

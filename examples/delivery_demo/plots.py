@@ -38,33 +38,71 @@ def plot_single_run_panels(artifacts: dict, save_path: Path | None = None) -> No
         )
     ax.set(xlabel="Shipment", ylabel="Delivery time", title="Predictions vs Reality")
     ax.legend(fontsize=8)
+    ax.legend(fontsize=8, loc="upper right")
     ax.grid(True, alpha=0.2)
 
     ax = axes[0, 1]
     point_colors = np.where(times < true_shift_point, "steelblue", "crimson")
-    ax.scatter(times, pits, s=5, alpha=0.45, c=point_colors)
+    ax.scatter(times, pits, s=5, alpha=0.45, c=point_colors, label="PIT value")
     if len(pits) >= 30:
         rolling = np.convolve(pits, np.ones(30) / 30, mode="valid")
-        ax.plot(np.arange(30, len(pits) + 1), rolling, color="black", lw=1.3)
-    ax.axhline(0.5, color="gray", ls="--", lw=1)
-    ax.axvline(true_shift_point, color="red", ls=":", lw=1.5, alpha=0.8)
+        ax.plot(
+            np.arange(30, len(pits) + 1),
+            rolling,
+            color="black",
+            lw=1.3,
+            label="Rolling mean (w=30)",
+        )
+    ax.axhline(0.5, color="gray", ls="--", lw=1, label="Reference (0.5)")
+    ax.axvline(
+        true_shift_point, color="red", ls=":", lw=1.5, alpha=0.8, label="True shift"
+    )
     if single["alarm_fired"] and single["alarm_time"] is not None:
-        ax.axvline(int(single["alarm_time"]), color="orange", ls="--", lw=1.5)
+        ax.axvline(
+            int(single["alarm_time"]),
+            color="orange",
+            ls="--",
+            lw=1.5,
+            label=f"Alarm (t={single['alarm_time']})",
+        )
     ax.set(xlabel="Shipment", ylabel="PIT", title="PIT stream")
+    ax.legend(fontsize=8, loc="upper right")
     ax.grid(True, alpha=0.2)
 
     ax = axes[1, 0]
-    ax.semilogy(times, np.maximum(evidence, 1e-10), color="steelblue", lw=1.8)
+    ax.semilogy(
+        times, np.maximum(evidence, 1e-10), color="steelblue", lw=1.8, label="E-process"
+    )
     threshold = 1.0 / float(single["monitor_alpha"])
-    ax.axhline(threshold, color="crimson", ls="--", lw=1.8)
-    ax.axvline(true_shift_point, color="red", ls=":", lw=1.5, alpha=0.8)
+    ax.axhline(
+        threshold,
+        color="crimson",
+        ls="--",
+        lw=1.8,
+        label=f"Threshold (1/α = {threshold:.0f})",
+    )
+    ax.axvline(
+        true_shift_point, color="red", ls=":", lw=1.5, alpha=0.8, label="True shift"
+    )
     if single.get("changepoint") is not None:
         ax.axvline(
-            int(single["changepoint"]), color="green", ls="--", lw=1.3, alpha=0.8
+            int(single["changepoint"]),
+            color="green",
+            ls="--",
+            lw=1.3,
+            alpha=0.8,
+            label="Changepoint",
         )
     if single["alarm_fired"] and single["alarm_time"] is not None:
-        ax.axvline(int(single["alarm_time"]), color="orange", ls="--", lw=1.8)
+        ax.axvline(
+            int(single["alarm_time"]),
+            color="orange",
+            ls="--",
+            lw=1.8,
+            label=f"Alarm (t={single['alarm_time']})",
+        )
     ax.set(xlabel="Shipment", ylabel="Evidence (log)", title="E-process")
+    ax.legend(fontsize=8, loc="upper right")
     ax.grid(True, alpha=0.2)
 
     ax = axes[1, 1]
@@ -113,9 +151,19 @@ def plot_power_panels(artifacts: dict, save_path: Path | None = None) -> None:
     )
 
     ax = axes[0, 0]
-    ax.plot(shifts, tprs, "o-", color="steelblue", lw=2.4, markersize=7)
+    ax.plot(
+        shifts,
+        tprs,
+        "o-",
+        color="steelblue",
+        lw=2.4,
+        markersize=7,
+        label="Detection Rate (TPR)",
+    )
     ax.set(xlabel="Shift magnitude", ylabel="Detection rate (TPR)", title="Power curve")
     ax.set_ylim(-0.05, 1.05)
+    ax.legend(fontsize=8, loc="upper right")
+    ax.legend(fontsize=8, loc="upper right")
     ax.grid(True, alpha=0.2)
 
     ax = axes[0, 1]
@@ -128,18 +176,37 @@ def plot_power_panels(artifacts: dict, save_path: Path | None = None) -> None:
         delays_sorted = np.sort(delays)
         ecdf = np.arange(1, len(delays_sorted) + 1) / len(delays_sorted)
         ax.step(
-            delays_sorted, ecdf, where="post", color=color, lw=2, label=f"{shift:.0%}"
+            delays_sorted,
+            ecdf,
+            where="post",
+            color=color,
+            lw=2,
+            label=f"Shift {shift:.0%} (n={len(delays)})",
         )
     ax.set(
         xlabel="Detection delay", ylabel="Cumulative probability", title="Delay ECDF"
     )
     ax.set_ylim(0.0, 1.02)
-    ax.legend(fontsize=8)
+    ax.legend(fontsize=8, loc="upper right")
     ax.grid(True, alpha=0.2)
 
     ax = axes[1, 0]
-    ax.plot(shifts, fprs, "s-", color="mediumpurple", lw=2.4, markersize=6)
-    ax.axhline(cfg["alpha_power"], color="crimson", ls="--", lw=1.5)
+    ax.plot(
+        shifts,
+        fprs,
+        "s-",
+        color="mediumpurple",
+        lw=2.4,
+        markersize=6,
+        label="False Positive Rate",
+    )
+    ax.axhline(
+        cfg["alpha_power"],
+        color="crimson",
+        ls="--",
+        lw=1.5,
+        label=f"Ville bound (α={cfg['alpha_power']:.2f})",
+    )
     ax.fill_between(
         shifts, 0, [cfg["alpha_power"]] * len(shifts), color="crimson", alpha=0.06
     )
@@ -149,6 +216,7 @@ def plot_power_panels(artifacts: dict, save_path: Path | None = None) -> None:
         title="Ville-bound diagnostic",
     )
     ax.set_ylim(-0.01, min(0.2, cfg["alpha_power"] * 3.0))
+    ax.legend(fontsize=8, loc="upper right")
     ax.grid(True, alpha=0.2)
 
     ax = axes[1, 1]
@@ -167,9 +235,11 @@ def plot_power_panels(artifacts: dict, save_path: Path | None = None) -> None:
             alpha=0.35,
             color=color,
             edgecolor="white",
+            label=f"Shift {shift:.0%} (n={len(alarm_times)})",
         )
-    ax.axvline(true_change, color="black", ls="--", lw=1.5)
+    ax.axvline(true_change, color="black", ls="--", lw=1.5, label="True change point")
     ax.set(xlabel="Alarm time", ylabel="Density", title="Alarm-time distribution")
+    ax.legend(fontsize=8, loc="upper right")
     ax.grid(True, alpha=0.2)
 
     plt.tight_layout()
@@ -208,13 +278,20 @@ def plot_comparison_panels(artifacts: dict, save_path: Path | None = None) -> No
             shifts, ys_delay, marker=marker, ls=linestyle, lw=linewidth, label=method
         )
 
-    axes[0].axhline(cfg["alpha_power"], color="crimson", ls=":", lw=1.5, alpha=0.7)
+    axes[0].axhline(
+        cfg["alpha_power"],
+        color="crimson",
+        ls=":",
+        lw=1.5,
+        alpha=0.7,
+        label=f"Ville bound (α={cfg['alpha_power']:.2f})",
+    )
     axes[0].set(
         xlabel="Shift magnitude", ylabel="False alarm rate", title="FPR across methods"
     )
     axes[0].set_ylim(-0.01, 0.15)
     axes[0].grid(True, alpha=0.2)
-    axes[0].legend(fontsize=8)
+    axes[0].legend(fontsize=8, loc="upper right")
 
     axes[1].set(
         xlabel="Shift magnitude",
@@ -223,7 +300,7 @@ def plot_comparison_panels(artifacts: dict, save_path: Path | None = None) -> No
     )
     axes[1].set_ylim(-0.05, 1.05)
     axes[1].grid(True, alpha=0.2)
-    axes[1].legend(fontsize=8)
+    axes[1].legend(fontsize=8, loc="upper right")
 
     axes[2].set(
         xlabel="Shift magnitude",
@@ -232,7 +309,7 @@ def plot_comparison_panels(artifacts: dict, save_path: Path | None = None) -> No
     )
     axes[2].set_ylim(bottom=0)
     axes[2].grid(True, alpha=0.2)
-    axes[2].legend(fontsize=8)
+    axes[2].legend(fontsize=8, loc="upper right")
 
     plt.tight_layout()
     if save_path is not None:

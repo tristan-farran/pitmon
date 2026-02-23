@@ -1,4 +1,4 @@
-\begin{thebibliography}{30}
+\begin{thebibliography}{29}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -8,59 +8,47 @@
 \bibitem[Arnold et~al.(2023)Arnold, Henzi, and Ziegel]{arnold2023sequentially}
 S.~Arnold, A.~Henzi, and J.~F. Ziegel.
 \newblock Sequentially valid tests for forecast calibration.
-\newblock \emph{Annals of Applied Statistics}, 17\penalty0 (3):\penalty0
-  1909--1935, 2023.
+\newblock \emph{Annals of Applied Statistics}, 17\penalty0 (3):\penalty0 1909--1935, 2023.
 
 \bibitem[Brockwell(2007)]{brockwell2007}
 A.~E. Brockwell.
 \newblock Universal residuals: A multivariate transformation.
-\newblock \emph{Statistics \& Probability Letters}, 77\penalty0 (14):\penalty0
-  1473--1478, 2007.
+\newblock \emph{Statistics \& Probability Letters}, 77\penalty0 (14):\penalty0 1473--1478, 2007.
 
 \bibitem[Dawid(1984)]{dawid1984statistical}
 A.~P. Dawid.
 \newblock Statistical theory: The prequential approach.
-\newblock \emph{Journal of the Royal Statistical Society: Series A},
-  147\penalty0 (2):\penalty0 278--292, 1984.
+\newblock \emph{Journal of the Royal Statistical Society: Series A}, 147\penalty0 (2):\penalty0 278--292, 1984.
 
 \bibitem[DeGroot and Fienberg(1983)]{degroot1983comparison}
 M.~H. DeGroot and S.~E. Fienberg.
 \newblock The comparison and evaluation of forecasters.
-\newblock \emph{Journal of the Royal Statistical Society: Series D},
-  32\penalty0 (1-2):\penalty0 12--22, 1983.
+\newblock \emph{Journal of the Royal Statistical Society: Series D}, 32\penalty0 (1-2):\penalty0 12--22, 1983.
 
 \bibitem[Diebold et~al.(1998)Diebold, Gunther, and Tay]{diebold1998evaluating}
 F.~X. Diebold, T.~A. Gunther, and A.~S. Tay.
-\newblock Evaluating density forecasts with applications to financial risk
-  management.
-\newblock \emph{International Economic Review}, 39\penalty0 (4):\penalty0
-  863--883, 1998.
+\newblock Evaluating density forecasts with applications to financial risk management.
+\newblock \emph{International Economic Review}, 39\penalty0 (4):\penalty0 863--883, 1998.
 
-\bibitem[Gelman et~al.(2013)Gelman, Carlin, Stern, Dunson, Vehtari, and
-  Rubin]{gelman2013bda}
-A.~Gelman, J.~B. Carlin, H.~S. Stern, D.~B. Dunson, A.~Vehtari, and D.~B.
-  Rubin.
+\bibitem[Gelman et~al.(2013)Gelman, Carlin, Stern, Dunson, Vehtari, and Rubin]{gelman2013bda}
+A.~Gelman, J.~B. Carlin, H.~S. Stern, D.~B. Dunson, A.~Vehtari, and D.~B. Rubin.
 \newblock \emph{Bayesian Data Analysis}.
 \newblock Chapman \& Hall/CRC, 3 edition, 2013.
 
 \bibitem[Gneiting and Katzfuss(2014)]{gneiting2014probabilistic}
 T.~Gneiting and M.~Katzfuss.
 \newblock Probabilistic forecasting.
-\newblock \emph{Annual Review of Statistics and Its Application}, 1:\penalty0
-  125--151, 2014.
+\newblock \emph{Annual Review of Statistics and Its Application}, 1:\penalty0 125--151, 2014.
 
 \bibitem[Gneiting and Raftery(2007)]{gneiting2007strictly}
 T.~Gneiting and A.~E. Raftery.
 \newblock Strictly proper scoring rules, prediction, and estimation.
-\newblock \emph{Journal of the American Statistical Association}, 102\penalty0
-  (477):\penalty0 359--378, 2007.
+\newblock \emph{Journal of the American Statistical Association}, 102\penalty0 (477):\penalty0 359--378, 2007.
 
-\bibitem[Gr{"u}nwald et~al.(2024)Gr{"u}nwald, de~Heide, and
-  Koolen]{grunwald2024safe}
+\bibitem[Gr{"u}nwald et~al.(2024)Gr{"u}nwald, de~Heide, and Koolen]{grunwald2024safe}
 P.~Gr{"u}nwald, R.~de~Heide, and W.~M. Koolen.
 \newblock Safe testing.
-\newblock \emph{Journal of the Royal Statistical Society: Series B},
-  86\penalty0 (2):\penalty0 254--291, 2024.
+\newblock \emph{Journal of the Royal Statistical Society: Series B}, 86\penalty0 (2):\penalty0 254--291, 2024.
 
 \bibitem[Guo et~al.(2017)Guo, Pleiss, Sun, and Weinberger]{guo2017calibration}
 C.~Guo, G.~Pleiss, Y.~Sun, and K.~Q. Weinberger.
@@ -69,8 +57,7 @@ C.~Guo, G.~Pleiss, Y.~Sun, and K.~Q. Weinberger.
 
 \bibitem[Hendrycks and Dietterich(2019)]{hendrycks2019benchmarking}
 D.~Hendrycks and T.~Dietterich.
-\newblock Benchmarking neural network robustness to common corruptions and
-  perturbations.
+\newblock Benchmarking neural network robustness to common corruptions and perturbations.
 \newblock In \emph{Proceedings of ICLR}, 2019.
 
 \bibitem[Jeffreys(1961)]{jeffreys1961}
@@ -78,12 +65,10 @@ H.~Jeffreys.
 \newblock \emph{Theory of Probability}.
 \newblock Oxford University Press, 3 edition, 1961.
 
-\bibitem[Johari et~al.(2022)Johari, Koomen, Pekelis, and
-  Walsh]{johari2022always}
+\bibitem[Johari et~al.(2022)Johari, Koomen, Pekelis, and Walsh]{johari2022always}
 R.~Johari, P.~Koomen, L.~Pekelis, and D.~Walsh.
 \newblock Always valid inference: Continuous monitoring of a/b tests.
-\newblock \emph{Operations Research}, 70\penalty0 (3):\penalty0 1806--1821,
-  2022.
+\newblock \emph{Operations Research}, 70\penalty0 (3):\penalty0 1806--1821, 2022.
 
 \bibitem[Krizhevsky(2009)]{krizhevsky2009learning}
 A.~Krizhevsky.
@@ -95,14 +80,12 @@ Z.~Lipton, Y.-X. Wang, and A.~Smola.
 \newblock Detecting and correcting for label shift with black box predictors.
 \newblock In \emph{Proceedings of ICML}, pages 3122--3130, 2018.
 
-\bibitem[Minderer et~al.(2021)Minderer, Djolonga, Romijnders, and
-  et~al.]{minderer2021revisiting}
+\bibitem[Minderer et~al.(2021)Minderer, Djolonga, Romijnders, and et~al.]{minderer2021revisiting}
 M.~Minderer, J.~Djolonga, R.~Romijnders, and et~al.
 \newblock Revisiting the calibration of modern neural networks.
 \newblock In \emph{Advances in NeurIPS}, volume~34, pages 15682--15694, 2021.
 
-\bibitem[Naeini et~al.(2015)Naeini, Cooper, and
-  Hauskrecht]{naeini2015obtaining}
+\bibitem[Naeini et~al.(2015)Naeini, Cooper, and Hauskrecht]{naeini2015obtaining}
 M.~P. Naeini, G.~Cooper, and M.~Hauskrecht.
 \newblock Obtaining well calibrated probabilities using bayesian binning.
 \newblock In \emph{Proceedings of AAAI}, pages 2901--2907, 2015.
@@ -114,53 +97,38 @@ E.~S. Page.
 
 \bibitem[Podkopaev and Ramdas(2021)]{podkopaev2021distribution}
 A.~Podkopaev and A.~Ramdas.
-\newblock Distribution-free uncertainty quantification for classification under
-  label shift.
+\newblock Distribution-free uncertainty quantification for classification under label shift.
 \newblock In \emph{Proceedings of UAI}, pages 844--853, 2021.
 
 \bibitem[Pollak(1985)]{pollak1985optimal}
 M.~Pollak.
 \newblock Optimal detection of a change in distribution.
-\newblock \emph{Annals of Statistics}, 13\penalty0 (1):\penalty0 206--227,
-  1985.
+\newblock \emph{Annals of Statistics}, 13\penalty0 (1):\penalty0 206--227, 1985.
 
-\bibitem[Rabanser et~al.(2019)Rabanser, G{"u}nnemann, and
-  Lipton]{rabanser2019failing}
+\bibitem[Rabanser et~al.(2019)Rabanser, G{"u}nnemann, and Lipton]{rabanser2019failing}
 S.~Rabanser, S.~G{"u}nnemann, and Z.~Lipton.
-\newblock Failing loudly: An empirical study of methods for detecting dataset
-  shift.
+\newblock Failing loudly: An empirical study of methods for detecting dataset shift.
 \newblock In \emph{Advances in NeurIPS}, volume~32, 2019.
 
-\bibitem[Ramdas et~al.(2023)Ramdas, Gr{"u}nwald, Vovk, and
-  Shafer]{ramdas2023game}
+\bibitem[Ramdas et~al.(2023)Ramdas, Gr{"u}nwald, Vovk, and Shafer]{ramdas2023game}
 A.~Ramdas, P.~Gr{"u}nwald, V.~Vovk, and G.~Shafer.
 \newblock Game-theoretic statistics and safe anytime-valid inference.
 \newblock \emph{Statistical Science}, 38\penalty0 (4):\penalty0 576--601, 2023.
 
-\bibitem[Shafer et~al.(2021)Shafer, Shen, Vereshchagin, and
-  Vovk]{shafer2021testing}
+\bibitem[Shafer et~al.(2021)Shafer, Shen, Vereshchagin, and Vovk]{shafer2021testing}
 G.~Shafer, A.~Shen, N.~Vereshchagin, and V.~Vovk.
 \newblock Test martingales, bayes factors and p-values.
 \newblock \emph{Statistical Science}, 26\penalty0 (1):\penalty0 84--101, 2021.
 
 \bibitem[Shin et~al.(2022)Shin, Ramdas, and Rinaldo]{shin2022detectors}
 J.~Shin, A.~Ramdas, and A.~Rinaldo.
-\newblock E-detectors: A nonparametric framework for online changepoint
-  detection.
+\newblock E-detectors: A nonparametric framework for online changepoint detection.
 \newblock \emph{arXiv preprint arXiv:2203.03532}, 2022.
 
 \bibitem[Shiryaev(1963)]{shiryaev1963}
 A.~N. Shiryaev.
 \newblock On optimum methods in quickest detection problems.
-\newblock \emph{Theory of Probability \& Its Applications}, 8\penalty0
-  (1):\penalty0 22--46, 1963.
-
-\bibitem[Vergara et~al.(2012)Vergara, Vembu, Ayhan, Ryan, Homer, and
-  Huerta]{vergara2012chemical}
-A.~Vergara, S.~Vembu, T.~Ayhan, M.~A. Ryan, M.~L. Homer, and R.~Huerta.
-\newblock Chemical gas sensor drift compensation using classifier ensembles.
-\newblock \emph{Sensors and Actuators B: Chemical}, 166--167:\penalty0
-  320--329, 2012.
+\newblock \emph{Theory of Probability \& Its Applications}, 8\penalty0 (1):\penalty0 22--46, 1963.
 
 \bibitem[Ville(1939)]{ville1939}
 J.~Ville.
@@ -170,8 +138,7 @@ J.~Ville.
 \bibitem[Vovk and Wang(2021)]{vovk2021values}
 V.~Vovk and R.~Wang.
 \newblock E-values: Calibration, combination, and applications.
-\newblock \emph{Annals of Statistics}, 49\penalty0 (3):\penalty0 1736--1754,
-  2021.
+\newblock \emph{Annals of Statistics}, 49\penalty0 (3):\penalty0 1736--1754, 2021.
 
 \bibitem[Vovk et~al.(2005)Vovk, Gammerman, and Shafer]{vovk2005algorithmic}
 V.~Vovk, A.~Gammerman, and G.~Shafer.
@@ -180,8 +147,7 @@ V.~Vovk, A.~Gammerman, and G.~Shafer.
 
 \bibitem[Wassmer and Brannath(2016)]{wassmer2016group}
 G.~Wassmer and W.~Brannath.
-\newblock \emph{Group Sequential and Confirmatory Adaptive Designs in Clinical
-  Trials}.
+\newblock \emph{Group Sequential and Confirmatory Adaptive Designs in Clinical Trials}.
 \newblock Springer, 2016.
 
 \end{thebibliography}

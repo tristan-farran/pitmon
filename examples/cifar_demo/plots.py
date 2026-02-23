@@ -68,7 +68,7 @@ def plot_single_run_panels(artifacts: dict, save_path: Path | None = None) -> No
     ax.set_ylabel("Predicted class", fontsize=11)
     ax.set_title("Predictions (Correct vs Wrong)", fontsize=11, fontweight="bold")
     ax.set_ylim(-0.5, 9.5)
-    ax.legend(fontsize=8)
+    ax.legend(fontsize=8, loc="upper right")
     ax.grid(True, alpha=0.2)
     ax.set_xlim(left=0, right=len(t))
 
@@ -93,7 +93,7 @@ def plot_single_run_panels(artifacts: dict, save_path: Path | None = None) -> No
     ax.set_ylabel("PIT value", fontsize=11)
     ax.set_title("PIT Stream", fontsize=11, fontweight="bold")
     ax.set_ylim(-0.05, 1.05)
-    ax.legend(fontsize=8)
+    ax.legend(fontsize=8, loc="upper right")
     ax.grid(True, alpha=0.2)
     ax.set_xlim(left=0, right=len(t))
 
@@ -131,7 +131,7 @@ def plot_single_run_panels(artifacts: dict, save_path: Path | None = None) -> No
     ax.set_ylabel("Log-evidence", fontsize=11)
     ax.set_xlabel("Observation", fontsize=11)
     ax.set_title("PITMonitor Evidence", fontsize=11, fontweight="bold")
-    ax.legend(fontsize=8)
+    ax.legend(fontsize=8, loc="upper right")
     ax.grid(True, alpha=0.2, which="both")
     ax.set_xlim(left=0, right=len(t))
 
@@ -160,7 +160,7 @@ def plot_single_run_panels(artifacts: dict, save_path: Path | None = None) -> No
     ax.set_xlabel("PIT value", fontsize=11)
     ax.set_ylabel("Density", fontsize=11)
     ax.set_title("PIT Distributions", fontsize=11, fontweight="bold")
-    ax.legend(fontsize=8)
+    ax.legend(fontsize=8, loc="upper right")
     ax.grid(True, alpha=0.2)
 
     plt.tight_layout()
@@ -221,7 +221,7 @@ def plot_power_panels(artifacts: dict, save_path: Path | None = None) -> None:
         title="Detection Latency ECDF by Severity",
     )
     ax.set_ylim(0.0, 1.02)
-    ax.legend(fontsize=9, loc="lower right")
+    ax.legend(fontsize=9, loc="upper right")
     ax.grid(True, alpha=0.2)
 
     ax = axes[1, 0]
@@ -340,7 +340,7 @@ def plot_comparison_panels(artifacts: dict, save_path: Path | None = None) -> No
     )
     axes[0].set_ylim(-0.01, 0.15)
     axes[0].grid(True, alpha=0.2)
-    axes[0].legend(fontsize=9, loc="best")
+    axes[0].legend(fontsize=9, loc="upper right")
 
     axes[1].set(
         xlabel="CIFAR-10-C severity",
@@ -349,7 +349,7 @@ def plot_comparison_panels(artifacts: dict, save_path: Path | None = None) -> No
     )
     axes[1].set_ylim(-0.05, 1.05)
     axes[1].grid(True, alpha=0.2)
-    axes[1].legend(fontsize=9, loc="best")
+    axes[1].legend(fontsize=9, loc="upper right")
 
     axes[2].set(
         xlabel="CIFAR-10-C severity",
@@ -358,7 +358,7 @@ def plot_comparison_panels(artifacts: dict, save_path: Path | None = None) -> No
     )
     axes[2].set_ylim(bottom=0)
     axes[2].grid(True, alpha=0.2)
-    axes[2].legend(fontsize=9, loc="best")
+    axes[2].legend(fontsize=9, loc="upper right")
 
     plt.tight_layout()
     if save_path is not None:

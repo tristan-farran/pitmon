@@ -38,10 +38,10 @@ e-process that accumulates evidence against exchangeability:
 
 Examples
 --------
-- `examples/cifar_demo.ipynb`: CIFAR-10 → CIFAR-10-C monitoring walkthrough.
-- `examples/delivery_demo.ipynb`: synthetic delivery-time monitoring walkthrough.
+- `examples/cifar_demo`: CIFAR-10 → CIFAR-10-C monitoring demo.
+- `examples/delivery_demo`: synthetic delivery-time monitoring demo.
 
 Run the CIFAR demo:
 ```bash
-jupyter notebook examples/cifar_demo.ipynb
+python examples/cifar_demo/run.py
 ```

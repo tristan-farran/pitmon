@@ -5,42 +5,42 @@ The style file: plainnat.bst
 Database file #1: pitmon_references.bib
 You've used 29 entries,
             2773 wiz_defined-function locations,
-            765 strings with 8946 characters,
-and the built_in function-call counts, 13842 in all, are:
-= -- 1248
-> -- 719
-< -- 22
-+ -- 245
-- -- 216
-* -- 1099
-:= -- 2067
-add.period$ -- 87
+            769 strings with 9267 characters,
+and the built_in function-call counts, 13804 in all, are:
+= -- 1236
+> -- 764
+< -- 21
++ -- 260
+- -- 231
+* -- 1109
+:= -- 2096
+add.period$ -- 90
 call.type$ -- 29
-change.case$ -- 157
+change.case$ -- 162
 chr.to.int$ -- 29
 cite$ -- 58
-duplicate$ -- 664
-empty$ -- 1190
-format.name$ -- 259
-if$ -- 2934
+duplicate$ -- 644
+empty$ -- 1157
+format.name$ -- 276
+if$ -- 2903
 int.to.chr$ -- 1
 int.to.str$ -- 1
 missing$ -- 33
-newline$ -- 153
+newline$ -- 155
 num.names$ -- 116
-pop$ -- 326
+pop$ -- 329
 preamble$ -- 1
-purify$ -- 130
+purify$ -- 135
 quote$ -- 0
-skip$ -- 510
+skip$ -- 494
 stack$ -- 0
-substring$ -- 642
-swap$ -- 92
-text.length$ -- 7
+substring$ -- 586
+swap$ -- 75
+text.length$ -- 5
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 294
 warning$ -- 0
-while$ -- 132
+while$ -- 129
 width$ -- 0
-write$ -- 381
+write$ -- 385

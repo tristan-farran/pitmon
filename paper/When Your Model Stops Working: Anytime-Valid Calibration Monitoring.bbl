@@ -10,6 +10,12 @@ S.~Arnold, A.~Henzi, and J.~F. Ziegel.
 \newblock Sequentially valid tests for forecast calibration.
 \newblock \emph{Annals of Applied Statistics}, 17\penalty0 (3):\penalty0 1909--1935, 2023.
 
+\bibitem[Bifet and Gavald{\`a}(2007)]{bifet2007learning}
+Albert Bifet and Ricard Gavald{\`a}.
+\newblock Learning from time-changing data with adaptive windowing.
+\newblock In \emph{Proceedings of the 7th SIAM International Conference on Data Mining}, pages 443--448. Society for Industrial and Applied Mathematics, 2007.
+\newblock \doi{10.1137/1.9781611972771.42}.
+
 \bibitem[Brockwell(2007)]{brockwell2007}
 A.~E. Brockwell.
 \newblock Universal residuals: A multivariate transformation.
@@ -50,11 +56,6 @@ P.~Gr{"u}nwald, R.~de~Heide, and W.~M. Koolen.
 \newblock Safe testing.
 \newblock \emph{Journal of the Royal Statistical Society: Series B}, 86\penalty0 (2):\penalty0 254--291, 2024.
 
-\bibitem[Guo et~al.(2017)Guo, Pleiss, Sun, and Weinberger]{guo2017calibration}
-C.~Guo, G.~Pleiss, Y.~Sun, and K.~Q. Weinberger.
-\newblock On calibration of modern neural networks.
-\newblock In \emph{Proceedings of ICML}, pages 1321--1330, 2017.
-
 \bibitem[Hendrycks and Dietterich(2019)]{hendrycks2019benchmarking}
 D.~Hendrycks and T.~Dietterich.
 \newblock Benchmarking neural network robustness to common corruptions and perturbations.
@@ -80,10 +81,11 @@ Z.~Lipton, Y.-X. Wang, and A.~Smola.
 \newblock Detecting and correcting for label shift with black box predictors.
 \newblock In \emph{Proceedings of ICML}, pages 3122--3130, 2018.
 
-\bibitem[Minderer et~al.(2021)Minderer, Djolonga, Romijnders, and et~al.]{minderer2021revisiting}
-M.~Minderer, J.~Djolonga, R.~Romijnders, and et~al.
-\newblock Revisiting the calibration of modern neural networks.
-\newblock In \emph{Advances in NeurIPS}, volume~34, pages 15682--15694, 2021.
+\bibitem[Montiel et~al.(2020)Montiel, Halford, Mastelini, Bolmier, Sourty, Vaysse, Zouitine, Gomes, Read, Abdessalem, and Bifet]{montiel2021river}
+Jacob Montiel, Max Halford, Saulo~Martiello Mastelini, Geoffrey Bolmier, Rapha{\"{e}}l Sourty, Robin Vaysse, Adil Zouitine, Heitor~Murilo Gomes, Jesse Read, Talel Abdessalem, and Albert Bifet.
+\newblock River: machine learning for streaming data in python.
+\newblock \emph{CoRR}, abs/2012.04740, 2020.
+\newblock URL \url{https://arxiv.org/abs/2012.04740}.
 
 \bibitem[Naeini et~al.(2015)Naeini, Cooper, and Hauskrecht]{naeini2015obtaining}
 M.~P. Naeini, G.~Cooper, and M.~Hauskrecht.

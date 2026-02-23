@@ -48,23 +48,23 @@
 \maketitle
 
 \begin{abstract}
-
-\noindent 
-
-Deployed machine learning models often experience calibration drift as the data distribution shifts over time. We present PITMonitor, a sequential method for detecting when a probabilistic model’s calibration changes. Unlike traditional calibration tests that require fixed evaluation windows, PITMonitor provides \emph{anytime-valid} false alarm control: the probability of ever raising a spurious alarm is bounded by $\alpha$, regardless of when monitoring stops. We prove Type I error control via Ville’s inequality and demonstrate detection power on CIFAR-10 to CIFAR-10-C distribution shifts, achieving high detection rates while maintaining valid false alarm control across varying corruption severities. Code is available at \url{https://github.com/tristan-farran/pitmon}.
-
+\noindent Deployed machine learning models often experience calibration drift as the world changes. To address this challenge, we present PITMonitor, a sequential method detecting calibration changes. Unlike traditional calibration tests that require fixed evaluation windows, PITMonitor provides \emph{anytime-valid} false alarm control: the probability of ever raising a spurious alarm is bounded by $\alpha$, regardless of when monitoring stops. We prove Type I error control via Ville's inequality and demonstrate detection power on \texttt{river}'s FriedmanDrift dataset, while maintaining valid false alarm control. Code is available at \url{https://github.com/tristan-farran/pitmon}.
 \end{abstract}
 
 %------------------------------------------------------------------------------
 \section{Introduction}
 %------------------------------------------------------------------------------
 
-Probabilistic models deployed in production face a fundamental challenge: the world changes. Models encounter distribution shifts such as changes in input distributions, label frequencies, or the relationship between features and targets. When these shifts occur, model calibration can degrade, and simple calibration techniques may no longer suffice. Prior work has shown that modern neural networks can be miscalibrated on standard benchmarks and that calibration behavior under distribution shift can vary by architecture and shift type \citep{guo2017calibration, minderer2021revisiting}.
+Probabilistic models deployed in production face a fundamental challenge: the world changes. Models encounter changes in input distributions, label frequencies, the relationship between features and targets, and so on. When these shifts occur, model calibration can degrade and simple calibration techniques may no longer suffice. 
 
-
-Detecting degrading calibration is critical for maintaining trustworthy AI systems. A medical diagnostic model that becomes overconfident after a sensor upgrade, or a financial risk model that underestimates tail probabilities after a market regime shift, can lead to consequential errors. Yet practitioners often rely on ad-hoc monitoring techniques; periodic recalibration schedules, threshold-based alerts on rolling metrics, manual inspection of residuals etc.
+Detecting degrading miscalibration is critical for maintaining trustworthy AI systems. A medical diagnostic model that becomes overconfident after a sensor upgrade, or a financial risk model that underestimates tail probabilities after a regime shift, can lead to consequential errors. In practice, calibration is often monitored using ad-hoc procedures such as periodic recalibration schedules, rolling-window hypothesis tests, threshold-based alerts on summary metrics, or manual inspection of residuals.
 
 These approaches suffer from a fundamental statistical problem: \emph{they do not control the false alarm rate over continuous monitoring}. A practitioner who checks calibration daily with a $p < 0.05$ threshold will, over a year of monitoring, almost certainly observe spurious alarms even if the model remains stable. Classical hypothesis tests assume a fixed sample size determined before seeing data; continuous monitoring violates this assumption.
+
+More principled alternatives are provided by online drift detectors, such as those implemented in the \texttt{river} library \citep{montiel2021river}. Classical detectors including DDM, EDDM, and Page-Hinkley are lightweight, easy to deploy, and effective at detecting abrupt changes, but are typically based on heuristic thresholds or fixed-sample statistical arguments and do not provide explicit long-run false alarm guarantees under continuous monitoring.
+
+ADWIN employs sequential hypothesis testing with anytime-valid concentration bounds, offering formal control of the probability of false alarms over an unbounded stream \citep{bifet2007learning}. However, even ADWIN generally operates on generic performance statistics such as error rates and as a result, only partially solves the problem of reliable, long-term calibration monitoring.
+
 
 We propose PITMonitor, a method providing \emph{anytime-valid} monitoring of PIT exchangeability with four key properties:
 
@@ -91,10 +91,7 @@ For a continuous predictive CDF $F$ and realized outcome $y$, the PIT is $U = F(
 A classical result states that if $F$ is the true distribution of $Y$, then $U \sim \Unif(0,1)$.
 
 \begin{proposition}[PIT Uniformity]
-If $Y$ has continuous CDF $F$, then $U = F(Y) \sim \Unif(0,1)$.https://iclr.cc/
-https://icml.cc/ https://imstat.
-org/journals-and-publications/annals-of-applied-statistics/ https://jmlr.org/
-https://neurips.cc/ https://virtual.aistats.org/
+If $Y$ has continuous CDF $F$, then $U = F(Y) \sim \Unif(0,1)$.
 \end{proposition}
 
 For discrete outcomes (e.g., classification), randomization yields a continuous PIT \citep{brockwell2007}.
@@ -470,46 +467,6 @@ Severity & Method & FPR & FPR CI & TPR & TPR CI & Median Delay \\
 
 These CIFAR comparisons show that PITMonitor maintains FPR near the target level while achieving high TPR across severities.
 DDM is similarly powerful but with somewhat higher false alarms, ADWIN is extremely conservative (zero FPR) with later alarms, KSWIN is fast but materially less sensitive at these severities, and EDDM is unstable in this setting.
-
-\paragraph{Part 3 Baseline Comparisons (Delivery Demo).}
-We also include the Part 3 benchmark from the delivery demo notebook, where shift magnitude is controlled directly (H$_0$, 30\%, 60\%, 100\%).
-Again, all methods are run on matched streams for 1{,}000 trials per condition.
-Table~\ref{tab:delivery_part3_compare} reports the observed FPR/TPR/delay values.
-
-\begin{table}[ht]
-\centering
-\caption{Delivery demo Part 3 comparison using 1{,}000 trials per shift level. 95\% Wilson score confidence intervals are reported for FPR and TPR.}
-\label{tab:delivery_part3_compare}
-\begin{tabular}{@{}ccccccc@{}}
-\toprule
-Shift & Method & FPR & FPR CI & TPR & TPR CI & Median Delay \\
-\midrule
-H$_0$ & PITMonitor & 3.6\% & [2.1\%, 6.1\%] & 0.0\% & [0.0\%, 0.7\%] & n/a \\
-H$_0$ & DDM & 11.2\% & [8.5\%, 14.6\%] & 3.2\% & [1.7\%, 5.7\%] & 78.0 \\
-H$_0$ & EDDM & 83.0\% & [79.2\%, 86.2\%] & 7.6\% & [5.2\%, 10.9\%] & 55.0 \\
-H$_0$ & ADWIN & 0.0\% & [0.0\%, 0.7\%] & 0.0\% & [0.0\%, 0.7\%] & n/a \\
-H$_0$ & KSWIN & 0.7\% & [0.2\%, 2.2\%] & 2.1\% & [1.0\%, 4.2\%] & 88.0 \\
-\midrule
-30\% & PITMonitor & 3.3\% & [1.8\%, 5.7\%] & 96.7\% & [94.3\%, 98.2\%] & 56.0 \\
-30\% & DDM & 11.7\% & [8.9\%, 15.2\%] & 88.1\% & [84.2\%, 91.1\%] & 41.0 \\
-30\% & EDDM & 82.1\% & [78.2\%, 85.5\%] & 17.9\% & [14.5\%, 21.8\%] & 19.0 \\
-30\% & ADWIN & 0.0\% & [0.0\%, 0.7\%] & 96.5\% & [94.0\%, 98.1\%] & 120.0 \\
-30\% & KSWIN & 1.2\% & [0.5\%, 2.9\%] & 73.6\% & [68.7\%, 78.0\%] & 29.0 \\
-\midrule
-60\% & PITMonitor & 3.9\% & [2.2\%, 6.7\%] & 96.1\% & [93.7\%, 97.8\%] & 33.0 \\
-60\% & DDM & 10.5\% & [7.9\%, 13.8\%] & 89.5\% & [85.8\%, 92.5\%] & 23.0 \\
-60\% & EDDM & 81.9\% & [77.9\%, 85.4\%] & 18.1\% & [14.6\%, 22.1\%] & 16.0 \\
-60\% & ADWIN & 0.0\% & [0.0\%, 0.7\%] & 100.0\% & [99.3\%, 100.0\%] & 56.0 \\
-60\% & KSWIN & 0.7\% & [0.2\%, 2.2\%] & 99.3\% & [97.8\%, 99.8\%] & 21.0 \\
-\midrule
-100\% & PITMonitor & 2.9\% & [1.5\%, 5.1\%] & 97.1\% & [94.9\%, 98.5\%] & 30.0 \\
-100\% & DDM & 11.6\% & [8.8\%, 15.1\%] & 88.4\% & [84.5\%, 91.4\%] & 20.0 \\
-100\% & EDDM & 83.7\% & [79.9\%, 86.9\%] & 16.3\% & [13.1\%, 20.1\%] & 14.0 \\
-100\% & ADWIN & 0.0\% & [0.0\%, 0.7\%] & 100.0\% & [99.3\%, 100.0\%] & 56.0 \\
-100\% & KSWIN & 0.9\% & [0.3\%, 2.6\%] & 99.1\% & [97.4\%, 99.8\%] & 18.0 \\
-\bottomrule
-\end{tabular}
-\end{table}
 
 The delivery benchmark reinforces the same tradeoff profile: PITMonitor attains high power with controlled false alarms, DDM and KSWIN often detect earlier but can incur higher false positives depending on regime, ADWIN is conservative and often delayed, and EDDM is dominated by excessive false alarms.
 

@@ -61,7 +61,7 @@ Detecting degrading miscalibration is critical for maintaining trustworthy AI sy
 
 These approaches suffer from a fundamental statistical problem: \emph{they do not control the false alarm rate over continuous monitoring}. A practitioner who checks calibration daily with a $p < 0.05$ threshold will, over a year of monitoring, almost certainly observe spurious alarms even if the model remains stable. Classical hypothesis tests assume a fixed sample size determined before seeing data; continuous monitoring violates this assumption.
 
-More principled alternatives are provided by online drift detectors, such as those implemented in the \texttt{river} library \citep{montiel2021river}. Classical detectors including DDM, EDDM, and Page-Hinkley are lightweight, easy to deploy, and effective at detecting abrupt changes, but are typically based on heuristic thresholds or fixed-sample statistical arguments and do not provide explicit long-run false alarm guarantees under continuous monitoring.
+More principled alternatives are provided by online drift detectors, such as those implemented in the \texttt{river} library \citep{montiel2021river}. Classical detectors including DDM, EDDM, and KSWIN are lightweight, easy to deploy, and effective at detecting abrupt changes, but are typically based on heuristic thresholds or fixed-sample statistical arguments and do not provide explicit long-run false alarm guarantees under continuous monitoring.
 
 ADWIN employs sequential hypothesis testing with anytime-valid concentration bounds, offering formal control of the probability of false alarms over an unbounded stream \citep{bifet2007learning}. However, even ADWIN generally operates on generic performance statistics such as error rates and as a result, only partially solves the problem of reliable, long-term calibration monitoring.
 
@@ -84,15 +84,11 @@ We propose PITMonitor, a method providing \emph{anytime-valid} monitoring of PIT
 
 \subsection{Calibration and Probability Integral Transforms}
 
-A probabilistic model outputs predicted distributions $\hat{F}$ for outcomes. The model is \emph{calibrated} if these predictions match reality: among all predictions where $\hat{F}(y) = p$, the outcome $Y \leq y$ should occur roughly $(100 \times p)$\% of the time.
+A probabilistic model outputting a predicted cumulative distribution function $\hat{F}$ over outcomes is \emph{calibrated} if these predictions match reality: among all predictions where $\hat{F}(y) = p$, the outcome $Y \leq y$ should occur roughly $(100 \times p)$\% of the time.
 
 The \emph{probability integral transform} (PIT) provides a universal tool for assessing calibration \citep{dawid1984statistical}.
 For a continuous predictive CDF $F$ and realized outcome $y$, the PIT is $U = F(y)$.
 A classical result states that if $F$ is the true distribution of $Y$, then $U \sim \Unif(0,1)$.
-
-\begin{proposition}[PIT Uniformity]
-If $Y$ has continuous CDF $F$, then $U = F(Y) \sim \Unif(0,1)$.
-\end{proposition}
 
 For discrete outcomes (e.g., classification), randomization yields a continuous PIT \citep{brockwell2007}.
 Given predicted class probabilities $(\hat{p}_1, \ldots, \hat{p}_K)$ and true class $y \in \{1, \ldots, K\}$:
@@ -101,18 +97,9 @@ Given predicted class probabilities $(\hat{p}_1, \ldots, \hat{p}_K)$ and true cl
 \end{equation}
 Placing $U$ uniformly within the cumulative probability interval corresponding to the true class.
 
+This method is generally efficacious across regression tasks. However it is important to note that in $K$-class classification with highly confident predictions, a substantial fraction of the PIT variability can arise from the auxiliary randomization variable $V$ rather than from predictive quality. This can reduce monitoring sensitivity in this regime, as the PITs may reflect randomization noise more than model changes.
 
-\begin{remark}
-\textbf{Caveat for confident multi-class classification:} In $K$-class classification with highly confident predictions (i.e., when $\hat{p}_y$ is close to 1), a substantial fraction of the PIT variability can arise from the auxiliary randomization variable $V$ rather than from predictive quality. This can reduce monitoring sensitivity in this regime, as the PITs may reflect randomization noise more than model changes.
-\end{remark}
-
-Alternative PIT formulations are also valid. For instance, an empirical-CDF PIT can be constructed by computing the rank of the true class probability $\hat{p}_y$ against a reference distribution from clean calibration data: $U = \frac{\text{rank}(\hat{p}_y)}{n_{\text{ref}}} + V \cdot \Delta$, where $\Delta$ accounts for ties. Both formulations produce $U \sim \Unif(0,1)$ under calibration stability, and the theoretical guarantees of PITMonitor apply to any method satisfying this property. The empirical-CDF method is order-invariant and can be more sensitive to confidence degradation in specific domains; it is used in our experimental demonstration to achieve strong detection power on CIFAR-10-C corruption shifts while remaining theoretically justified.
-
-Alternatively, an empirical-CDF PIT can be constructed by computing the rank of the true class probability $\hat{p}_y$ against a reference distribution from clean calibration data:
-\begin{equation}
-    U = \frac{\text{rank}(\hat{p}_y)}{n_{\text{ref}}} + V \cdot \Delta, \quad V \sim \Unif(0,1)
-\end{equation}
-where $\Delta$ accounts for ties. This order-invariant formulation is used in our experimental demonstration (see Section~\ref{sec:experiments}), as it can be more sensitive to confidence degradation in specific domains. Both methods produce $U \sim \Unif(0,1)$ under calibration stability, and the theoretical guarantees of PITMonitor apply to any method satisfying this property.
+Alternative PIT formulations are also valid. For instance, an empirical-CDF PIT can be constructed by computing the rank of the true class probability $\hat{p}_y$ against a reference distribution from clean calibration data: $U = \frac{\text{rank}(\hat{p}_y)}{n_{\text{ref}}} + V \cdot \Delta$, where $\Delta$ accounts for ties. Both formulations produce $U \sim \Unif(0,1)$ under calibration stability, and the theoretical guarantees of PITMonitor apply to any method satisfying this property.
 
 \subsection{Exchangeability}
 

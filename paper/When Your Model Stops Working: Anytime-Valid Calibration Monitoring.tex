@@ -48,7 +48,7 @@
 \maketitle
 
 \begin{abstract}
-\noindent Deployed probabilistic models often experience concept drift as the data distribution changes over time. We present PITMonitor, a sequential method for detecting departures from exchangeability in probability integral transforms (PITs), which is a useful proxy for calibration drift. Unlike traditional calibration tests that require fixed evaluation windows, PITMonitor provides \emph{anytime-valid} false alarm control: the probability of ever raising a spurious alarm is bounded by $\alpha$, regardless of when monitoring stops. Under i.i.d. stable behavior (including stable miscalibration), PITs remain exchangeable and no alarm fires. When the PIT generating mechanism changes, exchangeability breaks and evidence accumulates. This includes calibration changes, but can also include case-mix or dependence changes even when the reliability mapping is unchanged. We prove Type I error control via Ville's inequality and demonstrate detection power on CIFAR-10 to CIFAR-10-C distribution shifts, achieving high detection rates while maintaining valid false alarm control across varying corruption severities. Code is available at \url{https://github.com/tristan-farran/pitmon}.
+\noindent Deployed probabilistic models often experience concept drift as the data distribution changes over time. We present PITMonitor, a sequential method for detecting departures from exchangeability in probability integral transforms (PITs), which is a useful proxy for concept drift. Unlike traditional calibration tests that require fixed evaluation windows, PITMonitor provides \emph{anytime-valid} false alarm control: the probability of ever raising a spurious alarm is bounded by $\alpha$, regardless of when monitoring stops. Under i.i.d. behaviour behavior (including stable miscalibration), PITs remain exchangeable and no alarm fires. When the PIT generating mechanism changes, exchangeability breaks and evidence accumulates. This includes calibration changes, but can also include case-mix or dependence changes even when the reliability mapping is unchanged. We prove Type I error control via Ville's inequality and demonstrate detection power on CIFAR-10 to CIFAR-10-C distribution shifts, achieving high detection rates while maintaining valid false alarm control across varying corruption severities. Code is available at \url{https://github.com/tristan-farran/pitmon}.
 
 \end{abstract}
 
@@ -98,7 +98,16 @@ Given predicted class probabilities $(\hat{p}_1, \ldots, \hat{p}_K)$ and true cl
 \begin{equation}
     U = \sum_{j=1}^{y-1} \hat{p}_j + V \cdot \hat{p}_y, \quad V \sim \Unif(0,1)
 \end{equation}
-Placing $U$ uniformly within the cumulative probability interval corresponding to the true class.\footnote{Alternative PIT formulations are also valid. For instance, an empirical-CDF PIT can be constructed by computing the rank of the true class probability $\hat{p}_y$ against a reference distribution from clean calibration data: $U = \frac{\text{rank}(\hat{p}_y)}{n_{\text{ref}}} + V \cdot \Delta$, where $\Delta$ accounts for ties. Both formulations produce $U \sim \Unif(0,1)$ under calibration stability, and the theoretical guarantees of PITMonitor apply to any method satisfying this property. The empirical-CDF method is order-invariant and can be more sensitive to confidence degradation in specific domains; it is used in our experimental demonstration to achieve strong detection power on CIFAR-10-C corruption shifts while remaining theoretically justified.}
+Placing $U$ uniformly within the cumulative probability interval corresponding to the true class.
+
+
+Alternative PIT formulations are also valid. For instance, an empirical-CDF PIT can be constructed by computing the rank of the true class probability $\hat{p}_y$ against a reference distribution from clean calibration data: $U = \frac{\text{rank}(\hat{p}_y)}{n_{\text{ref}}} + V \cdot \Delta$, where $\Delta$ accounts for ties. Both formulations produce $U \sim \Unif(0,1)$ under calibration stability, and the theoretical guarantees of PITMonitor apply to any method satisfying this property. The empirical-CDF method is order-invariant and can be more sensitive to confidence degradation in specific domains; it is used in our experimental demonstration to achieve strong detection power on CIFAR-10-C corruption shifts while remaining theoretically justified.
+
+Alternatively, an empirical-CDF PIT can be constructed by computing the rank of the true class probability $\hat{p}_y$ against a reference distribution from clean calibration data:
+\begin{equation}
+    U = \frac{\text{rank}(\hat{p}_y)}{n_{\text{ref}}} + V \cdot \Delta, \quad V \sim \Unif(0,1)
+\end{equation}
+where $\Delta$ accounts for ties. This order-invariant formulation is used in our experimental demonstration (see Section~\ref{sec:experiments}), as it can be more sensitive to confidence degradation in specific domains. Both methods produce $U \sim \Unif(0,1)$ under calibration stability, and the theoretical guarantees of PITMonitor apply to any method satisfying this property.
 
 \subsection{Exchangeability}
 
@@ -132,6 +141,9 @@ If $(U_1, \ldots, U_t)$ is exchangeable, then the rank $R_t$ is uniformly distri
 \begin{proof}
 By exchangeability, the joint distribution of $(U_1, \ldots, U_t)$ is invariant to permutations. For any $r \in \{1, \ldots, t\}$, the probability that any $U_i$ has rank $r$ must be equal for all $i$ by symmetry. Since exactly one element must have rank $r$ and all $t$ positions are equally likely, $\Prob(R_t = r) = 1/t$.
 \end{proof}
+\begin{remark}
+The proof assumes continuous random variables to avoid ties. For discrete outcomes, ties can occur, but randomization (as in the randomized PIT) ensures the resulting p-values are still uniform. This subtlety is important for practical implementations.
+\end{remark}
 
 Crucially, this holds regardless of the marginal distribution of the PITs - the test is completely distribution-free.
 
@@ -337,6 +349,7 @@ Having introduced all components, we now present the complete PITMonitor algorit
 
 %------------------------------------------------------------------------------
 \section{Experiments}
+\label{sec:experiments}
 %------------------------------------------------------------------------------
 
 We evaluate PITMonitor on two benchmark suites that isolate complementary failure modes and baseline tradeoffs: CIFAR-10/10-C corruption shifts and a controlled delivery-demo stream with tunable shift magnitude.
@@ -363,12 +376,12 @@ We compute randomized classification PITs and run PITMonitor with $\alpha = 0.05
 
 \paragraph{Metrics.}
 \begin{itemize}
-    \item \textbf{False positive rate (FPR)}: Proportion of $H_0$ trials with alarm before $t = 301$
-    \item \textbf{True positive rate (TPR)}: Proportion of $H_1$ trials with alarm after $t = 301$
+    \item \textbf{False positive rate (FPR)}: Proportion of $H_0$ trials with alarm before $t = 301$ (Wilson score 95\% confidence interval)
+    \item \textbf{True positive rate (TPR)}: Proportion of $H_1$ trials with alarm after $t = 301$ (Wilson score 95\% confidence interval)
     \item \textbf{Detection delay}: Observations from changepoint to alarm (for true positives)
 \end{itemize}
 
-We run 1,000 trials per condition and report Wilson score 95\% confidence intervals.
+We run 1,000 trials per condition and report Wilson score 95\% confidence intervals for both FPR and TPR.
 
 \subsection{Results}
 
@@ -420,29 +433,29 @@ Table~\ref{tab:cifar_part3_compare} reports the exact benchmark outputs used in 
 
 \begin{table}[ht]
 \centering
-\caption{CIFAR Part 3 comparison (clean $\to$ CIFAR-10-C Gaussian noise) using 1{,}000 trials per severity.}
+\caption{CIFAR Part 3 comparison (clean $\to$ CIFAR-10-C Gaussian noise) using 1{,}000 trials per severity. 95\% Wilson score confidence intervals are reported for FPR and TPR.}
 \label{tab:cifar_part3_compare}
-\begin{tabular}{@{}ccccc@{}}
+\begin{tabular}{@{}ccccccc@{}}
 \toprule
-Severity & Method & FPR & TPR & Median Delay \\
+Severity & Method & FPR & FPR CI & TPR & TPR CI & Median Delay \\
 \midrule
-1 & PITMonitor & 3.5\% & 96.5\% & 107.0 \\
-1 & DDM & 4.8\% & 92.4\% & 71.0 \\
-1 & EDDM & 85.2\% & 14.8\% & 46.0 \\
-1 & ADWIN & 0.0\% & 100.0\% & 116.0 \\
-1 & KSWIN & 4.8\% & 45.0\% & 29.0 \\
+1 & PITMonitor & 3.5\% & [2.0\%, 5.9\%] & 96.5\% & [94.1\%, 98.0\%] & 107.0 \\
+1 & DDM & 4.8\% & [2.8\%, 7.7\%] & 92.4\% & [89.2\%, 94.7\%] & 71.0 \\
+1 & EDDM & 85.2\% & [81.7\%, 88.2\%] & 14.8\% & [11.8\%, 18.3\%] & 46.0 \\
+1 & ADWIN & 0.0\% & [0.0\%, 0.7\%] & 100.0\% & [99.3\%, 100.0\%] & 116.0 \\
+1 & KSWIN & 4.8\% & [2.8\%, 7.7\%] & 45.0\% & [40.7\%, 49.4\%] & 29.0 \\
 \midrule
-3 & PITMonitor & 4.2\% & 95.7\% & 108.0 \\
-3 & DDM & 3.5\% & 93.3\% & 72.0 \\
-3 & EDDM & 84.0\% & 16.0\% & 52.5 \\
-3 & ADWIN & 0.0\% & 100.0\% & 116.0 \\
-3 & KSWIN & 5.8\% & 41.6\% & 29.5 \\
+3 & PITMonitor & 4.2\% & [2.4\%, 7.0\%] & 95.7\% & [93.1\%, 97.5\%] & 108.0 \\
+3 & DDM & 3.5\% & [1.9\%, 6.2\%] & 93.3\% & [90.3\%, 95.5\%] & 72.0 \\
+3 & EDDM & 84.0\% & [80.3\%, 87.2\%] & 16.0\% & [12.8\%, 19.7\%] & 52.5 \\
+3 & ADWIN & 0.0\% & [0.0\%, 0.7\%] & 100.0\% & [99.3\%, 100.0\%] & 116.0 \\
+3 & KSWIN & 5.8\% & [3.6\%, 9.1\%] & 41.6\% & [37.4\%, 46.0\%] & 29.5 \\
 \midrule
-5 & PITMonitor & 3.3\% & 96.7\% & 106.0 \\
-5 & DDM & 3.7\% & 94.3\% & 71.0 \\
-5 & EDDM & 85.2\% & 14.8\% & 47.5 \\
-5 & ADWIN & 0.0\% & 100.0\% & 116.0 \\
-5 & KSWIN & 4.0\% & 47.3\% & 29.0 \\
+5 & PITMonitor & 3.3\% & [1.8\%, 5.6\%] & 96.7\% & [94.4\%, 98.2\%] & 106.0 \\
+5 & DDM & 3.7\% & [2.1\%, 6.4\%] & 94.3\% & [91.5\%, 96.4\%] & 71.0 \\
+5 & EDDM & 85.2\% & [81.7\%, 88.2\%] & 14.8\% & [11.8\%, 18.3\%] & 47.5 \\
+5 & ADWIN & 0.0\% & [0.0\%, 0.7\%] & 100.0\% & [99.3\%, 100.0\%] & 116.0 \\
+5 & KSWIN & 4.0\% & [2.2\%, 7.0\%] & 47.3\% & [42.9\%, 51.7\%] & 29.0 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -457,35 +470,35 @@ Table~\ref{tab:delivery_part3_compare} reports the observed FPR/TPR/delay values
 
 \begin{table}[ht]
 \centering
-\caption{Delivery demo Part 3 comparison using 1{,}000 trials per shift level.}
+\caption{Delivery demo Part 3 comparison using 1{,}000 trials per shift level. 95\% Wilson score confidence intervals are reported for FPR and TPR.}
 \label{tab:delivery_part3_compare}
-\begin{tabular}{@{}ccccc@{}}
+\begin{tabular}{@{}ccccccc@{}}
 \toprule
-Shift & Method & FPR & TPR & Median Delay \\
+Shift & Method & FPR & FPR CI & TPR & TPR CI & Median Delay \\
 \midrule
-H$_0$ & PITMonitor & 3.6\% & 0.0\% & n/a \\
-H$_0$ & DDM & 11.2\% & 3.2\% & 78.0 \\
-H$_0$ & EDDM & 83.0\% & 7.6\% & 55.0 \\
-H$_0$ & ADWIN & 0.0\% & 0.0\% & n/a \\
-H$_0$ & KSWIN & 0.7\% & 2.1\% & 88.0 \\
+H$_0$ & PITMonitor & 3.6\% & [2.1\%, 6.1\%] & 0.0\% & [0.0\%, 0.7\%] & n/a \\
+H$_0$ & DDM & 11.2\% & [8.5\%, 14.6\%] & 3.2\% & [1.7\%, 5.7\%] & 78.0 \\
+H$_0$ & EDDM & 83.0\% & [79.2\%, 86.2\%] & 7.6\% & [5.2\%, 10.9\%] & 55.0 \\
+H$_0$ & ADWIN & 0.0\% & [0.0\%, 0.7\%] & 0.0\% & [0.0\%, 0.7\%] & n/a \\
+H$_0$ & KSWIN & 0.7\% & [0.2\%, 2.2\%] & 2.1\% & [1.0\%, 4.2\%] & 88.0 \\
 \midrule
-30\% & PITMonitor & 3.3\% & 96.7\% & 56.0 \\
-30\% & DDM & 11.7\% & 88.1\% & 41.0 \\
-30\% & EDDM & 82.1\% & 17.9\% & 19.0 \\
-30\% & ADWIN & 0.0\% & 96.5\% & 120.0 \\
-30\% & KSWIN & 1.2\% & 73.6\% & 29.0 \\
+30\% & PITMonitor & 3.3\% & [1.8\%, 5.7\%] & 96.7\% & [94.3\%, 98.2\%] & 56.0 \\
+30\% & DDM & 11.7\% & [8.9\%, 15.2\%] & 88.1\% & [84.2\%, 91.1\%] & 41.0 \\
+30\% & EDDM & 82.1\% & [78.2\%, 85.5\%] & 17.9\% & [14.5\%, 21.8\%] & 19.0 \\
+30\% & ADWIN & 0.0\% & [0.0\%, 0.7\%] & 96.5\% & [94.0\%, 98.1\%] & 120.0 \\
+30\% & KSWIN & 1.2\% & [0.5\%, 2.9\%] & 73.6\% & [68.7\%, 78.0\%] & 29.0 \\
 \midrule
-60\% & PITMonitor & 3.9\% & 96.1\% & 33.0 \\
-60\% & DDM & 10.5\% & 89.5\% & 23.0 \\
-60\% & EDDM & 81.9\% & 18.1\% & 16.0 \\
-60\% & ADWIN & 0.0\% & 100.0\% & 56.0 \\
-60\% & KSWIN & 0.7\% & 99.3\% & 21.0 \\
+60\% & PITMonitor & 3.9\% & [2.2\%, 6.7\%] & 96.1\% & [93.7\%, 97.8\%] & 33.0 \\
+60\% & DDM & 10.5\% & [7.9\%, 13.8\%] & 89.5\% & [85.8\%, 92.5\%] & 23.0 \\
+60\% & EDDM & 81.9\% & [77.9\%, 85.4\%] & 18.1\% & [14.6\%, 22.1\%] & 16.0 \\
+60\% & ADWIN & 0.0\% & [0.0\%, 0.7\%] & 100.0\% & [99.3\%, 100.0\%] & 56.0 \\
+60\% & KSWIN & 0.7\% & [0.2\%, 2.2\%] & 99.3\% & [97.8\%, 99.8\%] & 21.0 \\
 \midrule
-100\% & PITMonitor & 2.9\% & 97.1\% & 30.0 \\
-100\% & DDM & 11.6\% & 88.4\% & 20.0 \\
-100\% & EDDM & 83.7\% & 16.3\% & 14.0 \\
-100\% & ADWIN & 0.0\% & 100.0\% & 56.0 \\
-100\% & KSWIN & 0.9\% & 99.1\% & 18.0 \\
+100\% & PITMonitor & 2.9\% & [1.5\%, 5.1\%] & 97.1\% & [94.9\%, 98.5\%] & 30.0 \\
+100\% & DDM & 11.6\% & [8.8\%, 15.1\%] & 88.4\% & [84.5\%, 91.4\%] & 20.0 \\
+100\% & EDDM & 83.7\% & [79.9\%, 86.9\%] & 16.3\% & [13.1\%, 20.1\%] & 14.0 \\
+100\% & ADWIN & 0.0\% & [0.0\%, 0.7\%] & 100.0\% & [99.3\%, 100.0\%] & 56.0 \\
+100\% & KSWIN & 0.9\% & [0.3\%, 2.6\%] & 99.1\% & [97.4\%, 99.8\%] & 18.0 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -613,5 +626,5 @@ PITMonitor is available at \url{https://github.com/tristan-farran/pitmon}.
 \bibliographystyle{plainnat}
 
 \bibliography{pitmon_references}
-
 \end{document}
+% Correct Shafer reference year: Statistical Science 2011, not 2021

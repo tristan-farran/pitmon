@@ -489,8 +489,8 @@ different distribution change regimes:
     \item \textbf{GRA} (Global Recurring Abrupt, $\Delta t = 0$): All relevant
     features change simultaneously at an abrupt onset. This is the canonical detection
     scenario.
-    \item \textbf{GSG} (Global Slow Gradual, $\Delta t = 100$): The change spreads
-    linearly across all features over a 100-sample transition window, representing
+    \item \textbf{GSG} (Global Slow Gradual, $\Delta t = 500$): The change spreads
+    linearly across all features over a 500-sample transition window, representing
     gradual covariate shift.
     \item \textbf{LEA} (Local Expanding Abrupt): Drift starts on a subset of features
     and expands to include more over time, representing localized distribution change.
@@ -498,9 +498,9 @@ different distribution change regimes:
 
 \paragraph{Stream layout.}
 Each stream consists of three contiguous segments: $n_\text{train} = 10{,}000$
-pre-drift samples for model training, $n_\text{stable} = 5{,}000$ pre-drift monitoring
+pre-drift samples for model training, $n_\text{stable} = 2{,}500$ pre-drift monitoring
 samples that define the null-hypothesis window for FPR estimation, and $n_\text{post}
-= 5{,}000$ post-drift samples for TPR estimation. The drift onset occurs at the
+= 2{,}500$ post-drift samples for TPR estimation. The drift onset occurs at the
 boundary between the stable and post-drift segments. The model is trained entirely on
 pre-drift data, correctly modeling a fixed deployed model whose calibration is
 monitored over time.

@@ -65,14 +65,14 @@ class Config:
 
     # ── Data geometry ────────────────────────────────────────────────
     n_train: int = 10_000  # samples for model training
-    n_stable: int = 5_000  # pre-drift monitoring samples
-    n_post: int = 5_000  # post-drift monitoring samples
+    n_stable: int = 2_500  # pre-drift monitoring samples
+    n_post: int = 2_500  # post-drift monitoring samples
 
     # ── Drift scenarios ──────────────────────────────────────────────
     # Each element is a (drift_type, transition_window) pair.
     drift_scenarios: Tuple = (
         ("gra", 0),  # Global Recurring Abrupt
-        ("gsg", 100),  # Global Slow Gradual
+        ("gsg", 500),  # Global Slow Gradual
         ("lea", 0),  # Local Expanding Abrupt
     )
 

@@ -2,8 +2,8 @@ PWD /Users/tristanfarran/Documents/Code/Pitmon/paper
 INPUT /usr/local/texlive/2025/texmf.cnf
 INPUT /usr/local/texlive/2025/texmf-dist/web2c/texmf.cnf
 INPUT /usr/local/texlive/2025/texmf-var/web2c/pdftex/pdflatex.fmt
-INPUT /Users/tristanfarran/Documents/Code/Pitmon/paper/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.tex
-OUTPUT %OUTDIR%/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.log
+INPUT /Users/tristanfarran/Documents/Code/Pitmon/paper/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.tex
+OUTPUT %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.log
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/base/article.cls
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/base/article.cls
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/base/size11.clo
@@ -58,6 +58,8 @@ INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/graphics-def/pdftex.def
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/graphics-def/pdftex.def
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/booktabs/booktabs.sty
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/booktabs/booktabs.sty
+INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/multirow/multirow.sty
+INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/multirow/multirow.sty
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/hyperref/hyperref.sty
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/hyperref/hyperref.sty
 INPUT /usr/local/texlive/2025/texmf-dist/tex/generic/iftex/iftex.sty
@@ -125,10 +127,10 @@ INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/graphics/mathcolor.ltx
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/graphics/mathcolor.ltx
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
-INPUT %OUTDIR%/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.aux
-INPUT %OUTDIR%/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.aux
-INPUT %OUTDIR%/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.aux
-OUTPUT %OUTDIR%/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.aux
+INPUT %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.aux
+INPUT %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.aux
+INPUT %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.aux
+OUTPUT %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.aux
 INPUT /usr/local/texlive/2025/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 INPUT /usr/local/texlive/2025/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 INPUT /usr/local/texlive/2025/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
@@ -137,14 +139,14 @@ INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.st
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
-INPUT %OUTDIR%/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.out
-INPUT %OUTDIR%/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.out
-INPUT %OUTDIR%/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.out
-INPUT %OUTDIR%/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.out
-OUTPUT %OUTDIR%/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.pdf
-INPUT %OUTDIR%/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.out
-INPUT %OUTDIR%/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.out
-OUTPUT %OUTDIR%/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.out
+INPUT %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.out
+INPUT %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.out
+INPUT %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.out
+INPUT %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.out
+OUTPUT %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.pdf
+INPUT %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.out
+INPUT %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.out
+OUTPUT %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.out
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/jknappen/ec/ecrm1728.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/jknappen/ec/ecbx1728.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/jknappen/ec/ecrm1200.tfm
@@ -210,15 +212,28 @@ INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm1
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/jknappen/ec/ecbx1200.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/jknappen/ec/tcrm1095.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc
-INPUT %OUTDIR%/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.bbl
-INPUT %OUTDIR%/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.bbl
-INPUT %OUTDIR%/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.bbl
-INPUT %OUTDIR%/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.aux
-INPUT %OUTDIR%/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.out
-INPUT %OUTDIR%/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.out
+INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/cm/cmbx10.tfm
+INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/cm/cmbx8.tfm
+INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/cm/cmbx6.tfm
+INPUT ../experiment/out/fig_detection_rates.png
+INPUT ../experiment/out/fig_detection_rates.png
+INPUT ../experiment/out/fig_detection_rates.png
+INPUT ../experiment/out/fig_detection_rates.png
+INPUT ../experiment/out/fig_detection_rates.png
+INPUT ../experiment/out/fig_single_run_gra_tw0.png
+INPUT ../experiment/out/fig_single_run_gra_tw0.png
+INPUT ../experiment/out/fig_single_run_gra_tw0.png
+INPUT ../experiment/out/fig_single_run_gra_tw0.png
+INPUT ../experiment/out/fig_single_run_gra_tw0.png
+INPUT %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.bbl
+INPUT %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.bbl
+INPUT %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.bbl
+INPUT %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.aux
+INPUT %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.out
+INPUT %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.out
+INPUT /usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb
-INPUT /usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb

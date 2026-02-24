@@ -1,0 +1,46 @@
+This is BibTeX, Version 0.99d (TeX Live 2025)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: When Your Model Stops Working - Anytime-Valid Calibration Monitoring.aux
+The style file: plainnat.bst
+Database file #1: pitmon_references.bib
+You've used 27 entries,
+            2773 wiz_defined-function locations,
+            760 strings with 9001 characters,
+and the built_in function-call counts, 13135 in all, are:
+= -- 1177
+> -- 733
+< -- 19
++ -- 249
+- -- 222
+* -- 1071
+:= -- 1988
+add.period$ -- 84
+call.type$ -- 27
+change.case$ -- 152
+chr.to.int$ -- 27
+cite$ -- 54
+duplicate$ -- 606
+empty$ -- 1094
+format.name$ -- 263
+if$ -- 2762
+int.to.chr$ -- 1
+int.to.str$ -- 1
+missing$ -- 32
+newline$ -- 145
+num.names$ -- 108
+pop$ -- 309
+preamble$ -- 1
+purify$ -- 128
+quote$ -- 0
+skip$ -- 467
+stack$ -- 0
+substring$ -- 582
+swap$ -- 73
+text.length$ -- 5
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 272
+warning$ -- 0
+while$ -- 123
+width$ -- 0
+write$ -- 360

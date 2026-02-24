@@ -50,7 +50,8 @@ class PITMonitor:
 
     n_bins : int, default=10
         Histogram bins for density estimation. More bins = faster adaptation
-        but more variance. 10 is an MDL-reasonable choice for most settings.
+        but more variance. The higher frequency your data, the more bins you
+        can afford.
 
     weight_schedule : Callable[[int], float], optional
         Mixture weight schedule over changepoint indices (index = 1, 2, ...).
@@ -72,7 +73,7 @@ class PITMonitor:
     def __init__(
         self,
         alpha=0.05,
-        n_bins=10,
+        n_bins=100,
         weight_schedule=None,
         rng=None,
     ):

@@ -1,0 +1,495 @@
+{
+  "config": {
+    "seed": 42,
+    "epochs": 100,
+    "lr": 0.001,
+    "n_train": 5000,
+    "n_stable": 2500,
+    "n_post": 2500,
+    "alpha": 0.05,
+    "n_trials": 5,
+    "drift_scenarios": [
+      [
+        "gra",
+        0
+      ],
+      [
+        "gsg",
+        500
+      ],
+      [
+        "lea",
+        0
+      ]
+    ]
+  },
+  "results": {
+    "gra_tw0": {
+      "PITMonitor": {
+        "n_trials": 5,
+        "alarm_rate": 0.0,
+        "tpr": 0.0,
+        "tpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "fpr": 0.0,
+        "fpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "median_delay": NaN,
+        "mean_delay": NaN,
+        "std_delay": NaN,
+        "n_detections": 0,
+        "delays": []
+      },
+      "ADWIN": {
+        "n_trials": 5,
+        "alarm_rate": 0.0,
+        "tpr": 0.0,
+        "tpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "fpr": 0.0,
+        "fpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "median_delay": NaN,
+        "mean_delay": NaN,
+        "std_delay": NaN,
+        "n_detections": 0,
+        "delays": []
+      },
+      "KSWIN": {
+        "n_trials": 5,
+        "alarm_rate": 1.0,
+        "tpr": 0.0,
+        "tpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "fpr": 1.0,
+        "fpr_ci": [
+          0.5655085052479191,
+          1.0
+        ],
+        "median_delay": NaN,
+        "mean_delay": NaN,
+        "std_delay": NaN,
+        "n_detections": 0,
+        "delays": []
+      },
+      "PageHinkley": {
+        "n_trials": 5,
+        "alarm_rate": 1.0,
+        "tpr": 0.0,
+        "tpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "fpr": 1.0,
+        "fpr_ci": [
+          0.5655085052479191,
+          1.0
+        ],
+        "median_delay": NaN,
+        "mean_delay": NaN,
+        "std_delay": NaN,
+        "n_detections": 0,
+        "delays": []
+      },
+      "DDM": {
+        "n_trials": 5,
+        "alarm_rate": 0.0,
+        "tpr": 0.0,
+        "tpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "fpr": 0.0,
+        "fpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "median_delay": NaN,
+        "mean_delay": NaN,
+        "std_delay": NaN,
+        "n_detections": 0,
+        "delays": []
+      },
+      "EDDM": {
+        "n_trials": 5,
+        "alarm_rate": 1.0,
+        "tpr": 0.0,
+        "tpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "fpr": 1.0,
+        "fpr_ci": [
+          0.5655085052479191,
+          1.0
+        ],
+        "median_delay": NaN,
+        "mean_delay": NaN,
+        "std_delay": NaN,
+        "n_detections": 0,
+        "delays": []
+      },
+      "HDDM_A": {
+        "n_trials": 5,
+        "alarm_rate": 0.0,
+        "tpr": 0.0,
+        "tpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "fpr": 0.0,
+        "fpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "median_delay": NaN,
+        "mean_delay": NaN,
+        "std_delay": NaN,
+        "n_detections": 0,
+        "delays": []
+      },
+      "HDDM_W": {
+        "n_trials": 5,
+        "alarm_rate": 1.0,
+        "tpr": 0.2,
+        "tpr_ci": [
+          0.03622316096978745,
+          0.6244717358814613
+        ],
+        "fpr": 0.8,
+        "fpr_ci": [
+          0.3755282641185388,
+          0.9637768390302125
+        ],
+        "median_delay": 172.0,
+        "mean_delay": 172.0,
+        "std_delay": 0.0,
+        "n_detections": 1,
+        "delays": [
+          172
+        ]
+      }
+    },
+    "gsg_tw500": {
+      "PITMonitor": {
+        "n_trials": 5,
+        "alarm_rate": 0.0,
+        "tpr": 0.0,
+        "tpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "fpr": 0.0,
+        "fpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "median_delay": NaN,
+        "mean_delay": NaN,
+        "std_delay": NaN,
+        "n_detections": 0,
+        "delays": []
+      },
+      "ADWIN": {
+        "n_trials": 5,
+        "alarm_rate": 0.0,
+        "tpr": 0.0,
+        "tpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "fpr": 0.0,
+        "fpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "median_delay": NaN,
+        "mean_delay": NaN,
+        "std_delay": NaN,
+        "n_detections": 0,
+        "delays": []
+      },
+      "KSWIN": {
+        "n_trials": 5,
+        "alarm_rate": 1.0,
+        "tpr": 0.0,
+        "tpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "fpr": 1.0,
+        "fpr_ci": [
+          0.5655085052479191,
+          1.0
+        ],
+        "median_delay": NaN,
+        "mean_delay": NaN,
+        "std_delay": NaN,
+        "n_detections": 0,
+        "delays": []
+      },
+      "PageHinkley": {
+        "n_trials": 5,
+        "alarm_rate": 1.0,
+        "tpr": 0.0,
+        "tpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "fpr": 1.0,
+        "fpr_ci": [
+          0.5655085052479191,
+          1.0
+        ],
+        "median_delay": NaN,
+        "mean_delay": NaN,
+        "std_delay": NaN,
+        "n_detections": 0,
+        "delays": []
+      },
+      "DDM": {
+        "n_trials": 5,
+        "alarm_rate": 0.2,
+        "tpr": 0.0,
+        "tpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "fpr": 0.2,
+        "fpr_ci": [
+          0.03622316096978745,
+          0.6244717358814613
+        ],
+        "median_delay": NaN,
+        "mean_delay": NaN,
+        "std_delay": NaN,
+        "n_detections": 0,
+        "delays": []
+      },
+      "EDDM": {
+        "n_trials": 5,
+        "alarm_rate": 1.0,
+        "tpr": 0.0,
+        "tpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "fpr": 1.0,
+        "fpr_ci": [
+          0.5655085052479191,
+          1.0
+        ],
+        "median_delay": NaN,
+        "mean_delay": NaN,
+        "std_delay": NaN,
+        "n_detections": 0,
+        "delays": []
+      },
+      "HDDM_A": {
+        "n_trials": 5,
+        "alarm_rate": 0.2,
+        "tpr": 0.2,
+        "tpr_ci": [
+          0.03622316096978745,
+          0.6244717358814613
+        ],
+        "fpr": 0.0,
+        "fpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "median_delay": 1026.0,
+        "mean_delay": 1026.0,
+        "std_delay": 0.0,
+        "n_detections": 1,
+        "delays": [
+          1026
+        ]
+      },
+      "HDDM_W": {
+        "n_trials": 5,
+        "alarm_rate": 1.0,
+        "tpr": 0.0,
+        "tpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "fpr": 1.0,
+        "fpr_ci": [
+          0.5655085052479191,
+          1.0
+        ],
+        "median_delay": NaN,
+        "mean_delay": NaN,
+        "std_delay": NaN,
+        "n_detections": 0,
+        "delays": []
+      }
+    },
+    "lea_tw0": {
+      "PITMonitor": {
+        "n_trials": 5,
+        "alarm_rate": 0.2,
+        "tpr": 0.0,
+        "tpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "fpr": 0.2,
+        "fpr_ci": [
+          0.03622316096978745,
+          0.6244717358814613
+        ],
+        "median_delay": NaN,
+        "mean_delay": NaN,
+        "std_delay": NaN,
+        "n_detections": 0,
+        "delays": []
+      },
+      "ADWIN": {
+        "n_trials": 5,
+        "alarm_rate": 0.0,
+        "tpr": 0.0,
+        "tpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "fpr": 0.0,
+        "fpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "median_delay": NaN,
+        "mean_delay": NaN,
+        "std_delay": NaN,
+        "n_detections": 0,
+        "delays": []
+      },
+      "KSWIN": {
+        "n_trials": 5,
+        "alarm_rate": 1.0,
+        "tpr": 0.0,
+        "tpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "fpr": 1.0,
+        "fpr_ci": [
+          0.5655085052479191,
+          1.0
+        ],
+        "median_delay": NaN,
+        "mean_delay": NaN,
+        "std_delay": NaN,
+        "n_detections": 0,
+        "delays": []
+      },
+      "PageHinkley": {
+        "n_trials": 5,
+        "alarm_rate": 1.0,
+        "tpr": 0.0,
+        "tpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "fpr": 1.0,
+        "fpr_ci": [
+          0.5655085052479191,
+          1.0
+        ],
+        "median_delay": NaN,
+        "mean_delay": NaN,
+        "std_delay": NaN,
+        "n_detections": 0,
+        "delays": []
+      },
+      "DDM": {
+        "n_trials": 5,
+        "alarm_rate": 0.2,
+        "tpr": 0.0,
+        "tpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "fpr": 0.2,
+        "fpr_ci": [
+          0.03622316096978745,
+          0.6244717358814613
+        ],
+        "median_delay": NaN,
+        "mean_delay": NaN,
+        "std_delay": NaN,
+        "n_detections": 0,
+        "delays": []
+      },
+      "EDDM": {
+        "n_trials": 5,
+        "alarm_rate": 1.0,
+        "tpr": 0.0,
+        "tpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "fpr": 1.0,
+        "fpr_ci": [
+          0.5655085052479191,
+          1.0
+        ],
+        "median_delay": NaN,
+        "mean_delay": NaN,
+        "std_delay": NaN,
+        "n_detections": 0,
+        "delays": []
+      },
+      "HDDM_A": {
+        "n_trials": 5,
+        "alarm_rate": 0.0,
+        "tpr": 0.0,
+        "tpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "fpr": 0.0,
+        "fpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "median_delay": NaN,
+        "mean_delay": NaN,
+        "std_delay": NaN,
+        "n_detections": 0,
+        "delays": []
+      },
+      "HDDM_W": {
+        "n_trials": 5,
+        "alarm_rate": 1.0,
+        "tpr": 0.0,
+        "tpr_ci": [
+          0.0,
+          0.43449149475208104
+        ],
+        "fpr": 1.0,
+        "fpr_ci": [
+          0.5655085052479191,
+          1.0
+        ],
+        "median_delay": NaN,
+        "mean_delay": NaN,
+        "std_delay": NaN,
+        "n_detections": 0,
+        "delays": []
+      }
+    }
+  },
+  "elapsed_seconds": 5.944590091705322
+}

@@ -1,14 +1,12 @@
 """Core experiment: run all detectors across trials and scenarios.
 
 Each trial:
-    1. Generate a FriedmanDrift stream  (data.py)
-    2. Train MLP on pre-drift data      (model.py)
+    1. Generate a FriedmanDrift stream
+    2. Train a ProbabilisticMLP on pre-drift data
     3. Compute PITs + residuals on the monitoring window
-    4. Feed every detector               (detectors.py)
+    4. Feed every detector
     5. Collect results
 """
-
-from __future__ import annotations
 
 import json
 import time
@@ -32,11 +30,11 @@ from model import compute_pits, compute_residuals, train_model
 
 
 def run_single_trial(
-    cfg: Config,
-    drift_type: str,
-    transition_window: int,
-    trial_idx: int,
-) -> dict[str, dict]:
+    cfg,
+    drift_type,
+    transition_window,
+    trial_idx,
+):
     """Run one trial and return {detector_name: result_dict}."""
     seed = cfg.seed + trial_idx * 1000
 
@@ -48,11 +46,11 @@ def run_single_trial(
     y_mon = y[cfg.n_train :]
 
     # 2. Train model
-    gbr, sigma_hat = train_model(X_train, y_train, cfg.n_cal_frac, seed=seed)
+    model = train_model(X_train, y_train, cfg.epochs, cfg.lr)
 
     # 3. Compute monitoring signals
-    pits = compute_pits(gbr, sigma_hat, X_mon, y_mon)
-    residuals = compute_residuals(gbr, X_mon, y_mon)
+    pits = compute_pits(model, X_mon, y_mon)
+    residuals = compute_residuals(model, X_mon, y_mon)
 
     sq_residuals = residuals**2
 
@@ -67,7 +65,7 @@ def run_single_trial(
         n_monitor_bins=cfg.n_monitor_bins,
         seed=seed,
     )
-    out: dict[str, dict] = {}
+    out = {}
     for det in detectors:
         det.feed(pits, sq_residuals, binary_errors, cfg.n_stable)
         out[det.name] = asdict(det.result)
@@ -78,7 +76,7 @@ def run_single_trial(
 # ─── Aggregation helpers ─────────────────────────────────────────────
 
 
-def _wilson_ci(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
+def _wilson_ci(k, n, z=1.96):
     """Wilson score interval for a binomial proportion."""
     if n == 0:
         return (float("nan"), float("nan"))
@@ -90,14 +88,14 @@ def _wilson_ci(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
 
 
 def aggregate_results(
-    trial_results: list[dict[str, dict]],
-    n_stable: int,
-) -> dict[str, dict]:
+    trial_results,
+    n_stable,
+):
     """Aggregate per-trial detector results into summary statistics.
 
     Returns {detector_name: summary_dict}.
     """
-    summaries: dict[str, dict] = {}
+    summaries = {}
 
     for det_name in ALL_DETECTOR_NAMES:
         rows = [trial[det_name] for trial in trial_results if det_name in trial]
@@ -136,7 +134,7 @@ def aggregate_results(
 # ─── Full experiment ─────────────────────────────────────────────────
 
 
-def run_experiment(cfg: Config) -> dict:
+def run_experiment(cfg):
     """Run the complete experiment: all scenarios × all trials × all detectors.
 
     Returns a JSON-serialisable results dictionary.
@@ -148,14 +146,14 @@ def run_experiment(cfg: Config) -> dict:
     )
     print(f"  n_train={cfg.n_train}, n_stable={cfg.n_stable}, n_post={cfg.n_post}")
 
-    all_results: dict[str, dict] = {}
+    all_results = {}
     t0 = time.time()
 
     for drift_type, tw in cfg.drift_scenarios:
         scenario_key = f"{drift_type}_tw{tw}"
         print(f"\n── Scenario: {scenario_key} ──")
 
-        trial_results: list[dict[str, dict]] = []
+        trial_results = []
 
         with ThreadPoolExecutor(max_workers=cfg.max_workers) as pool:
             futures = {
@@ -187,6 +185,8 @@ def run_experiment(cfg: Config) -> dict:
     return {
         "config": {
             "seed": cfg.seed,
+            "epochs": cfg.epochs,
+            "lr": cfg.lr,
             "n_train": cfg.n_train,
             "n_stable": cfg.n_stable,
             "n_post": cfg.n_post,
@@ -199,7 +199,7 @@ def run_experiment(cfg: Config) -> dict:
     }
 
 
-def save_results(results: dict, path: Path) -> None:
+def save_results(results, path):
     """Save results as JSON (delays are serialised as lists)."""
     path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -216,6 +216,6 @@ def save_results(results: dict, path: Path) -> None:
         json.dump(results, f, indent=2, default=_default)
 
 
-def load_results(path: Path) -> dict:
+def load_results(path):
     with open(path) as f:
         return json.load(f)

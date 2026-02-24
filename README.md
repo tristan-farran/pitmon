@@ -49,13 +49,12 @@ Three FriedmanDrift variants are tested:
 
 For each scenario × trial:
 1. Data — Generate a FriedmanDrift stream (10 features, regression target)
-2. Train — Fit a `GradientBoostingRegressor` on the pre-drift segment
-3. Calibrate — Estimate residual σ̂ on a held-out calibration subset
-4. Monitor — Feed the monitoring segment (2000 pre-drift + 2000 post-drift) to all detectors:
+2. Train — Fit a `ProbabilisticMLP` on the pre-drift segment
+3. Monitor — Feed the monitoring segment to all detectors:
    - PITMonitor receives PITs: `Φ((y − ŷ) / σ̂)`
    - Continuous detectors receive squared residuals: `(y − ŷ)²`
    - Binary detectors receive thresholded errors: `1{|y − ŷ| > median}`
-5. Record — Whether alarm fired, when, and if it was a true or false detection
+4. Record — Whether alarm fired, when, and if it was a true or false detection
 
 Metrics:
 - TPR (True Positive Rate) — fraction of trials where drift was correctly detected

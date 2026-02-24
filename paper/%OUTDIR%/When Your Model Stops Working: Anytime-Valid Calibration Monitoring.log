@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.9.19)  23 FEB 2026 22:31
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.9.19)  24 FEB 2026 18:11
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -330,7 +330,7 @@ Package xcolor Info: Model `wave' substituted by `hsb' on input line 1372.
  (/usr/local/texlive/2025/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 File: l3backend-pdftex.def 2025-06-09 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count329
-) (./When Your Model Stops Working: Anytime-Valid Calibration Monitoring.aux)
+) (%OUTDIR%/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.aux)
 \openout1 = `"When Your Model Stops Working: Anytime-Valid Calibration Monitoring.aux"'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 46.
@@ -371,7 +371,7 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 48
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
 ))
 Package hyperref Info: Link coloring OFF on input line 46.
- (./When Your Model Stops Working: Anytime-Valid Calibration Monitoring.out) (./When Your Model Stops Working: Anytime-Valid Calibration Monitoring.out)
+ (%OUTDIR%/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.out) (%OUTDIR%/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.out)
 \@outlinefile=\write3
 \openout3 = `"When Your Model Stops Working: Anytime-Valid Calibration Monitoring.out"'.
 
@@ -445,13 +445,13 @@ Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on inp
 
 [11]
 
-[12] (./When Your Model Stops Working: Anytime-Valid Calibration Monitoring.bbl
+[12] (%OUTDIR%/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.bbl
 
 [13]
 
 [14])
 
-[15] (./When Your Model Stops Working: Anytime-Valid Calibration Monitoring.aux)
+[15] (%OUTDIR%/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.aux)
  ***********
 LaTeX2e <2025-06-01> patch level 1
 L3 programming layer <2025-09-02>
@@ -460,15 +460,15 @@ Package rerunfilecheck Info: File `"When Your Model Stops Working: Anytime-Valid
 (rerunfilecheck)             Checksum: D98AC4D2E129351E045D0BD1BA8D5EA3;2808.
  ) 
 Here is how much of TeX's memory you used:
- 12341 strings out of 467797
- 186989 string characters out of 5431803
+ 12342 strings out of 467797
+ 187096 string characters out of 5431803
  611816 words of memory out of 5000000
  40688 multiletter control sequences out of 15000+600000
  649616 words of font info for 98 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  75i,9n,79p,893b,594s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1728.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm0600.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm0800.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm0900.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfti1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfti1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfti1200.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sftt1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sftt1200.pfb>
-Output written on "When Your Model Stops Working: Anytime-Valid Calibration Monitoring.pdf" (15 pages, 530116 bytes).
+Output written on "%OUTDIR%/When Your Model Stops Working: Anytime-Valid Calibration Monitoring.pdf" (15 pages, 530017 bytes).
 PDF statistics:
  477 PDF objects out of 1000 (max. 8388607)
  402 compressed objects within 5 object streams

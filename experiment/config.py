@@ -1,6 +1,4 @@
-"""Experiment v2 configuration."""
-
-from __future__ import annotations
+"""Experiment configuration."""
 
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -11,16 +9,20 @@ class Config:
     """All experiment parameters in one place.
 
     The FriedmanDrift stream is divided into three contiguous segments:
-        [0, n_train)                           → model training data
-        [n_train, n_train + n_stable)          → monitoring, pre-drift
-        [n_train + n_stable, n_train + n_total) → monitoring, post-drift
+        [0, n_train) → model training data
+        [n_train, n_train + n_stable) → monitoring, pre-drift
+        [n_train + n_stable, n_total) → monitoring, post-drift
 
-    The first drift position is set to ``n_train + n_stable`` so that
+    The first drift position is set to n_train + n_stable so that
     the model is always trained entirely on pre-drift data.
     """
 
     # ── Reproducibility ──────────────────────────────────────────────
     seed: int = 42
+
+    # ── Training ─────────────────────────────────────────────────────
+    epochs: int = 100
+    lr: float = 1e-3
 
     # ── Data geometry ────────────────────────────────────────────────
     n_train: int = 5_000  # samples for model training
@@ -29,10 +31,9 @@ class Config:
 
     # ── Drift scenarios ──────────────────────────────────────────────
     # Each scenario is a (drift_type, transition_window) pair.
-    # FriedmanDrift position is computed from n_train + n_stable.
-    drift_scenarios: tuple[tuple[str, int], ...] = (
+    drift_scenarios = (
         ("gra", 0),  # Global Recurring Abrupt
-        ("gsg", 1000),  # Global Slow Gradual (1000 sample transition)
+        ("gsg", 500),  # Global Slow Gradual
         ("lea", 0),  # Local Expanding Abrupt
     )
 
@@ -49,20 +50,20 @@ class Config:
 
     # ── Derived helpers (not frozen fields, just methods) ────────────
     @property
-    def n_total(self) -> int:
+    def n_total(self):
         return self.n_train + self.n_stable + self.n_post
 
     @property
-    def drift_index(self) -> int:
+    def drift_index(self):
         """Absolute sample index where the first drift occurs."""
         return self.n_train + self.n_stable
 
     @property
-    def out_path(self) -> Path:
+    def out_path(self):
         return Path(self.output_dir)
 
-    def positions_for(self, drift_type: str) -> tuple[int, ...]:
-        """Return FriedmanDrift ``position`` tuple for the given drift type.
+    def positions_for(self, drift_type):
+        """Return FriedmanDrift position tuple for the given drift type.
 
         Unused drift points are pushed far beyond the data window so they
         never fire during the experiment.

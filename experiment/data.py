@@ -1,7 +1,5 @@
 """Data generation from River's FriedmanDrift benchmark."""
 
-from __future__ import annotations
-
 import numpy as np
 from river.datasets.synth import FriedmanDrift
 
@@ -9,11 +7,11 @@ from config import Config
 
 
 def generate_stream(
-    cfg: Config,
-    drift_type: str,
-    transition_window: int,
-    seed: int,
-) -> tuple[np.ndarray, np.ndarray]:
+    cfg,
+    drift_type,
+    transition_window,
+    seed,
+):
     """Materialise a FriedmanDrift stream into (X, y) numpy arrays.
 
     Parameters

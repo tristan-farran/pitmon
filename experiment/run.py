@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-"""Entry point for experiment v2.
+"""Entry point for experiment.
 
 Usage:
     python run.py                        # full run (compute + plot)
@@ -7,8 +6,6 @@ Usage:
     python run.py --plot                 # plot from saved results
     python run.py --trials 50 --workers 4  # quick test run
 """
-
-from __future__ import annotations
 
 import argparse
 import sys
@@ -26,23 +23,25 @@ from experiment import load_results, run_experiment, save_results
 from plots import make_all_plots
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args():
     p = argparse.ArgumentParser(
         description="PITMonitor vs River drift detectors on FriedmanDrift"
     )
     p.add_argument("--compute", action="store_true", help="Run experiment")
     p.add_argument("--plot", action="store_true", help="Generate plots")
     p.add_argument("--trials", type=int, default=10_000, help="MC trials per scenario")
+    p.add_argument("--epochs", type=int, default=100, help="NN training epochs")
     p.add_argument("--workers", type=int, default=8, help="Parallel workers")
-    p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--seed", type=int, default=42, help="RNG seed")
     p.add_argument("--output", type=str, default="out", help="Output directory")
     return p.parse_args()
 
 
-def main() -> None:
+def main():
     args = parse_args()
     cfg = Config(
         seed=args.seed,
+        epochs=args.epochs,
         n_trials=args.trials,
         max_workers=args.workers,
         output_dir=args.output,

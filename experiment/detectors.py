@@ -1,9 +1,9 @@
 """Unified drift detector interface.
 
 All detectors are wrapped so they expose a common API:
-    detector.name     → str
-    detector.feed(...)  → None  (processes the full monitoring stream)
-    detector.result   → DetectorResult
+    detector.name → str
+    detector.feed(...) → None  (processes the full monitoring stream)
+    detector.result → DetectorResult
 
 This keeps the experiment loop clean and makes adding new detectors trivial.
 
@@ -13,10 +13,7 @@ Input conventions:
     - DDM / EDDM / HDDM_A / HDDM_W ← binary errors  (thresholded)
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
-from typing import Protocol
 
 import numpy as np
 from river.drift import ADWIN, KSWIN, PageHinkley
@@ -39,44 +36,26 @@ class DetectorResult:
     detection_delay: int | None  # samples after drift; None if missed
 
 
-# ─── Protocol for type-checking ──────────────────────────────────────
-
-
-class Detector(Protocol):
-    name: str
-
-    def feed(
-        self,
-        pits: np.ndarray,
-        sq_residuals: np.ndarray,
-        binary_errors: np.ndarray,
-        n_stable: int,
-    ) -> None: ...
-
-    @property
-    def result(self) -> DetectorResult: ...
-
-
 # ─── PITMonitor wrapper ─────────────────────────────────────────────
 
 
 class PITMonitorDetector:
     """Wraps our PITMonitor in the common Detector interface."""
 
-    def __init__(self, alpha: float = 0.05, n_bins: int = 10, seed: int = 42):
+    def __init__(self, alpha=0.05, n_bins=10, seed=42):
         self.name = "PITMonitor"
         self._alpha = alpha
         self._n_bins = n_bins
         self._seed = seed
-        self._result: DetectorResult | None = None
+        self._result = None
 
     def feed(
         self,
-        pits: np.ndarray,
-        sq_residuals: np.ndarray,
-        binary_errors: np.ndarray,
-        n_stable: int,
-    ) -> None:
+        pits,
+        sq_residuals,
+        binary_errors,
+        n_stable,
+    ):
         mon = PITMonitor(alpha=self._alpha, n_bins=self._n_bins, rng=self._seed)
         alarm_idx = None
         for i, pit in enumerate(pits):
@@ -97,7 +76,7 @@ class PITMonitorDetector:
         )
 
     @property
-    def result(self) -> DetectorResult:
+    def result(self):
         assert self._result is not None
         return self._result
 
@@ -118,19 +97,19 @@ class RiverDetector:
         One of "continuous" or "binary".
     """
 
-    def __init__(self, name: str, detector_factory, input_kind: str):
+    def __init__(self, name, detector_factory, input_kind):
         self.name = name
         self._factory = detector_factory
         self._input_kind = input_kind
-        self._result: DetectorResult | None = None
+        self._result = None
 
     def feed(
         self,
-        pits: np.ndarray,
-        sq_residuals: np.ndarray,
-        binary_errors: np.ndarray,
-        n_stable: int,
-    ) -> None:
+        pits,
+        sq_residuals,
+        binary_errors,
+        n_stable,
+    ):
         det = self._factory()
         stream = sq_residuals if self._input_kind == "continuous" else binary_errors
         alarm_idx = None
@@ -154,7 +133,7 @@ class RiverDetector:
         )
 
     @property
-    def result(self) -> DetectorResult:
+    def result(self):
         assert self._result is not None
         return self._result
 
@@ -163,10 +142,10 @@ class RiverDetector:
 
 
 def build_all_detectors(
-    alpha: float = 0.05,
-    n_monitor_bins: int = 10,
-    seed: int = 42,
-) -> list[Detector]:
+    alpha=0.05,
+    n_monitor_bins=10,
+    seed=42,
+):
     """Instantiate one of every detector type for a single trial."""
     return [
         PITMonitorDetector(alpha=alpha, n_bins=n_monitor_bins, seed=seed),

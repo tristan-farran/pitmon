@@ -6,8 +6,6 @@ Generates three main figures:
     3. Delay distributions — box plots per method × scenario
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -54,7 +52,7 @@ def _apply_style():
 # ─── Figure 1: Detection rate comparison (grouped bar) ───────────────
 
 
-def plot_detection_rates(results: dict, save_dir: Path) -> None:
+def plot_detection_rates(results, save_dir):
     """Clear horizontal bar charts: one row per scenario."""
     _apply_style()
 
@@ -134,7 +132,7 @@ def plot_detection_rates(results: dict, save_dir: Path) -> None:
 # ─── Figure 2: Detection delay box plots ────────────────────────────
 
 
-def plot_delay_distributions(results: dict, save_dir: Path) -> None:
+def plot_delay_distributions(results, save_dir):
     """Cleaner boxplots: only plot real delay data."""
     _apply_style()
 
@@ -200,7 +198,7 @@ def plot_delay_distributions(results: dict, save_dir: Path) -> None:
 # ─── Figure 3: Summary table (rendered as a figure) ─────────────────
 
 
-def plot_summary_table(results: dict, save_dir: Path) -> None:
+def plot_summary_table(results, save_dir):
     """Render a formatted summary table as a figure."""
     _apply_style()
     scenarios = [k for k in results["results"] if k in SCENARIO_LABELS]
@@ -282,7 +280,7 @@ def plot_summary_table(results: dict, save_dir: Path) -> None:
 # ─── Master plot function ────────────────────────────────────────────
 
 
-def make_all_plots(results: dict, save_dir: Path) -> None:
+def make_all_plots(results, save_dir):
     """Generate all publication figures."""
     save_dir.mkdir(parents=True, exist_ok=True)
     print("\nGenerating plots:")
@@ -290,36 +288,3 @@ def make_all_plots(results: dict, save_dir: Path) -> None:
     plot_delay_distributions(results, save_dir)
     plot_summary_table(results, save_dir)
     print("Done.")
-
-
-#############
-
-import matplotlib.pyplot as plt
-import numpy as np
-
-
-def plot_pit_histogram(pits, title="PIT Histogram"):
-    """Plots PIT density vs. theoretical uniform distribution[cite: 273]."""
-    plt.figure(figsize=(8, 5))
-    plt.hist(pits, bins=20, density=True, alpha=0.7, color="blue", edgecolor="black")
-    plt.axhline(1.0, color="red", linestyle="--", label="Perfect Calibration")
-    plt.xlabel("Probability Integral Transform (PIT)")
-    plt.ylabel("Density")
-    plt.title(title)
-    plt.legend()
-    plt.show()
-
-
-def plot_calibration_curve(pits):
-    """Generates a Reliability Diagram comparing empirical CDF to Ideal[cite: 285]."""
-    sorted_pits = np.sort(pits)
-    empirical_cdf = np.arange(1, len(sorted_pits) + 1) / len(sorted_pits)
-
-    plt.figure(figsize=(8, 5))
-    plt.plot(sorted_pits, empirical_cdf, label="Empirical CDF")
-    plt.plot([0, 1], [0, 1], "k--", label="Ideal")
-    plt.xlabel("PIT Values")
-    plt.ylabel("Cumulative Probability")
-    plt.title("Reliability Diagram (PIT-based)")
-    plt.legend()
-    plt.show()

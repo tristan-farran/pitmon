@@ -1,12 +1,13 @@
 import math
 import json
 import pickle
-import numpy as np
 from pathlib import Path
-import matplotlib.pyplot as plt
-from typing import Optional, List, Tuple, Callable, Union
-from sortedcontainers import SortedList
+from typing import Optional
 from dataclasses import dataclass
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sortedcontainers import SortedList
 
 
 @dataclass
@@ -70,10 +71,10 @@ class PITMonitor:
 
     def __init__(
         self,
-        alpha: float = 0.05,
-        n_bins: int = 10,
-        weight_schedule: Optional[Callable[[int], float]] = None,
-        rng: Optional[Union[int, np.random.Generator]] = None,
+        alpha=0.05,
+        n_bins=10,
+        weight_schedule=None,
+        rng=None,
     ):
         if not 0 < alpha < 1:
             raise ValueError("alpha must be in (0, 1)")
@@ -92,24 +93,24 @@ class PITMonitor:
             self._validate_weight_schedule()
 
         self.t = 0
-        self._sorted_pits: SortedList[float] = SortedList()
+        self._sorted_pits = SortedList()
         self._bin_counts = np.ones(n_bins)  # Laplace prior (pseudocount = 1)
 
         self._M = 0.0  # Mixture e-process
-        self._history: List[Tuple[float, float, float]] = []  # (pit, pval, M)
+        self._history = []  # (pit, pval, M)
 
         self.alarm_triggered = False
-        self.alarm_time: Optional[int] = None
+        self.alarm_time = None
 
     @staticmethod
-    def _default_weight_schedule(index: int) -> float:
+    def _default_weight_schedule(index):
         """Default mixture weights over changepoint indices (index >= 1)."""
         if index < 1:
             raise ValueError("weight index must be >= 1")
         return 1.0 / (index * (index + 1))
 
     @classmethod
-    def _validate_default_weight_schedule_once(cls) -> None:
+    def _validate_default_weight_schedule_once(cls):
         """One-time validation for the fixed default schedule w_t = 1/(t(t+1))."""
         if cls._default_schedule_validated:
             return
@@ -126,7 +127,7 @@ class PITMonitor:
 
         cls._default_schedule_validated = True
 
-    def _validate_weight_schedule(self) -> None:
+    def _validate_weight_schedule(self):
         """Validate that the configured mixture weights define a PMF over indices."""
         horizon = 10_000
         tol = 1e-8
@@ -156,14 +157,14 @@ class PITMonitor:
                 f"(mass over first {horizon} terms was {total:.6f})"
             )
 
-    def _weight_at_time(self, t: int) -> float:
+    def _weight_at_time(self, t):
         """Mixture weight used at monitor time t (t >= 1)."""
         w = float(self._weight_schedule(t))
         if w < 0 or not np.isfinite(w):
             raise ValueError("weight_schedule produced an invalid weight")
         return w
 
-    def _conformal_pvalue(self, pit: float) -> float:
+    def _conformal_pvalue(self, pit):
         """Insert PIT and return tie-randomized conformal p-value."""
         self._sorted_pits.add(pit)
         left = self._sorted_pits.bisect_left(pit)
@@ -172,7 +173,7 @@ class PITMonitor:
         p = (left + U) / self.t
         return float(np.clip(p, 1e-10, 1 - 1e-10))  # clip to avoid numerical issues
 
-    def update(self, pit: float) -> Alarm:
+    def update(self, pit):
         """
         Process one PIT value.
 
@@ -215,7 +216,7 @@ class PITMonitor:
 
         return Alarm(self.alarm_triggered, self.t, self._M, self.threshold)
 
-    def update_with_cdf(self, cdf: Callable[[float], float], y: float) -> Alarm:
+    def update_with_cdf(self, cdf, y):
         """
         Convenience method: compute PIT and process it.
 
@@ -240,7 +241,7 @@ class PITMonitor:
         """
         return self.update(cdf(y))
 
-    def update_many(self, pits: np.ndarray, stop_on_alarm: bool = True) -> Alarm:
+    def update_many(self, pits, stop_on_alarm=True):
         """
         Process a sequence of PIT values.
 
@@ -263,7 +264,7 @@ class PITMonitor:
                 break
         return last_alarm
 
-    def trial_summary(self, n_stable: int) -> dict:
+    def trial_summary(self, n_stable):
         """
         Standardized trial diagnostics for a stable-then-shift stream - useful for demos.
 
@@ -296,21 +297,21 @@ class PITMonitor:
         }
 
     @property
-    def evidence(self) -> float:
+    def evidence(self):
         """Current evidence against exchangeability."""
         return self._M
 
     @property
-    def pits(self) -> np.ndarray:
+    def pits(self):
         """All observed PITs in order."""
         return np.array([h[0] for h in self._history])
 
     @property
-    def pvalues(self) -> np.ndarray:
+    def pvalues(self):
         """All conformal p-values."""
         return np.array([h[1] for h in self._history])
 
-    def history(self) -> List[Alarm]:
+    def history(self):
         """Return history of all alarms (one per update)."""
         return [
             Alarm(
@@ -322,7 +323,7 @@ class PITMonitor:
             for t, (_, _, M) in enumerate(self._history, 1)
         ]
 
-    def __str__(self) -> str:
+    def __str__(self):
         """Human-readable status."""
         if self.t == 0:
             return f"PITMonitor: Not started (α={self.alpha})"
@@ -334,7 +335,7 @@ class PITMonitor:
             f"t={self.t}, evidence={self._M:.2f}, threshold={self.threshold:.0f}"
         )
 
-    def changepoint(self) -> Optional[int]:
+    def changepoint(self):
         """
         Estimate changepoint by maximizing a Bayes factor score.
 
@@ -392,7 +393,7 @@ class PITMonitor:
 
         return max(scores, key=lambda x: x[1])[0]
 
-    def summary(self) -> dict:
+    def summary(self):
         """
         Get summary statistics of the monitoring session.
 
@@ -419,7 +420,7 @@ class PITMonitor:
         }
         return summary
 
-    def calibration_score(self) -> float:
+    def calibration_score(self):
         """
         Compute calibration score (Kolmogorov-Smirnov statistic).
 
@@ -451,7 +452,7 @@ class PITMonitor:
         self.alarm_triggered = False
         self.alarm_time = None
 
-    def save(self, filepath: Union[str, Path]) -> None:
+    def save(self, filepath):
         """
         Save monitor state to file.
 
@@ -506,7 +507,7 @@ class PITMonitor:
                 pickle.dump(state, f)
 
     @classmethod
-    def load(cls, filepath: Union[str, Path]) -> "PITMonitor":
+    def load(cls, filepath):
         """
         Load monitor state from file.
 
@@ -584,7 +585,7 @@ class PITMonitor:
 
         return monitor
 
-    def plot(self, figsize: Tuple[float, float] = (12, 4)) -> PlotResult:
+    def plot(self, figsize=(12, 4)):
         """
         Create diagnostic plot.
 

@@ -49,7 +49,17 @@
 \maketitle
 
 \begin{abstract}
-\noindent Deployed machine learning models often experience calibration drift as the world changes. To address this challenge, we present PITMonitor, a sequential method for detecting calibration changes in probabilistic models. Unlike traditional calibration tests that require fixed evaluation windows, PITMonitor provides \emph{anytime-valid} false alarm control: the probability of ever raising a spurious alarm is bounded by $\alpha$, regardless of when monitoring stops. We prove Type I error control via Ville's inequality and demonstrate detection power on three scenarios from \texttt{river}'s FriedmanDrift benchmark, comparing performance against the seven included drift detectors. Code is available at \url{https://github.com/tristan-farran/pitmon}.
+\noindent Deployed machine learning models often experience calibration drift as the
+world changes. To address this challenge, we present PITMonitor, a sequential method
+for detecting calibration changes in probabilistic models. Unlike traditional
+calibration tests that require fixed evaluation windows, PITMonitor provides
+\emph{anytime-valid} false alarm control: the probability of ever raising a spurious
+alarm is bounded by $\alpha$ simultaneously over all time, without requiring a
+pre-specified monitoring horizon or stopping rule. We prove Type I error control via
+Ville's inequality and demonstrate detection power on three scenarios from
+\texttt{river}'s FriedmanDrift benchmark, comparing performance against the seven
+included drift detectors. Code is available at
+\url{https://github.com/tristan-farran/pitmon}.
 \end{abstract}
 
 %------------------------------------------------------------------------------
@@ -67,7 +77,7 @@ ADWIN employs sequential hypothesis testing with anytime-valid bounds on the pro
 We propose PITMonitor, a method providing \emph{anytime-valid} monitoring of model calibration with four key properties:
 
 \begin{enumerate}
-    \item \textbf{Anytime-valid false alarm control:} we prove that $\Prob(\text{ever alarm} \mid H_0) \leq \alpha$, regardless of when or why monitoring stops.
+    \item \textbf{Anytime-valid false alarm control:} we prove that $\Prob(\text{ever alarm} \mid H_0) \leq \alpha$ simultaneously over all time, without requiring a pre-specified monitoring horizon or stopping rule.
 
     \item \textbf{Change detection without static-error alarms:} PITMonitor detects and locates \emph{changes} in the PIT process. A model that is consistently miscalibrated but stable will not trigger alarms, while a changing process can.\footnote{In many domains some amount of miscalibration is inevitable, but model degradation remains a pressing concern.}
 
@@ -526,9 +536,7 @@ shows a representative single-run monitoring trace for the GRA scenario.
 \begin{table}[ht]
 \centering
 \caption{Detection performance across three FriedmanDrift scenarios ($N=100$ trials
-per scenario, $\alpha = 0.05$). 95\% Wilson score CIs are given in brackets.
-Detectors with $\text{FPR} \approx 1$ alarm regardless of drift and are marked
-$\dagger$.}
+per scenario, $\alpha = 0.05$). 95\% Wilson score CIs are given in brackets.}
 \label{tab:results}
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{@{}llccccc@{}}
@@ -566,6 +574,14 @@ Scenario & Method & TPR & TPR CI & FPR & FPR CI & Med.\ Delay \\
  & HDDM\_W$^\dagger$   & 0\%           & [0\%, 4\%]    & 100\%         & [96\%, 100\%] & --  \\
 \bottomrule
 \end{tabular}
+\smallskip
+\begin{minipage}{\linewidth}
+\small $^\dagger$ FPR $\approx 1$: these detectors alarm on virtually every trial
+irrespective of drift. Their TPR reflects only the small fraction of trials where a
+random alarm happens to fall after the drift onset, not genuine detection power. The
+red dashed line in Figure~\ref{fig:detection_rates} marks the nominal $\alpha = 0.05$
+FPR level.
+\end{minipage}
 \end{table}
 
 \begin{figure}[H]
@@ -672,11 +688,11 @@ PITMonitor with feature-level monitors or use larger post-drift windows.
 \paragraph{Detection delay vs.\ FPR control.}
 PITMonitor's anytime-valid guarantee comes at the cost of later detection compared
 to ADWIN. The median delay on GRA (100 samples) reflects the number of post-drift
-observations needed for the e-process to cross $1/\alpha = 20$. Users can reduce
-delay by accepting a larger $\alpha$: setting $\alpha = 0.10$ lowers the threshold
-to 10, requiring less accumulated evidence. Reducing $B$ (fewer histogram bins) also
-increases power per observation when the direction of shift is consistent, at the cost
-of less flexibility to detect diffuse concentration patterns.
+observations needed for the e-process to cross $1/\alpha = 20$. The most direct way
+to reduce delay is to accept a larger $\alpha$: setting $\alpha = 0.10$ lowers the
+threshold to 10, requiring less accumulated evidence before an alarm fires. Users
+should calibrate $\alpha$ against their tolerance for false alarms over the full
+expected deployment horizon rather than treating it as a fixed convention.
 
 \textit{Exchangeability assumption.}
 PITMonitor tests exchangeability of PITs. If pre-change PITs exhibit temporal

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.9.19)  25 FEB 2026 14:45
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.9.19)  25 FEB 2026 14:49
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -436,40 +436,40 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 [4]
 
 [5]
-Overfull \hbox (5.73915pt too wide) in paragraph at lines 300--301
+Overfull \hbox (5.73915pt too wide) in paragraph at lines 310--311
 []\T1/cmr/m/n/10.95 Define the fil-tra-tion $\OMS/cmsy/m/n/10.95 F[] \OT1/cmr/m/n/10.95 = \OML/cmm/m/it/10.95 ^^[\OT1/cmr/m/n/10.95 (\OML/cmm/m/it/10.95 U[]; [] ; U[]\OT1/cmr/m/n/10.95 )$\T1/cmr/m/n/10.95 . As shown in sub-sec-tion []2.3[], by the $\OMS/cmsy/m/n/10.95 F[]$\T1/cmr/m/n/10.95 -measurability
  []
 
 
 
 [6]
-Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on input line 397.
+Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on input line 407.
 
 
 [7]
 
 [8]
-Overfull \hbox (4.2806pt too wide) in paragraph at lines 558--558
+Overfull \hbox (4.2806pt too wide) in paragraph at lines 566--566
 \T1/cmr/m/n/10.95 Expanding) 
  []
 
-<../experiment/out/fig_detection_rates.png, id=221, 859.5312pt x 852.3042pt>
+<../experiment/out/fig_detection_rates.png, id=222, 859.5312pt x 852.3042pt>
 File: ../experiment/out/fig_detection_rates.png Graphic file (type png)
 <use ../experiment/out/fig_detection_rates.png>
-Package pdftex.def Info: ../experiment/out/fig_detection_rates.png  used on input line 573.
+Package pdftex.def Info: ../experiment/out/fig_detection_rates.png  used on input line 589.
 (pdftex.def)             Requested size: 469.75502pt x 465.8166pt.
 
 
 [9]
-Overfull \vbox (307.60867pt too high) has occurred while \output is active []
+Overfull \vbox (333.05038pt too high) has occurred while \output is active []
 
 
 
 [10 <../experiment/out/fig_detection_rates.png>]
-<../experiment/out/fig_single_run_gra_tw0.png, id=241, 1004.0712pt x 639.8304pt>
+<../experiment/out/fig_single_run_gra_tw0.png, id=243, 1004.0712pt x 639.8304pt>
 File: ../experiment/out/fig_single_run_gra_tw0.png Graphic file (type png)
 <use ../experiment/out/fig_single_run_gra_tw0.png>
-Package pdftex.def Info: ../experiment/out/fig_single_run_gra_tw0.png  used on input line 583.
+Package pdftex.def Info: ../experiment/out/fig_single_run_gra_tw0.png  used on input line 599.
 (pdftex.def)             Requested size: 469.75502pt x 299.34373pt.
 
 
@@ -477,7 +477,7 @@ Package pdftex.def Info: ../experiment/out/fig_single_run_gra_tw0.png  used on i
 
 [12]
 LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10.95> not available
-(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 714.
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 730.
 
 
 [13]
@@ -495,18 +495,18 @@ Package rerunfilecheck Info: File `"When Your Model Stops Working - Anytime-Vali
 (rerunfilecheck)             Checksum: F0B7BF7A3BD20F63B290733EE334D753;2299.
  ) 
 Here is how much of TeX's memory you used:
- 12426 strings out of 467797
- 188893 string characters out of 5431803
- 614650 words of memory out of 5000000
- 40765 multiletter control sequences out of 15000+600000
- 650545 words of font info for 101 fonts, out of 8000000 for 9000
+ 12433 strings out of 467797
+ 189006 string characters out of 5431803
+ 615577 words of memory out of 5000000
+ 40770 multiletter control sequences out of 15000+600000
+ 651472 words of font info for 104 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,12n,79p,916b,608s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1728.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm0600.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm0800.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm0900.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfti1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfti1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfti1200.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sftt1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sftt1200.pfb>
-Output written on "%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.pdf" (16 pages, 1642142 bytes).
+ 75i,12n,79p,858b,582s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1728.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm0600.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm0800.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm0900.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfti1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfti1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfti1200.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sftt1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sftt1200.pfb>
+Output written on "%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.pdf" (16 pages, 1651296 bytes).
 PDF statistics:
- 485 PDF objects out of 1000 (max. 8388607)
- 405 compressed objects within 5 object streams
+ 491 PDF objects out of 1000 (max. 8388607)
+ 409 compressed objects within 5 object streams
  123 named destinations out of 1000 (max. 500000)
  155 words of extra memory for PDF output out of 10000 (max. 10000000)
 

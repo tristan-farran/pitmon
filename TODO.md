@@ -1,0 +1,5 @@
+- Clarify what ECE actually means for us: "We report the Expected Calibration Error (ECE), defined as the average absolute deviation between the empirical PIT CDF and the identity line over a uniform grid on [0,1]."
+
+- ADWIN is now showing a very high (and suspiciously consistent) false alarm rate way above the $\delta = 0.05$, the sublety is that ADWIN's any-time valid false alarm guarantee is different from PITMonitor's, it's something like a bound on the amount of streams that will false alarm at least once, not the FPR itself I think. Check the code isn't doing something funky here and causing this error, then investigate how the ADWIN guarantee works and make the paper actually reflect this.
+
+- The LaTeX table is outputting with un-escaped %s which is breaking the LaTeX compiler, fix this. And is it possible to embed the table directly from the table .tex file in the paper rather than copying it over every time?

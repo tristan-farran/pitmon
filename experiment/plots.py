@@ -41,50 +41,50 @@ SCENARIO_SHORT: dict[str, str] = {
 
 METHOD_COLORS: dict[str, str] = {
     "PITMonitor": "#1b6ec2",
-    "ADWIN":       "#7c3aed",
-    "KSWIN":       "#0d9488",
+    "ADWIN": "#7c3aed",
+    "KSWIN": "#0d9488",
     "PageHinkley": "#16a34a",
-    "DDM":         "#ca8a04",
-    "EDDM":        "#ea580c",
-    "HDDM_A":      "#db2777",
-    "HDDM_W":      "#9d174d",
+    "DDM": "#ca8a04",
+    "EDDM": "#ea580c",
+    "HDDM_A": "#db2777",
+    "HDDM_W": "#9d174d",
 }
 
 # Hatching patterns to distinguish methods in greyscale printing
 METHOD_HATCHES: dict[str, str] = {
     "PITMonitor": "",
-    "ADWIN":       "//",
-    "KSWIN":       "\\\\",
+    "ADWIN": "//",
+    "KSWIN": "\\\\",
     "PageHinkley": "xx",
-    "DDM":         "..",
-    "EDDM":        "++",
-    "HDDM_A":      "--",
-    "HDDM_W":      "||",
+    "DDM": "..",
+    "EDDM": "++",
+    "HDDM_A": "--",
+    "HDDM_W": "||",
 }
 
 _RC_OVERRIDES = {
-    "font.family":         "serif",
-    "font.serif":          ["CMU Serif", "Computer Modern Roman", "DejaVu Serif"],
-    "mathtext.fontset":    "cm",
-    "font.size":           9,
-    "axes.titlesize":      10,
-    "axes.titleweight":    "bold",
-    "axes.labelsize":      9,
-    "xtick.labelsize":     8,
-    "ytick.labelsize":     8,
-    "legend.fontsize":     7.5,
-    "legend.framealpha":   0.85,
-    "legend.edgecolor":    "0.7",
-    "figure.dpi":          200,
-    "savefig.dpi":         300,
-    "savefig.bbox":        "tight",
-    "axes.spines.top":     False,
-    "axes.spines.right":   False,
-    "axes.grid":           True,
-    "grid.alpha":          0.25,
-    "grid.linewidth":      0.5,
-    "lines.linewidth":     1.5,
-    "patch.linewidth":     0.5,
+    "font.family": "serif",
+    "font.serif": ["CMU Serif", "Computer Modern Roman", "DejaVu Serif"],
+    "mathtext.fontset": "cm",
+    "font.size": 9,
+    "axes.titlesize": 10,
+    "axes.titleweight": "bold",
+    "axes.labelsize": 9,
+    "xtick.labelsize": 8,
+    "ytick.labelsize": 8,
+    "legend.fontsize": 7.5,
+    "legend.framealpha": 0.85,
+    "legend.edgecolor": "0.7",
+    "figure.dpi": 200,
+    "savefig.dpi": 300,
+    "savefig.bbox": "tight",
+    "axes.spines.top": False,
+    "axes.spines.right": False,
+    "axes.grid": True,
+    "grid.alpha": 0.25,
+    "grid.linewidth": 0.5,
+    "lines.linewidth": 1.5,
+    "patch.linewidth": 0.5,
 }
 
 
@@ -132,8 +132,11 @@ def plot_detection_rates(results: dict, save_dir: Path) -> plt.Figure:
     n_scenarios = len(scenarios)
 
     fig, axes = plt.subplots(
-        n_scenarios, 2, figsize=(7.0, 2.4 * n_scenarios),
+        n_scenarios,
+        2,
+        figsize=(7.0, 2.4 * n_scenarios),
         gridspec_kw={"wspace": 0.35, "hspace": 0.4},
+        constrained_layout=True,
     )
     if n_scenarios == 1:
         axes = np.array([axes])
@@ -163,8 +166,13 @@ def plot_detection_rates(results: dict, save_dir: Path) -> plt.Figure:
         # TPR panel
         ax = axes[i, 0]
         bars = ax.barh(
-            y, tprs, xerr=tpr_err_arr, color=colors, alpha=0.88,
-            edgecolor="white", linewidth=0.5,
+            y,
+            tprs,
+            xerr=tpr_err_arr,
+            color=colors,
+            alpha=0.88,
+            edgecolor="white",
+            linewidth=0.5,
             error_kw={"lw": 0.8, "capsize": 2, "capthick": 0.8},
         )
         for bar, method in zip(bars, methods):
@@ -178,14 +186,23 @@ def plot_detection_rates(results: dict, save_dir: Path) -> plt.Figure:
         # FPR panel
         ax = axes[i, 1]
         bars = ax.barh(
-            y, fprs, xerr=fpr_err_arr, color=colors, alpha=0.88,
-            edgecolor="white", linewidth=0.5,
+            y,
+            fprs,
+            xerr=fpr_err_arr,
+            color=colors,
+            alpha=0.88,
+            edgecolor="white",
+            linewidth=0.5,
             error_kw={"lw": 0.8, "capsize": 2, "capthick": 0.8},
         )
         for bar, method in zip(bars, methods):
             bar.set_hatch(METHOD_HATCHES.get(method, ""))
         ax.axvline(
-            alpha, color="crimson", ls="--", lw=1.2, alpha=0.8,
+            alpha,
+            color="crimson",
+            ls="--",
+            lw=1.2,
+            alpha=0.8,
             label=f"α = {alpha}",
         )
         ax.set_yticks(y)
@@ -199,9 +216,11 @@ def plot_detection_rates(results: dict, save_dir: Path) -> plt.Figure:
 
     fig.suptitle(
         "Drift Detection: True and False Positive Rates",
-        fontsize=11, fontweight="bold", y=1.01,
+        fontsize=11,
+        fontweight="bold",
+        y=1.01,
     )
-    fig.tight_layout()
+
     out = save_dir / "fig_detection_rates.png"
     fig.savefig(out, bbox_inches="tight")
     plt.close(fig)
@@ -231,7 +250,11 @@ def plot_delay_distributions(results: dict, save_dir: Path) -> plt.Figure:
 
     n_scenarios = len(scenarios)
     fig, axes = plt.subplots(
-        1, n_scenarios, figsize=(4.0 * n_scenarios, 4.0), sharey=False,
+        1,
+        n_scenarios,
+        figsize=(4.0 * n_scenarios, 4.0),
+        sharey=False,
+        constrained_layout=True,
     )
     if n_scenarios == 1:
         axes = [axes]
@@ -249,17 +272,25 @@ def plot_delay_distributions(results: dict, save_dir: Path) -> plt.Figure:
 
         if not delay_data:
             ax.text(
-                0.5, 0.5, "No detections",
-                ha="center", va="center", transform=ax.transAxes,
-                fontsize=10, fontstyle="italic", color="0.5",
+                0.5,
+                0.5,
+                "No detections",
+                ha="center",
+                va="center",
+                transform=ax.transAxes,
+                fontsize=10,
+                fontstyle="italic",
+                color="0.5",
             )
             ax.set_title(scen_label)
             continue
 
         # Violin plot with custom styling
         parts = ax.violinplot(
-            delay_data, positions=range(1, len(delay_data) + 1),
-            showmedians=False, showextrema=False,
+            delay_data,
+            positions=range(1, len(delay_data) + 1),
+            showmedians=False,
+            showextrema=False,
         )
         for body, color in zip(parts["bodies"], colors):
             body.set_facecolor(color)
@@ -298,9 +329,11 @@ def plot_delay_distributions(results: dict, save_dir: Path) -> plt.Figure:
     axes[0].set_ylabel("Detection delay (samples)")
     fig.suptitle(
         "Detection Delay Distributions (True Positives Only)",
-        fontsize=11, fontweight="bold", y=1.01,
+        fontsize=11,
+        fontweight="bold",
+        y=1.01,
     )
-    fig.tight_layout()
+
     out = save_dir / "fig_delay_distributions.png"
     fig.savefig(out, bbox_inches="tight")
     plt.close(fig)
@@ -482,12 +515,16 @@ def plot_single_run_panels(
     scen_label = SCENARIO_LABELS.get(scen_key, scen_key)
 
     fig, axes = plt.subplots(
-        2, 2, figsize=(7.5, 5.5),
+        2,
+        2,
+        figsize=(7.5, 5.5),
         gridspec_kw={"hspace": 0.38, "wspace": 0.32},
+        constrained_layout=True,
     )
     fig.suptitle(
         f"PITMonitor Single Run — {scen_label}",
-        fontsize=11, fontweight="bold",
+        fontsize=11,
+        fontweight="bold",
     )
 
     # Colour definitions for consistency
@@ -503,22 +540,42 @@ def plot_single_run_panels(
     mask_post = ~mask_pre
 
     ax.scatter(
-        times[mask_pre], y_all[mask_pre], s=3, alpha=0.25,
-        c=c_pre, rasterized=True,
+        times[mask_pre],
+        y_all[mask_pre],
+        s=3,
+        alpha=0.25,
+        c=c_pre,
+        rasterized=True,
     )
     ax.scatter(
-        times[mask_post], y_all[mask_post], s=3, alpha=0.25,
-        c=c_post, rasterized=True,
+        times[mask_post],
+        y_all[mask_post],
+        s=3,
+        alpha=0.25,
+        c=c_post,
+        rasterized=True,
     )
     ax.scatter(
-        times, preds, s=2, alpha=0.20, c="0.3", rasterized=True,
+        times,
+        preds,
+        s=2,
+        alpha=0.20,
+        c="0.3",
+        rasterized=True,
     )
     ax.axvline(
-        true_shift_point, color=c_shift, ls=":", lw=1.2, alpha=0.8,
+        true_shift_point,
+        color=c_shift,
+        ls=":",
+        lw=1.2,
+        alpha=0.8,
     )
     if artifacts["alarm_fired"] and artifacts["alarm_time"] is not None:
         ax.axvline(
-            int(artifacts["alarm_time"]), color=c_alarm, ls="--", lw=1.2,
+            int(artifacts["alarm_time"]),
+            color=c_alarm,
+            ls="--",
+            lw=1.2,
         )
     legend_handles = [
         Line2D([0], [0], marker="o", ls="", color=c_pre, ms=3, label="Actual (pre)"),
@@ -528,8 +585,14 @@ def plot_single_run_panels(
     ]
     if artifacts["alarm_fired"] and artifacts["alarm_time"] is not None:
         legend_handles.append(
-            Line2D([0], [0], color=c_alarm, ls="--", lw=1.2,
-                   label=f"Alarm (t={artifacts['alarm_time']})")
+            Line2D(
+                [0],
+                [0],
+                color=c_alarm,
+                ls="--",
+                lw=1.2,
+                label=f"Alarm (t={artifacts['alarm_time']})",
+            )
         )
     ax.legend(handles=legend_handles, fontsize=6.5, loc="upper right", ncol=2)
     ax.set(xlabel="Sample", ylabel="Target value", title="(a) Predictions vs reality")
@@ -543,8 +606,11 @@ def plot_single_run_panels(
         w = 50
         rolling = np.convolve(pits, np.ones(w) / w, mode="valid")
         ax.plot(
-            np.arange(w, len(pits) + 1), rolling,
-            color="0.15", lw=1.0, alpha=0.8,
+            np.arange(w, len(pits) + 1),
+            rolling,
+            color="0.15",
+            lw=1.0,
+            alpha=0.8,
         )
     ax.axhline(0.5, color="0.5", ls="--", lw=0.8, alpha=0.6)
     ax.axvline(true_shift_point, color=c_shift, ls=":", lw=1.2, alpha=0.8)
@@ -564,26 +630,42 @@ def plot_single_run_panels(
     # ── Bottom-left: E-process ───────────────────────────────────────
     ax = axes[1, 0]
     ax.semilogy(
-        times, np.maximum(evidence, 1e-10),
-        color=c_pre, lw=1.3,
+        times,
+        np.maximum(evidence, 1e-10),
+        color=c_pre,
+        lw=1.3,
     )
     threshold = 1.0 / float(artifacts["monitor_alpha"])
     ax.axhline(
-        threshold, color=c_shift, ls="--", lw=1.2,
+        threshold,
+        color=c_shift,
+        ls="--",
+        lw=1.2,
         label=f"Threshold (1/α = {threshold:.0f})",
     )
     ax.axvline(
-        true_shift_point, color=c_shift, ls=":", lw=1.2, alpha=0.8,
+        true_shift_point,
+        color=c_shift,
+        ls=":",
+        lw=1.2,
+        alpha=0.8,
         label="True shift",
     )
     if artifacts.get("changepoint") is not None:
         ax.axvline(
-            int(artifacts["changepoint"]), color=c_cp, ls="--", lw=1.2,
-            alpha=0.8, label=f"CP est. (t≈{artifacts['changepoint']})",
+            int(artifacts["changepoint"]),
+            color=c_cp,
+            ls="--",
+            lw=1.2,
+            alpha=0.8,
+            label=f"CP est. (t≈{artifacts['changepoint']})",
         )
     if artifacts["alarm_fired"] and artifacts["alarm_time"] is not None:
         ax.axvline(
-            int(artifacts["alarm_time"]), color=c_alarm, ls="--", lw=1.2,
+            int(artifacts["alarm_time"]),
+            color=c_alarm,
+            ls="--",
+            lw=1.2,
             label=f"Alarm (t={artifacts['alarm_time']})",
         )
     ax.legend(fontsize=6.5, loc="upper left")
@@ -593,24 +675,36 @@ def plot_single_run_panels(
     ax = axes[1, 1]
     bins = np.linspace(0, 1, 21)
     pre_pits = pits[: true_shift_point - 1]
-    post_pits = pits[true_shift_point - 1:]
+    post_pits = pits[true_shift_point - 1 :]
     if len(pre_pits) > 0:
         ax.hist(
-            pre_pits, bins=bins, density=True, alpha=0.50,
-            color=c_pre, edgecolor="white", linewidth=0.4,
+            pre_pits,
+            bins=bins,
+            density=True,
+            alpha=0.50,
+            color=c_pre,
+            edgecolor="white",
+            linewidth=0.4,
             label=f"Pre-shift (n={len(pre_pits)})",
         )
     if len(post_pits) > 0:
         ax.hist(
-            post_pits, bins=bins, density=True, alpha=0.50,
-            color=c_post, edgecolor="white", linewidth=0.4,
+            post_pits,
+            bins=bins,
+            density=True,
+            alpha=0.50,
+            color=c_post,
+            edgecolor="white",
+            linewidth=0.4,
             label=f"Post-shift (n={len(post_pits)})",
         )
     ax.axhline(1.0, color="0.3", ls="--", lw=1.0, label="U[0,1] reference")
     ax.legend(fontsize=6.5)
     ax.set(
-        xlabel="PIT", ylabel="Density",
-        title="(d) PIT distributions", xlim=(0, 1),
+        xlabel="PIT",
+        ylabel="Density",
+        title="(d) PIT distributions",
+        xlim=(0, 1),
     )
 
     if save_path is not None:
@@ -644,8 +738,11 @@ def plot_nbins_sweep(sweep: dict, save_dir: Path, alpha: float = 0.05) -> plt.Fi
 
     n_scenarios = len(scenarios)
     fig, axes = plt.subplots(
-        3, n_scenarios, figsize=(3.5 * n_scenarios, 7.0),
+        3,
+        n_scenarios,
+        figsize=(3.5 * n_scenarios, 7.0),
         gridspec_kw={"hspace": 0.35, "wspace": 0.30},
+        constrained_layout=True,
     )
     if n_scenarios == 1:
         axes = axes.reshape(3, 1)
@@ -655,13 +752,16 @@ def plot_nbins_sweep(sweep: dict, save_dir: Path, alpha: float = 0.05) -> plt.Fi
     for col, scen in enumerate(scenarios):
         scen_data = sweep["scenarios"][scen]
         xs = [nb for nb in n_bins_vals if nb in scen_data or str(nb) in scen_data]
+
         def get_d(nb):
             return scen_data.get(nb, scen_data.get(str(nb), {}))
 
-        tprs  = [get_d(nb).get("tpr",          float("nan")) for nb in xs]
-        fprs  = [get_d(nb).get("fpr",          float("nan")) for nb in xs]
-        delas = [get_d(nb).get("mean_delay",
-                  get_d(nb).get("median_delay", float("nan"))) for nb in xs]
+        tprs = [get_d(nb).get("tpr", float("nan")) for nb in xs]
+        fprs = [get_d(nb).get("fpr", float("nan")) for nb in xs]
+        delas = [
+            get_d(nb).get("mean_delay", get_d(nb).get("median_delay", float("nan")))
+            for nb in xs
+        ]
 
         tpr_lo = [get_d(nb).get("tpr_ci", [float("nan"), float("nan")])[0] for nb in xs]
         tpr_hi = [get_d(nb).get("tpr_ci", [float("nan"), float("nan")])[1] for nb in xs]
@@ -707,9 +807,11 @@ def plot_nbins_sweep(sweep: dict, save_dir: Path, alpha: float = 0.05) -> plt.Fi
 
     fig.suptitle(
         "PITMonitor Sensitivity to n_bins",
-        fontsize=11, fontweight="bold", y=1.01,
+        fontsize=11,
+        fontweight="bold",
+        y=1.01,
     )
-    fig.tight_layout()
+
     out = save_dir / "fig_nbins_sweep.png"
     fig.savefig(out, bbox_inches="tight")
     plt.close(fig)

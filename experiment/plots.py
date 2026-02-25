@@ -159,12 +159,8 @@ def generate_experiment_macros(results: dict, save_dir: Path) -> str:
         cp_err = pm.get("mean_cp_error", float("nan"))
 
         lines.append(f"% {tag}")
-        lines.append(
-            rf"\newcommand{{\resPM{tag}TPR}}{{{tpr:.1%}}}".replace("%", r"\%")
-        )
-        lines.append(
-            rf"\newcommand{{\resPM{tag}FPR}}{{{fpr:.1%}}}".replace("%", r"\%")
-        )
+        lines.append(rf"\newcommand{{\resPM{tag}TPR}}{{{tpr:.1%}}}".replace("%", r"\%"))
+        lines.append(rf"\newcommand{{\resPM{tag}FPR}}{{{fpr:.1%}}}".replace("%", r"\%"))
         if not np.isnan(delay):
             lines.append(rf"\newcommand{{\resPM{tag}Delay}}{{{delay:.0f}}}")
         if not np.isnan(cp_err):
@@ -182,12 +178,8 @@ def generate_experiment_macros(results: dict, save_dir: Path) -> str:
         fpr = ad.get("fpr", float("nan"))
         delay = ad.get("mean_delay", float("nan"))
         lines.append(f"% {tag}")
-        lines.append(
-            rf"\newcommand{{\resAD{tag}TPR}}{{{tpr:.1%}}}".replace("%", r"\%")
-        )
-        lines.append(
-            rf"\newcommand{{\resAD{tag}FPR}}{{{fpr:.1%}}}".replace("%", r"\%")
-        )
+        lines.append(rf"\newcommand{{\resAD{tag}TPR}}{{{tpr:.1%}}}".replace("%", r"\%"))
+        lines.append(rf"\newcommand{{\resAD{tag}FPR}}{{{fpr:.1%}}}".replace("%", r"\%"))
         if not np.isnan(delay):
             lines.append(rf"\newcommand{{\resAD{tag}Delay}}{{{delay:.0f}}}")
 
@@ -204,19 +196,13 @@ def generate_experiment_macros(results: dict, save_dir: Path) -> str:
             delay = d.get("mean_delay", float("nan"))
             tag = short
             lines.append(
-                rf"\newcommand{{\res{prefix}{tag}TPR}}{{{tpr:.1%}}}".replace(
-                    "%", r"\%"
-                )
+                rf"\newcommand{{\res{prefix}{tag}TPR}}{{{tpr:.1%}}}".replace("%", r"\%")
             )
             lines.append(
-                rf"\newcommand{{\res{prefix}{tag}FPR}}{{{fpr:.1%}}}".replace(
-                    "%", r"\%"
-                )
+                rf"\newcommand{{\res{prefix}{tag}FPR}}{{{fpr:.1%}}}".replace("%", r"\%")
             )
             if not np.isnan(delay):
-                lines.append(
-                    rf"\newcommand{{\res{prefix}{tag}Delay}}{{{delay:.0f}}}"
-                )
+                lines.append(rf"\newcommand{{\res{prefix}{tag}Delay}}{{{delay:.0f}}}")
 
     latex_src = "\n".join(lines) + "\n"
     out = save_dir / "experiment_macros.tex"
@@ -463,44 +449,6 @@ def plot_delay_distributions(results: dict, save_dir: Path) -> plt.Figure:
                 solid_capstyle="round",
                 zorder=4,
             )
-            # Annotate with median and IQR or range
-            if len(delays) > 1:
-                q25, q75 = np.percentile(delays, [25, 75])
-                ax.annotate(
-                    f"med={med:.0f}\nIQR=[{q25:.0f},{q75:.0f}]",
-                    xy=(pos, med),
-                    xytext=(0, 12),
-                    textcoords="offset points",
-                    ha="center",
-                    va="bottom",
-                    fontsize=6,
-                    color=color,
-                )
-            else:
-                ax.annotate(
-                    f"n=1, delay={delays[0]:.0f}",
-                    xy=(pos, delays[0]),
-                    xytext=(0, 8),
-                    textcoords="offset points",
-                    ha="center",
-                    va="bottom",
-                    fontsize=6,
-                    color=color,
-                )
-
-        # Annotate methods with zero detections
-        for pos in no_detection_pos:
-            ax.annotate(
-                "0 TP",
-                xy=(pos, 0),
-                xytext=(0, 8),
-                textcoords="offset points",
-                ha="center",
-                va="bottom",
-                fontsize=7,
-                fontstyle="italic",
-                color="0.5",
-            )
 
         ax.set_xticks(positions)
         ax.set_xticklabels(all_methods, rotation=40, ha="right", fontsize=7.5)
@@ -679,13 +627,15 @@ def plot_cp_error_distribution(results: dict, save_dir: Path) -> Optional[plt.Fi
             label = SCENARIO_LABELS.get(scen, scen)
             mean_err = pm.get("mean_cp_error", np.mean(cp_errors))
             median_err = pm.get("median_cp_error", np.median(cp_errors))
-            plot_data.append({
-                "label": label,
-                "short": SCENARIO_SHORT.get(scen, scen),
-                "errors": np.array(cp_errors),
-                "mean": mean_err,
-                "median": median_err,
-            })
+            plot_data.append(
+                {
+                    "label": label,
+                    "short": SCENARIO_SHORT.get(scen, scen),
+                    "errors": np.array(cp_errors),
+                    "mean": mean_err,
+                    "median": median_err,
+                }
+            )
 
     if not plot_data:
         print("  Skipped fig_cp_error_distribution.png (no CP data)")

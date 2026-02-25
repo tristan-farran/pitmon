@@ -61,15 +61,19 @@ def parse_args() -> argparse.Namespace:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__.split("Flags")[0],
     )
-    p.add_argument("--train",       action="store_true", help="Train and save the model")
-    p.add_argument("--force-train", action="store_true", help="Re-train even if bundle exists")
-    p.add_argument("--compute",     action="store_true", help="Run MC experiment")
-    p.add_argument("--plot",        action="store_true", help="Generate plots from saved results")
-    p.add_argument("--trials",  type=int, default=1_000,  help="MC trials per scenario")
-    p.add_argument("--epochs",  type=int, default=1_000,   help="NN training epochs")
-    p.add_argument("--workers", type=int, default=8,      help="Parallel workers")
-    p.add_argument("--seed",    type=int, default=42,     help="RNG seed")
-    p.add_argument("--output",  type=str, default="out",  help="Output directory")
+    p.add_argument("--train", action="store_true", help="Train and save the model")
+    p.add_argument(
+        "--force-train", action="store_true", help="Re-train even if bundle exists"
+    )
+    p.add_argument("--compute", action="store_true", help="Run MC experiment")
+    p.add_argument(
+        "--plot", action="store_true", help="Generate plots from saved results"
+    )
+    p.add_argument("--trials", type=int, default=1_000, help="MC trials per scenario")
+    p.add_argument("--epochs", type=int, default=500, help="NN training epochs")
+    p.add_argument("--workers", type=int, default=8, help="Parallel workers")
+    p.add_argument("--seed", type=int, default=42, help="RNG seed")
+    p.add_argument("--output", type=str, default="out", help="Output directory")
     return p.parse_args()
 
 
@@ -86,9 +90,9 @@ def main() -> None:
 
     # Default: run everything when no flags are given
     if not any([args.train, args.compute, args.plot]):
-        args.train   = True
+        args.train = True
         args.compute = True
-        args.plot    = True
+        args.plot = True
 
     results_path = cfg.out_path / "results.json"
 
@@ -107,7 +111,9 @@ def main() -> None:
                 cfg, drift_type=drift_type, transition_window=tw, seed=cfg.seed
             )
             X_train, y_train = X[: cfg.n_train], y[: cfg.n_train]
-            bundle = train_model(X_train, y_train, epochs=cfg.epochs, lr=cfg.lr, seed=cfg.seed)
+            bundle = train_model(
+                X_train, y_train, epochs=cfg.epochs, lr=cfg.lr, seed=cfg.seed
+            )
             save_bundle(bundle, cfg.bundle_path)
             print(f"Bundle saved to {cfg.bundle_path}")
 

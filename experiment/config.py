@@ -42,7 +42,7 @@ class Config:
         Each entry is (drift_type, transition_window).  Supported drift types
         are those accepted by ``river.datasets.synth.FriedmanDrift``.
     alpha : float
-        Nominal false alarm rate passed to PITMonitor (and used as the FPR
+        False alarm rate bound passed to PITMonitor (and used as the FPR
         reference line in plots).
     n_bins_list : tuple of int
         PITMonitor histogram sizes to sweep over.  The first entry is used for
@@ -77,12 +77,9 @@ class Config:
     )
 
     # ── Detector settings ──────────────────────────────────────────
+    n_bins_list: Tuple = (100,)  # PITMonitor
     alpha: float = 0.05  # PITMonitor
     delta: float = 0.05  # ADWIN
-
-    # Bin sizes for the sensitivity sweep. The first value is used for the
-    # main experiment; all values appear in the n_bins sensitivity plot.
-    n_bins_list: Tuple = (100,)
 
     # ── Monte-Carlo trials ───────────────────────────────────────────
     n_trials: int = 1_000

@@ -156,7 +156,7 @@ class ModelBundle:
 def train_model(
     X_train: np.ndarray,
     y_train: np.ndarray,
-    epochs: int = 200,
+    epochs: int = 500,
     lr: float = 3e-4,
     batch_size: int = 256,
     hidden_dim: int = 128,

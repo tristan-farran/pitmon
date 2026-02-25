@@ -1,0 +1,22 @@
+\begin{table}[t]
+\centering
+\small
+\caption{Drift detection results on FriedmanDrift (\expNtrials{} trials, $\alpha=\expAlpha$). Mean delay is in samples. Best TPR per scenario is \textbf{bolded}; FPR exceeding $\alpha$ is \underline{underlined}.}
+\label{tab:results}
+\begin{tabular}{l ccc ccc ccc}
+\toprule
+\multicolumn{1}{l}{} & \multicolumn{3}{c}{GRA} & \multicolumn{3}{c}{GSG} & \multicolumn{3}{c}{LEA} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10}
+Method & TPR & FPR & Delay & TPR & FPR & Delay & TPR & FPR & Delay \\
+\midrule
+PITMonitor & \textbf{100.0\%} & 0.0\% & 70 & \textbf{100.0\%} & 0.0\% & 176 & 0.0\% & 0.0\% & — \\
+ADWIN & 50.0\% & \underline{50.0\%} & 27 & 50.0\% & \underline{50.0\%} & 27 & \textbf{50.0\%} & \underline{50.0\%} & 46 \\
+KSWIN & 0.0\% & \underline{100.0\%} & — & 10.0\% & \underline{90.0\%} & 174 & 0.0\% & \underline{100.0\%} & — \\
+PageHinkley & 0.0\% & \underline{100.0\%} & — & 0.0\% & \underline{100.0\%} & — & 0.0\% & \underline{100.0\%} & — \\
+DDM & \textbf{100.0\%} & 0.0\% & 291 & \textbf{100.0\%} & 0.0\% & 539 & 0.0\% & 0.0\% & — \\
+EDDM & 20.0\% & \underline{80.0\%} & 282 & 20.0\% & \underline{80.0\%} & 439 & 0.0\% & \underline{80.0\%} & — \\
+HDDM\_A & 90.0\% & \underline{10.0\%} & 65 & 90.0\% & \underline{10.0\%} & 162 & 0.0\% & \underline{10.0\%} & — \\
+HDDM\_W & 10.0\% & \underline{90.0\%} & 12 & 10.0\% & \underline{90.0\%} & 51 & 10.0\% & \underline{90.0\%} & 1564 \\
+\bottomrule
+\end{tabular}
+\end{table}

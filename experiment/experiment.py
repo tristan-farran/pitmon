@@ -107,12 +107,12 @@ def run_single_trial(
 
     # ── Generate stream and compute signals once ─────────────────────
     X, y = generate_stream(cfg, drift_type, transition_window, seed=seed)
-    X_mon = X[cfg.n_train:]
-    y_mon = y[cfg.n_train:]
+    X_mon = X[cfg.n_train :]
+    y_mon = y[cfg.n_train :]
 
     pits = compute_pits(bundle, X_mon, y_mon)
     residuals = compute_residuals(bundle, X_mon, y_mon)
-    sq_residuals = residuals ** 2
+    sq_residuals = residuals**2
 
     # Binary error threshold computed on the stable window only (no leakage)
     pre_drift_abs = np.abs(residuals[: cfg.n_stable])
@@ -122,6 +122,7 @@ def run_single_trial(
     # ── Run baseline detectors once (they don't depend on n_bins) ────
     baseline_detectors = build_all_detectors(
         alpha=cfg.alpha,
+        delta=cfg.delta,
         n_monitor_bins=all_n_bins[0],  # n_bins irrelevant for baselines
         seed=seed,
     )
@@ -134,6 +135,7 @@ def run_single_trial(
 
     # ── Run one PITMonitor per n_bins value ───────────────────────────
     from pitmon import PITMonitor
+
     pit_results: dict[int, dict] = {}
     for n_bins in all_n_bins:
         mon = PITMonitor(alpha=cfg.alpha, n_bins=n_bins, rng=seed)
@@ -197,8 +199,8 @@ def collect_single_run(
 
     seed = cfg.seed + trial_idx * 1000
     X, y = generate_stream(cfg, drift_type, transition_window, seed=seed)
-    X_mon = X[cfg.n_train:]
-    y_mon = y[cfg.n_train:]
+    X_mon = X[cfg.n_train :]
+    y_mon = y[cfg.n_train :]
 
     pits = compute_pits(bundle, X_mon, y_mon)
     mu, _ = compute_predictions(bundle, X_mon)
@@ -250,9 +252,9 @@ def _wilson_ci(k: int, n: int, z: float = 1.96) -> tuple:
     if n == 0:
         return (float("nan"), float("nan"))
     p_hat = k / n
-    denom = 1 + z ** 2 / n
-    centre = (p_hat + z ** 2 / (2 * n)) / denom
-    margin = z * np.sqrt((p_hat * (1 - p_hat) + z ** 2 / (4 * n)) / n) / denom
+    denom = 1 + z**2 / n
+    centre = (p_hat + z**2 / (2 * n)) / denom
+    margin = z * np.sqrt((p_hat * (1 - p_hat) + z**2 / (4 * n)) / n) / denom
     return (max(0.0, centre - margin), min(1.0, centre + margin))
 
 
@@ -284,7 +286,9 @@ def aggregate_results(trial_results_for_bins: list[dict], n_stable: int) -> dict
         n_fired = sum(r["alarm_fired"] for r in rows)
         n_false = sum(r["false_alarm"] for r in rows)
         n_true_detect = sum(r["alarm_fired"] and not r["false_alarm"] for r in rows)
-        delays = [r["detection_delay"] for r in rows if r["detection_delay"] is not None]
+        delays = [
+            r["detection_delay"] for r in rows if r["detection_delay"] is not None
+        ]
 
         tpr = n_true_detect / n
         fpr = n_false / n
@@ -384,8 +388,8 @@ def run_experiment(
     print(f"  n_bins sweep: {list(all_n_bins)}  (canonical: {canonical_bins})")
     print(f"  n_train={cfg.n_train}, n_stable={cfg.n_stable}, n_post={cfg.n_post}")
 
-    all_results: dict = {}     # main table (canonical n_bins)
-    all_single_runs: dict = {} # per-scenario visualization artifacts
+    all_results: dict = {}  # main table (canonical n_bins)
+    all_single_runs: dict = {}  # per-scenario visualization artifacts
     bins_sweep_scenarios: dict = {}  # n_bins sensitivity data
     t0 = time.time()
 
@@ -440,10 +444,10 @@ def run_experiment(
             bins_summary = aggregate_results(bins_slice, cfg.n_stable)
             pit_s = bins_summary.get("PITMonitor", {})
             bins_sweep_scenarios[scenario_key][n_bins] = {
-                "tpr":          pit_s.get("tpr",          float("nan")),
-                "tpr_ci":       pit_s.get("tpr_ci",       (float("nan"), float("nan"))),
-                "fpr":          pit_s.get("fpr",          float("nan")),
-                "fpr_ci":       pit_s.get("fpr_ci",       (float("nan"), float("nan"))),
+                "tpr": pit_s.get("tpr", float("nan")),
+                "tpr_ci": pit_s.get("tpr_ci", (float("nan"), float("nan"))),
+                "fpr": pit_s.get("fpr", float("nan")),
+                "fpr_ci": pit_s.get("fpr_ci", (float("nan"), float("nan"))),
                 "median_delay": pit_s.get("median_delay", float("nan")),
             }
 
@@ -452,23 +456,23 @@ def run_experiment(
 
     return {
         "config": {
-            "seed":            cfg.seed,
-            "epochs":          cfg.epochs,
-            "lr":              cfg.lr,
-            "n_train":         cfg.n_train,
-            "n_stable":        cfg.n_stable,
-            "n_post":          cfg.n_post,
-            "alpha":           cfg.alpha,
-            "n_bins":          canonical_bins,
-            "n_bins_list":     list(all_n_bins),
-            "n_trials":        cfg.n_trials,
+            "seed": cfg.seed,
+            "epochs": cfg.epochs,
+            "lr": cfg.lr,
+            "n_train": cfg.n_train,
+            "n_stable": cfg.n_stable,
+            "n_post": cfg.n_post,
+            "alpha": cfg.alpha,
+            "n_bins": canonical_bins,
+            "n_bins_list": list(all_n_bins),
+            "n_trials": cfg.n_trials,
             "drift_scenarios": list(cfg.drift_scenarios),
         },
-        "results":     all_results,
+        "results": all_results,
         "single_runs": all_single_runs,
         "bins_sweep": {
             "n_bins_list": list(all_n_bins),
-            "scenarios":   bins_sweep_scenarios,
+            "scenarios": bins_sweep_scenarios,
         },
         "elapsed_seconds": elapsed,
     }

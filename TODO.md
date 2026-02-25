@@ -1,0 +1,8 @@
+- Doesn't perform on LEA, too subtle
+- Write that adwin is the only one with a delta=0.05 rest default parameters as they don't have false alarm control - are they being fairly compared? lots of params
+- Changepoint statistics
+- Calibration score
+- ADWIN's detection delay. In the GRA and GSG scenarios, ADWIN achieves median delay of 23 samples in both cases. This is suspicious — the GSG scenario has a 500-sample gradual transition, so you'd expect ADWIN to detect later. You should either verify this result and comment on why (possibly ADWIN fires on the first feature to shift), or flag it as worth investigating.
+- The LEA result needs more analysis. You report 0% TPR for PITMonitor on LEA and attribute it to "small initial perturbation to the Gaussian predictive distribution." But the post-drift window is 2,500 samples — that's substantial. Is the 0% due to the drift being weak throughout, or does it become detectable late but the window ends? A single-run trace like Figure 2 but for LEA would make the failure mode much clearer and strengthen the honesty of the limitation discussion.
+- Section 4, Baselines paragraph: You define the binary threshold as the "pre-drift median absolute residual" — this requires knowing the pre-drift distribution at monitoring time. Worth clarifying whether this is estimated from the stable window or from training data.
+- Section 4, Baselines paragraph: You define the binary threshold as the "pre-drift median absolute residual" — this requires knowing the pre-drift distribution at monitoring time. Worth clarifying whether this is estimated from the stable window or from training data.

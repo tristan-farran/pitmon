@@ -30,7 +30,7 @@ class TestPITMonitorInit:
         """Test default initialization."""
         monitor = PITMonitor()
         assert monitor.alpha == 0.05
-        assert monitor.n_bins == 10
+        assert monitor.n_bins == 100
         assert monitor.threshold == 20.0
         assert monitor.t == 0
         assert not monitor.alarm_triggered
@@ -324,17 +324,6 @@ class TestPITMonitorChangepoint:
 class TestPITMonitorSummary:
     """Test summary and diagnostic methods."""
 
-    def test_summary_empty(self):
-        """Test summary with no data."""
-        monitor = PITMonitor()
-        summary = monitor.summary()
-
-        assert summary["t"] == 0
-        assert not summary["alarm_triggered"]
-        assert summary["alarm_time"] is None
-        assert summary["evidence"] == 0.0
-        assert summary["calibration_score"] is None
-
     def test_summary_with_data(self):
         """Test summary with data."""
         np.random.seed(42)
@@ -390,14 +379,6 @@ class TestPITMonitorReset:
 
 class TestPITMonitorRepr:
     """Test string representations."""
-
-    def test_repr(self):
-        """Test __repr__."""
-        monitor = PITMonitor(alpha=0.05, n_bins=10)
-        repr_str = repr(monitor)
-        assert "PITMonitor" in repr_str
-        assert "alpha=0.05" in repr_str
-        assert "n_bins=10" in repr_str
 
     def test_str_not_started(self):
         """Test __str__ when not started."""

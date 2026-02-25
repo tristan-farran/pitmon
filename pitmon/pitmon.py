@@ -48,7 +48,7 @@ class PITMonitor:
     alpha : float, default=0.05
         Anytime-valid false alarm rate: P(ever alarm | H0) ≤ α
 
-    n_bins : int, default=10
+    n_bins : int, default=100
         Histogram bins for density estimation. More bins = faster adaptation
         but more variance. The higher frequency your data, the more bins you
         can afford.
@@ -73,7 +73,7 @@ class PITMonitor:
     def __init__(
         self,
         alpha=0.05,
-        n_bins=100,
+        n_bins=10,
         weight_schedule=None,
         rng=None,
     ):
@@ -417,7 +417,7 @@ class PITMonitor:
             "evidence": self._M,
             "threshold": self.threshold,
             "changepoint": self.changepoint() if self.alarm_triggered else None,
-            "calibration_score": self.calibration_score(),
+            "calibration_score": None if self.t == 0 else self.calibration_score(),
         }
         return summary
 

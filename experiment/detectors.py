@@ -212,7 +212,8 @@ class RiverDetector:
 
 def build_all_detectors(
     alpha: float = 0.05,
-    n_monitor_bins: int = 10,
+    delta: float = 0.05,
+    n_monitor_bins: int = 100,
     seed: int = 42,
 ) -> list:
     """Instantiate one of every detector type for a single trial.

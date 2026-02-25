@@ -49,90 +49,42 @@
 \maketitle
 
 \begin{abstract}
-\noindent Deployed machine learning models often experience calibration drift as the
-world changes. To address this challenge, we present PITMonitor, a sequential method
-for detecting calibration changes in probabilistic regression models.
-Unlike traditional calibration tests that require fixed evaluation windows, PITMonitor
-provides \emph{anytime-valid} false alarm control: the probability of ever raising a
-spurious alarm is bounded by $\alpha$, regardless of when monitoring stops.
-We prove Type I error control via Ville's inequality and demonstrate detection power
-on three synthetic drift scenarios from \texttt{river}'s FriedmanDrift benchmark,
-comparing against seven stream-drift baselines while maintaining valid false alarm
-control. Code is available at \url{https://github.com/tristan-farran/pitmon}.
+\noindent Deployed machine learning models often experience calibration drift as the world changes. To address this challenge, we present PITMonitor, a sequential method for detecting calibration changes in probabilistic models. Unlike traditional calibration tests that require fixed evaluation windows, PITMonitor provides \emph{anytime-valid} false alarm control: the probability of ever raising a spurious alarm is bounded by $\alpha$, regardless of when monitoring stops. We prove Type I error control via Ville's inequality and demonstrate detection power on three scenarios from \texttt{river}'s FriedmanDrift benchmark, comparing performance against the seven included drift detectors. Code is available at \url{https://github.com/tristan-farran/pitmon}.
 \end{abstract}
 
 %------------------------------------------------------------------------------
 \section{Introduction}
 %------------------------------------------------------------------------------
 
-Probabilistic models deployed in production face a fundamental challenge: the world
-changes. Models encounter changes in input distributions, label frequencies, the
-relationship between features and targets, and so on. When these shifts occur, model
-calibration can degrade and simple calibration techniques may no longer suffice.
+Probabilistic models deployed in production face a fundamental challenge: the world changes. Models may encounter non-stationary processes, regime shifts, and concept drift across domains where miscalibration can lead to consequential issues. When these shifts occur, model calibration can degrade and simple detection techniques may no longer suffice. In practice, calibration is often monitored using ad-hoc procedures such as periodic recalibration schedules, rolling-window hypothesis tests, threshold-based alerts on summary metrics, or manual inspection of residuals.
 
-Detecting degrading miscalibration is critical for maintaining trustworthy AI systems.
-A medical diagnostic model that becomes overconfident after a sensor upgrade, or a
-financial risk model that underestimates tail probabilities after a regime shift, can
-lead to consequential errors. In practice, calibration is often monitored using ad-hoc
-procedures such as periodic recalibration schedules, rolling-window hypothesis tests,
-threshold-based alerts on summary metrics, or manual inspection of residuals.
+These approaches suffer from a fundamental statistical problem: \emph{they do not control the false alarm rate over continuous monitoring}. A practitioner who checks calibration daily with a $p < 0.05$ threshold will, over a year of monitoring, almost certainly observe spurious alarms even if the model remains stable. Classical hypothesis tests assume a fixed sample size determined before seeing data, continuous monitoring violates this assumption.
 
-These approaches suffer from a fundamental statistical problem: \emph{they do not
-control the false alarm rate over continuous monitoring}. A practitioner who checks
-calibration daily with a $p < 0.05$ threshold will, over a year of monitoring, almost
-certainly observe spurious alarms even if the model remains stable. Classical hypothesis
-tests assume a fixed sample size determined before seeing data; continuous monitoring
-violates this assumption.
+More principled alternatives are provided by online drift detectors, such as those implemented in the \texttt{river} library \citep{montiel2021river}. Classical detectors including DDM, EDDM, and KSWIN are lightweight, easy to deploy, and effective at detecting abrupt changes, but are typically based on heuristic thresholds or fixed-sample statistical arguments and do not provide explicit long-run false alarm guarantees under continuous monitoring or changepoint localisation.
 
-More principled alternatives are provided by online drift detectors, such as those
-implemented in the \texttt{river} library \citep{montiel2021river}. Classical detectors
-including DDM, EDDM, and KSWIN are lightweight, easy to deploy, and effective at
-detecting abrupt changes, but are typically based on heuristic thresholds or
-fixed-sample statistical arguments and do not provide explicit long-run false alarm
-guarantees under continuous monitoring.
+ADWIN employs sequential hypothesis testing with anytime-valid bounds on the probability of false alarms over an unbounded stream \citep{bifet2007learning}. However, it operates on generic performance statistics such as squared residuals and does not provide changepoint estimates, only partially addressing the problem of reliable, informative, long-term calibration monitoring.
 
-ADWIN employs sequential hypothesis testing with anytime-valid concentration bounds,
-offering formal control of the probability of false alarms over an unbounded stream
-\citep{bifet2007learning}. However, ADWIN operates on generic performance statistics
-such as squared residuals and as a result only partially addresses the problem of
-reliable, long-term calibration monitoring.
-
-We propose PITMonitor, a method providing \emph{anytime-valid} monitoring of PIT
-exchangeability with four key properties:
+We propose PITMonitor, a method providing \emph{anytime-valid} monitoring of model calibration with four key properties:
 
 \begin{enumerate}
-    \item \textbf{Anytime-valid false alarm control:} we prove that $\Prob(\text{ever
-    alarm} \mid H_0) \leq \alpha$, regardless of when or why monitoring stops.
+    \item \textbf{Anytime-valid false alarm control:} we prove that $\Prob(\text{ever alarm} \mid H_0) \leq \alpha$, regardless of when or why monitoring stops.
 
-    \item \textbf{Change detection without static-error alarms:} PITMonitor detects
-    and locates \emph{changes} in the PIT process. A model that is consistently
-    miscalibrated but stable will not trigger alarms,\footnote{In many domains some
-    amount of miscalibration is inevitable, but model degradation remains a pressing
-    concern.} while a changing process can.
+    \item \textbf{Change detection without static-error alarms:} PITMonitor detects and locates \emph{changes} in the PIT process. A model that is consistently miscalibrated but stable will not trigger alarms, while a changing process can.\footnote{In many domains some amount of miscalibration is inevitable, but model degradation remains a pressing concern.}
 
-    \item \textbf{No baseline period required:} unlike methods requiring a ``clean''
-    reference distribution, PITMonitor works from the first observation by testing
-    exchangeability of the PIT sequence.
+    \item \textbf{No baseline period required:} unlike methods requiring a ``clean'' reference distribution, PITMonitor works from the first observation by testing exchangeability of the PIT sequence.
 
-    \item \textbf{Practical efficiency:} the exact algorithm runs in $O(t \log t)$
-    time and $O(t)$ space for $t$ observations, with a simple recursive update.
+    \item \textbf{Practical efficiency:} the exact algorithm runs in $O(t \log t)$ time and $O(t)$ space for $t$ observations, with a simple recursive update.
 \end{enumerate}
 
 %------------------------------------------------------------------------------
 \section{Background}
 %------------------------------------------------------------------------------
 
-\subsection{Calibration and Probability Integral Transforms}
+\subsection{Probability Integral Transforms}
 
-A probabilistic model outputting a predicted cumulative distribution function $\hat{F}$
-over outcomes is \emph{calibrated} if these predictions match reality: among all
-predictions where $\hat{F}(y) = p$, the outcome $Y \leq y$ should occur roughly
-$(100 \times p)$\% of the time.
+A probabilistic model outputting a predicted cumulative distribution function $\hat{F}$ over outcomes is \emph{calibrated} if these predictions match reality: among all predictions where $\hat{F}(y) = p$, the outcome $Y \leq y$ should occur roughly $(100 \times p)$\% of the time.
 
-The \emph{probability integral transform} (PIT) provides a universal tool for assessing
-calibration \citep{dawid1984statistical}. For a continuous predictive CDF $F$ and
-realized outcome $y$, the PIT is $U = F(y)$. A classical result states that if $F$ is
-the true distribution of $Y$, then $U \sim \Unif(0,1)$.
+The \emph{probability integral transform} (PIT) provides a universal tool for assessing calibration \citep{dawid1984statistical}. For a continuous predictive CDF $F$ and realized outcome $y$, the PIT is $U = F(y)$. A classical result states that if $F$ is the true distribution of $Y$, then $U \sim \Unif(0,1)$.
 
 In the regression setting where the model outputs a Gaussian predictive distribution
 $\mathcal{N}(\mu_t, \sigma_t^2)$, the PIT is:
@@ -148,23 +100,16 @@ $(\hat{p}_1, \ldots, \hat{p}_K)$ and true class $y \in \{1, \ldots, K\}$:
 \begin{equation}
     U = \sum_{j=1}^{y-1} \hat{p}_j + V \cdot \hat{p}_y, \quad V \sim \Unif(0,1)
 \end{equation}
-placing $U$ uniformly within the cumulative probability interval corresponding to the
-true class. Both formulations produce $U_t \sim \Unif(0,1)$ under calibration
-stability, and the theoretical guarantees of PITMonitor apply to any method satisfying
-this property.
+placing $U$ uniformly within the cumulative probability interval corresponding to the true class.
+
 
 \subsection{Exchangeability}
 
 A sequence $(X_1, X_2, \ldots)$ is \emph{exchangeable} if its joint distribution is
-invariant to finite permutations. Exchangeability is weaker than independence: i.i.d.\
-sequences are exchangeable, but exchangeable sequences need not be independent
-\citep{gelman2013bda}.
+invariant to finite permutations. Exchangeability is weaker than independence: i.i.d.\ sequences are exchangeable, but exchangeable sequences need not be independent \citep{definetti1937}.
 
 \begin{remark}[Stable Miscalibration Preserves Exchangeability]
-If a model is consistently miscalibrated but its calibration error distribution remains
-stable over time, the resulting PITs are i.i.d.\ from some fixed, non-uniform
-distribution. Since i.i.d.\ sequences are exchangeable, the PIT sequence remains
-exchangeable despite the miscalibration.
+If a model is consistently miscalibrated, with its calibration error distribution remaining stable over time, the resulting PITs are i.i.d.\ from some fixed, non-uniform distribution. Since i.i.d.\ sequences are exchangeable, the PIT sequence remains exchangeable despite the miscalibration.
 \end{remark}
 
 This observation is central to PITMonitor's design:
@@ -178,13 +123,14 @@ This observation is central to PITMonitor's design:
 \end{itemize}
 
 By testing exchangeability rather than uniformity, we avoid triggering on stable
-calibration error. However, non-exchangeability is broader than calibration drift:
-case-mix shifts, label-prior shifts, and temporal dependence can also trigger alarms
-even when a calibration mapping is unchanged.
+calibration error.
 
-\subsection{Conformal P-values from Ranks}
+It should be noted, however, that non-exchangeability can also result from temporal dependence: autocorrelated PITs can trigger alarms even when the calibration distribution is unchanged. This can occur in time series models, models with lagged features, or whenever predictions are not independent across time. Practitioners should check for autocorrelation in the PIT sequence and be cautious when interpreting alarms in settings where temporal dependence is expected.
 
-To sequentially test exchangeability we employ \emph{conformal p-values}
+\subsection{Conformal P-values}
+\label{sec:pvals}
+
+To sequentially test exchangeability we employ \emph{conformal p-values from ranks}
 \citep{vovk2005algorithmic}.
 
 Given observations $U_1, \ldots, U_t$, define the rank of $U_t$:
@@ -197,19 +143,15 @@ If $(U_1, \ldots, U_t)$ is exchangeable, then the rank $R_t$ is uniformly distri
 on $\{1, \ldots, t\}$.
 \end{proposition}
 \begin{proof}
-By exchangeability, the joint distribution of $(U_1, \ldots, U_t)$ is invariant to
-permutations. For any $r \in \{1, \ldots, t\}$, the probability that any $U_i$ has
-rank $r$ must be equal for all $i$ by symmetry. Since exactly one element must have
-rank $r$ and all $t$ positions are equally likely, $\Prob(R_t = r) = 1/t$.
+By exchangeability, $(U_1, \ldots, U_t)$ is equally likely to be in any of the $t!$
+orderings. For any fixed rank $r \in \{1, \ldots,
+t\}$, exactly $(t-1)!$ of these orderings place $U_t$ in position $r$. Therefore
+$\Prob(R_t = r) = (t-1)!/t! = 1/t$, giving uniform distribution on $\{1, \ldots,
+t\}$.
 \end{proof}
-\begin{remark}
-The proof assumes continuous random variables to avoid ties. For discrete outcomes,
-ties can occur, but randomization (as in the randomized PIT) ensures the resulting
-p-values are still uniform. This subtlety is important for practical implementations.
-\end{remark}
 
-Crucially, this holds regardless of the marginal distribution of the PITs -- the test
-is completely distribution-free.
+Crucially, this holds regardless of the marginal distribution of the PITs---the test
+is distribution-free.
 
 To obtain continuous uniform p-values from the discrete uniform ranks, we randomize
 within ties:
@@ -219,28 +161,32 @@ within ties:
 
 Under $H_0$ (exchangeability), these p-values are marginally $\Unif(0,1)$ and satisfy
 the sequential conformal validity conditions used by test martingales. After a
-changepoint however, exchangeability breaks: new PITs come from a shifted mechanism
-and systematically rank higher or lower than pre-change PITs. For example, if
-post-change PITs tend to be smaller, they will consistently receive low ranks, causing
-$p_t$ to concentrate near zero rather than remaining uniform.
+changepoint, exchangeability breaks: new PITs come from a shifted mechanism and
+systematically rank higher or lower than pre-change PITs. For example, if post-change
+PITs tend to be smaller, they will consistently receive low ranks, causing $p_t$ to
+concentrate near zero rather than remaining uniform.
 
-\subsection{E-values and Anytime-Valid Inference}
+\subsection{E-values}
 
-An \emph{e-value} is a nonnegative random variable $E$ satisfying $\E[E] \leq 1$
+An \emph{e-value} is a non-negative random variable $E$ satisfying $\E[E] \leq 1$
 under the null hypothesis \citep{vovk2021values}. By Markov's inequality,
-$\Prob(E \geq 1/\alpha) \leq \alpha$, so thresholding at $1/\alpha$ provides a valid
-level-$\alpha$ test. Under alternatives where the null is violated, well-chosen e-values
-satisfy $\E[E] > 1$, providing power. The density-based construction
-(Section~\ref{sec:density}) achieves this adaptively without requiring a parametric
-specification of the alternative: when p-values concentrate due to non-exchangeability,
-the histogram learns the concentration pattern, yielding $\E[e] > 1$.
+$\Prob(E \geq 1/\alpha) \leq \alpha$, so thresholding at $1/\alpha$ yields a valid
+level-$\alpha$ test without needing to know the distribution of $E$ under the null.
+This is in contrast to p-values, which require knowing the null distribution
+explicitly to calibrate thresholds.
+
+Under alternatives where the null is violated, an e-value has power if $\E[E] > 1$.
+The density-based construction in Section~\ref{sec:density} achieves this
+adaptively: when conformal p-values concentrate in certain bins due to
+non-exchangeability, the histogram places more mass there, yielding $\E[e] > 1$
+without requiring a parametric specification of the alternative.
 
 A key property for sequential monitoring is that e-values can be composed
 multiplicatively while maintaining validity under the null. If $E_1, E_2$ are
-conditional e-values with $\E[E_1 | \mathcal{F}_0] \leq 1$ and
-$\E[E_2 | \mathcal{F}_1] \leq 1$ (where $\mathcal{F}_t$ is the information available
-through time $t$), their product remains a valid e-value. This allows us to define a
-cumulative e-process:
+conditional e-values with $\E[E_1 \mid \mathcal{F}_0] \leq 1$ and
+$\E[E_2 \mid \mathcal{F}_1] \leq 1$ (where $\mathcal{F}_t$ is the information
+available through time $t$), their product remains a valid e-value. This allows us
+to define a cumulative e-process:
 \begin{equation}
     M_t = E_1 \times \cdots \times E_t, \quad M_t = M_{t-1} \cdot E_t
 \end{equation}
@@ -249,20 +195,8 @@ Taking conditional expectations given past observations:
     \E[M_t \mid \mathcal{F}_{t-1}] = M_{t-1} \cdot \E[E_t \mid \mathcal{F}_{t-1}]
     \leq M_{t-1}
 \end{equation}
-Thus $(M_t)$ is a nonnegative supermartingale under $H_0$.
+Thus $(M_t)$ is a non-negative supermartingale under $H_0$.
 
-Ville's inequality \citep{ville1939} provides the anytime-valid guarantee by bounding
-the probability that a nonnegative supermartingale ever exceeds a threshold:
-\begin{proposition}[Ville's Inequality]
-Let $(M_t)_{t \geq 1}$ be a nonnegative supermartingale with $\E[M_1] \leq 1$. Then:
-\begin{equation}
-    \Prob\left(\sup_{t \geq 1} M_t \geq \frac{1}{\alpha}\right) \leq \alpha
-\end{equation}
-\end{proposition}
-
-Unlike fixed-sample tests that control error only at a predetermined $n$, Ville's
-inequality allows monitoring to continue indefinitely while maintaining
-$\alpha$-level control.
 
 %------------------------------------------------------------------------------
 \section{Method}
@@ -272,19 +206,18 @@ $\alpha$-level control.
 \label{sec:density}
 
 We construct e-values from conformal p-values using a density-based betting framework
-\citep{shafer2021testing, grunwald2024safe}. Before observing $p_t$, we specify a
-density function $\hat{f}(p)$ over $[0,1]$ encoding our prior belief about where $p_t$
-will concentrate. Any density function $\hat{f}(p)$ satisfying
-$\int_0^1 \hat{f}(p) dp = 1$ yields a valid e-value with $\E[\hat{f}(p)] = 1$ under
-uniformity, providing a fair bet that averages to 1 under the null while allowing high
-payoffs when p-values concentrate.
-
+\citep{shafer2011testing, grunwald2024safe}. Before observing $p_t$, we specify a
+density function $\hat{f}(p)$ over $[0,1]$ encoding our prior belief about where
+$p_t$ will concentrate. Any density function $\hat{f}(p)$ satisfying
+$\int_0^1 \hat{f}(p)\,dp = 1$ yields a valid e-value: under uniformity,
+$\E[\hat{f}(p)] = \int_0^1 \hat{f}(p)\,dp = 1$, providing a fair bet that averages
+to 1 under the null while allowing high payoffs when p-values concentrate.
 
 \begin{proposition}[Density Betting Yields Valid E-values]
 \label{prop:density}
-Let $\hat{f}: [0,1] \to [0,\infty)$ be any density function (i.e., $\int_0^1
-\hat{f}(p) dp = 1$). If $p \sim \Unif(0,1)$, then $e = \hat{f}(p)$ satisfies
-$\E[e] = 1$.
+Let $\hat{f}: [0,1] \to [0,\infty)$ be any density function (i.e.,
+$\int_0^1 \hat{f}(p)\,dp = 1$). If $p \sim \Unif(0,1)$, then $e = \hat{f}(p)$
+satisfies $\E[e] = 1$.
 \end{proposition}
 
 By adapting our density to observed concentration patterns, we automatically bet in
@@ -295,40 +228,39 @@ PITMonitor uses a histogram density that learns from past observations:
 \begin{equation}
     \hat{f}(p) = B \cdot \frac{c_b}{\sum_j c_j} \quad \text{for } p \in \text{bin } b
 \end{equation}
-where $c_b$ counts past p-values in bin $b$ and $B$ is the number of bins.
+where $c_b$ counts past p-values in bin $b$ and $B$ is the number of bins. The
+histogram is initialized with Laplace pseudocounts $c_b = 1$ for all $b$, which
+ensures $\hat{f}$ is a valid density from the first observation and prevents
+zero-count bins from generating infinite or zero e-values during early monitoring.
 
-Under exchangeability (null), p-values scatter uniformly. With finite bins, the learned
-histogram spreads mass roughly evenly across bins, yielding $\E[e] \approx 1$. When
-exchangeability breaks, p-values cluster in certain bins; the histogram learns these
-concentration patterns and achieves $\E[e] > 1$, generating detection power.
+Under exchangeability, p-values scatter uniformly and the learned histogram spreads mass roughly evenly across bins, yielding $\E[e] \approx 1$. If exchangeability breaks, p-values cluster in certain bins; the histogram learns these concentration patterns and achieves $\E[e] > 1$, generating detection power.
 
-We update the histogram \emph{after} computing $e_t$, ensuring $\hat{f}$ depends only
-on past observations. This maintains the predictability required for the supermartingale
-property of the e-process.
-
-Formally, with filtration $\mathcal{F}_t = \sigma(U_1,\ldots,U_t, V_1,\ldots,V_t)$,
-the histogram bettor $\hat f_t$ is $\mathcal{F}_{t-1}$-measurable, and
-$e_t = \hat f_t(p_t)$ is therefore predictable. Under $H_0$, we use the standard
-conformal validity condition that $p_t$ is conditionally uniform given $\mathcal{F}_{t-1}$; hence
+We update the histogram \emph{after} computing $e_t$, ensuring $\hat{f}$ depends only on past observations. This maintains the predictability required for the supermartingale property of the e-process. Formally, the histogram bettor $\hat{f}_t$ is $\mathcal{F}_{t-1}$-measurable, and $e_t = \hat{f}_t(p_t)$ is therefore predictable. Under $H_0$, $p_t$ is conditionally
+$\Unif(0,1)$ given $\mathcal{F}_{t-1}$, so
 \begin{equation}
-    \E[e_t \mid \mathcal{F}_{t-1}] = \int_0^1 \hat f_t(p)\,dp = 1.
+    \E[e_t \mid \mathcal{F}_{t-1}] = \int_0^1 \hat{f}_t(p)\,dp = 1.
 \end{equation}
-This is the fairness property required for the martingale arguments below.
 
 \subsection{The Mixture E-process}
 
-The key challenge is that the changepoint time $\tau$ is unknown. Rather than commit to
-a single guess, we maintain a weighted mixture over all possible changepoint times:
+The key challenge is that the changepoint time $\tau$ is unknown. An e-process
+starting at $\tau$ would be sensitive to drift beginning at $\tau$ but would miss
+earlier changes, while one starting too early accumulates noise that dilutes its
+power. Rather than commit to a single guess, we maintain a weighted mixture over all
+possible changepoint times:
 \begin{equation}
     M_t = \sum_{\tau=1}^{t} w_\tau \cdot M_t^{(\tau)}
 \end{equation}
-where $M_t^{(\tau)} = \prod_{s=\tau}^{t} e_s$ is the evidence accumulated from time
-$\tau$ onward, and $w_\tau = 1/(\tau(\tau+1))$ is a deterministic mixture weight,
-which is nonnegative and satisfies $\sum_{\tau=1}^{\infty} w_\tau = 1$.
+where $M_t^{(\tau)} = \prod_{s=\tau}^{t} e_s$ denotes the evidence accumulated from
+time $\tau$ onward (defined for $\tau \leq t$), and $w_\tau = 1/(\tau(\tau+1))$ is a
+deterministic weight satisfying $\sum_{\tau=1}^{\infty} w_\tau = 1$. Since each component $M_t^{(\tau)}$ forms a
+valid e-process sensitive to drift beginning at $\tau$, the mixture is simultaneously
+sensitive to changepoints at any time, while remaining a valid e-process under the
+null by linearity of expectation. The full martingale argument is given in the proof
+of Theorem~\ref{thm:type1}.
 
-The power of this approach lies in an efficient recursion that avoids maintaining
-separate products for each $\tau$:
-
+This allows us to use an efficient recursion that avoids maintaining separate products
+for each $\tau$:
 \begin{proposition}[Efficient Recursion]
 The mixture e-process satisfies:
 \begin{equation}
@@ -346,78 +278,95 @@ M_t &= \sum_{\tau=1}^{t} w_\tau \cdot M_t^{(\tau)} \\
 \end{align}
 \end{proof}
 
-This recursion enables $O(1)$ update of the mixture per observation (plus $O(\log t)$
-for rank computation), avoiding the cost of maintaining or updating all $t$ component
-e-processes separately.
+This recursion enables an $O(1)$ update of the mixture per observation (plus
+$O(\log t)$ for rank computation via a sorted structure), avoiding the cost of
+maintaining or updating all $t$ component e-processes separately.
 
 \subsection{Type I Error Control}
 
+Ville's inequality \citep{ville1939} provides the anytime-valid guarantee by bounding
+the probability that a non-negative supermartingale \emph{ever} exceeds a threshold
+simultaneously over all time, without requiring a pre-specified stopping rule:
+
 \begin{theorem}[Anytime-Valid False Alarm Control]
 \label{thm:type1}
-Under $H_0$ (exchangeability of PITs), the PITMonitor process $(M_t)$ satisfies:
+Under $H_0$, PITMonitor satisfies:
 \begin{equation}
     \Prob\left(\sup_{t \geq 1} M_t \geq \frac{1}{\alpha}\right) \leq \alpha
 \end{equation}
 \end{theorem}
 
 \begin{proof}
-Define the filtration $\mathcal{F}_t = \sigma(U_1,\ldots,U_t, V_1,\ldots,V_t)$. As
-shown above, $e_t$ is nonnegative and satisfies $\E[e_t\mid\mathcal{F}_{t-1}] = 1$
-under $H_0$.
+Define the filtration $\mathcal{F}_t = \sigma(U_1,\ldots,U_t)$. As shown in subsection \ref{sec:pvals}, by the $\mathcal{F}_{t-1}$-measurability of $\hat{f}_t$, each e-value satisfies $\E[e_t \mid \mathcal{F}_{t-1}] = 1$ under $H_0$.
 
-For each candidate changepoint $\tau$, define the component process
+The mixture $M_t = \sum_{\tau=1}^{t} w_\tau M_t^{(\tau)}$ is defined with
+$M_t^{(\tau)} = \prod_{s=\tau}^{t} e_s$ only for $\tau \leq t$. To apply Ville's
+inequality we work with an extended process defined for all $t \geq 0$. For each
+$\tau \geq 1$ define:
 \begin{equation}
 \widetilde{M}_t^{(\tau)} =
 \begin{cases}
-1, & t < \tau, \\
-\prod_{s=\tau}^{t} e_s, & t \ge \tau.
+1 & t < \tau \\
+\prod_{s=\tau}^{t} e_s & t \geq \tau
 \end{cases}
 \end{equation}
-Then $(\widetilde{M}_t^{(\tau)})_{t\ge 0}$ is a nonnegative martingale with respect
-to $(\mathcal{F}_t)$.
+Since $e_t \geq 0$ and $\E[e_t \mid \mathcal{F}_{t-1}] = 1$, each
+$(\widetilde{M}_t^{(\tau)})_{t \geq 0}$ is a non-negative martingale with
+$\widetilde{M}_0^{(\tau)} = 1$.
 
-Now define the \emph{full} mixture
+
+Define the full mixture over all $\tau \geq 1$:
 \begin{equation}
 \widetilde{M}_t = \sum_{\tau=1}^{\infty} w_\tau\, \widetilde{M}_t^{(\tau)},
-\qquad w_\tau = \frac{1}{\tau(\tau+1)},
+\qquad w_\tau = \frac{1}{\tau(\tau+1)}, \quad \sum_{\tau=1}^{\infty} w_\tau = 1
 \end{equation}
-with $\sum_{\tau\ge 1} w_\tau = 1$. A nonnegative weighted sum of martingales is a
-martingale, so $(\widetilde{M}_t)$ is a nonnegative martingale (hence supermartingale)
-with $\E[\widetilde{M}_0]=1$.
+A countable non-negative weighted combination of martingales with summable weights is
+itself a martingale, so $(\widetilde{M}_t)_{t \geq 0}$ is a non-negative martingale
+with $\widetilde{M}_0 = \sum_{\tau=1}^{\infty} w_\tau = 1$.
 
-The implemented recursion tracks the truncated mixture
+For $\tau > t$, $\widetilde{M}_t^{(\tau)} = 1$ since no e-values have been
+incorporated yet. Therefore:
+\begin{align}
+\widetilde{M}_t &= \sum_{\tau=1}^{t} w_\tau \prod_{s=\tau}^{t} e_s
+                + \sum_{\tau=t+1}^{\infty} w_\tau \cdot 1 \\
+                &= M_t + \sum_{\tau=t+1}^{\infty} \frac{1}{\tau(\tau+1)}
+\end{align}
+The tail sum telescopes: $\sum_{\tau=t+1}^{\infty} \frac{1}{\tau(\tau+1)}
+= \sum_{\tau=t+1}^{\infty}\!\left(\frac{1}{\tau} - \frac{1}{\tau+1}\right)
+= \frac{1}{t+1}$. Hence:
 \begin{equation}
-M_t = \sum_{\tau=1}^{t} w_\tau \prod_{s=\tau}^{t} e_s,
+\widetilde{M}_t = M_t + \frac{1}{t+1} \geq M_t
 \end{equation}
-which satisfies $M_t = e_t(M_{t-1}+w_t)$ and $M_0=0$. Since
-$\widetilde{M}_t^{(\tau)}=1$ for $\tau>t$,
+
+Since $(\widetilde{M}_t)$ is a non-negative martingale with $\E[\widetilde{M}_0] = 1$,
+Ville's inequality gives $\Prob(\sup_{t \geq 0} \widetilde{M}_t \geq 1/\alpha)
+\leq \alpha$. Because $\widetilde{M}_t \geq M_t$ for all $t$:
 \begin{equation}
-\widetilde{M}_t = M_t + \sum_{\tau=t+1}^{\infty} w_\tau = M_t + \frac{1}{t+1}
-\ge M_t.
-\end{equation}
-Therefore,
-\begin{equation}
-\left\{\sup_{t\ge 1} M_t \ge \frac{1}{\alpha}\right\}
+\left\{\sup_{t\geq 1} M_t \geq \frac{1}{\alpha}\right\}
 \subseteq
-\left\{\sup_{t\ge 1} \widetilde{M}_t \ge \frac{1}{\alpha}\right\}.
+\left\{\sup_{t\geq 1} \widetilde{M}_t \geq \frac{1}{\alpha}\right\}
 \end{equation}
-Applying Ville's inequality to $(\widetilde{M}_t)$ yields
+and therefore:
 \begin{equation}
-\Prob\left(\sup_{t\ge 1} M_t \ge \frac{1}{\alpha}\right)
-\le
-\Prob\left(\sup_{t\ge 1} \widetilde{M}_t \ge \frac{1}{\alpha}\right)
-\le \alpha.
+\Prob\!\left(\sup_{t\geq 1} M_t \geq \frac{1}{\alpha}\right)
+\leq
+\Prob\!\left(\sup_{t\geq 1} \widetilde{M}_t \geq \frac{1}{\alpha}\right)
+\leq \alpha
 \end{equation}
 \end{proof}
 
-\begin{remark}[Behavior Under the Null]
-Under $H_0$, the \emph{full} mixture $\widetilde{M}_t$ is a nonnegative
-martingale/supermartingale, while the implemented truncated statistic $M_t$ is
-dominated by $\widetilde{M}_t$. Ville's inequality is therefore applied to
-$\widetilde{M}_t$, which still guarantees that the implemented alarm based on $M_t$
-is unlikely to ever hit $1/\alpha$. Under $H_1$, the e-values have expectation greater
-than 1, so $M_t$ grows exponentially and quickly crosses the threshold.
-\end{remark}
+The guarantee $\Prob(\sup_{t \geq 1} M_t \geq 1/\alpha) \leq \alpha$ bounds the
+probability of \emph{ever} raising a false alarm simultaneously over all time,
+without any commitment to a stopping rule. This is strictly stronger than controlling
+error at a fixed sample size: a practitioner may monitor indefinitely, or stop monitoring for any reason and the false alarm guarantee remains valid.
+
+The implemented statistic $M_t$ truncates the mixture at the current time $t$, while
+$\widetilde{M}_t$ includes all future mixture components at their prior weight
+$1/(t+1)$. The correction term $1/(t+1)$ vanishes as $t \to \infty$, so the two
+statistics become asymptotically equivalent. The martingale property holds for
+$\widetilde{M}_t$; the alarm is raised on $M_t$, which is bounded above by
+$\widetilde{M}_t$ at all times.
+
 
 \subsection{Changepoint Estimation}
 
@@ -720,12 +669,14 @@ prediction error regardless of how many features are responsible. Practitioners
 monitoring models where feature-level drift is anticipated may need to complement
 PITMonitor with feature-level monitors or use larger post-drift windows.
 
-\textit{Detection delay vs.\ FPR control.}
+\paragraph{Detection delay vs.\ FPR control.}
 PITMonitor's anytime-valid guarantee comes at the cost of later detection compared
 to ADWIN. The median delay on GRA (100 samples) reflects the number of post-drift
 observations needed for the e-process to cross $1/\alpha = 20$. Users can reduce
-delay by accepting larger $\alpha$, or by increasing $B$ so the histogram adapts
-faster to concentrated p-values.
+delay by accepting a larger $\alpha$: setting $\alpha = 0.10$ lowers the threshold
+to 10, requiring less accumulated evidence. Reducing $B$ (fewer histogram bins) also
+increases power per observation when the direction of shift is consistent, at the cost
+of less flexibility to detect diffuse concentration patterns.
 
 \textit{Exchangeability assumption.}
 PITMonitor tests exchangeability of PITs. If pre-change PITs exhibit temporal

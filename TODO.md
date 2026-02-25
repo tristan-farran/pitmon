@@ -1,8 +1,9 @@
-- Doesn't perform on LEA, too subtle
-- Write that adwin is the only one with a delta=0.05 rest default parameters as they don't have false alarm control - are they being fairly compared? lots of params
-- Changepoint statistics
-- Calibration score
+- Why doesn't PITMON perform on LEA, is it too subtle? The LEA result needs more analysis. You report 0% TPR for PITMonitor on LEA and attribute it to "small initial perturbation to the Gaussian predictive distribution." But the post-drift window is 2,500 samples — that's substantial. Is the 0% due to the drift being weak throughout, or does it become detectable late but the window ends? A single-run trace like Figure 2 but for LEA would make the failure mode much clearer and strengthen the honesty of the limitation discussion.
+- Why do all the detectors but ADWIN perform so poorly and ADWIN almost perfectly, it seems suspicious.
+- Adwin is the only one with a delta=0.05 the rest have default parameters as they don't have false alarm control - are they being fairly compared?
 - ADWIN's detection delay. In the GRA and GSG scenarios, ADWIN achieves median delay of 23 samples in both cases. This is suspicious — the GSG scenario has a 500-sample gradual transition, so you'd expect ADWIN to detect later. You should either verify this result and comment on why (possibly ADWIN fires on the first feature to shift), or flag it as worth investigating.
-- The LEA result needs more analysis. You report 0% TPR for PITMonitor on LEA and attribute it to "small initial perturbation to the Gaussian predictive distribution." But the post-drift window is 2,500 samples — that's substantial. Is the 0% due to the drift being weak throughout, or does it become detectable late but the window ends? A single-run trace like Figure 2 but for LEA would make the failure mode much clearer and strengthen the honesty of the limitation discussion.
-- Section 4, Baselines paragraph: You define the binary threshold as the "pre-drift median absolute residual" — this requires knowing the pre-drift distribution at monitoring time. Worth clarifying whether this is estimated from the stable window or from training data.
-- Section 4, Baselines paragraph: You define the binary threshold as the "pre-drift median absolute residual" — this requires knowing the pre-drift distribution at monitoring time. Worth clarifying whether this is estimated from the stable window or from training data.
+- Ensure the binary detectors are using the "training data median absolute residual" in the code - not pre-drift monitoring data
+- Are we computing FPR on pre drift in the simulation or separately? It should be the pre drift simulation
+- Correct code to compute mean detection delay not median and and have it also calculate mean changepoint eror for PITMonitor and include that in the table
+- Rather than outputting a table as an image, have the code directly output the latex table we'll need for the paper each time with all the summary statistics you see in the paper
+- Improve visualisations, they are bland and hard to read, make them publication quality

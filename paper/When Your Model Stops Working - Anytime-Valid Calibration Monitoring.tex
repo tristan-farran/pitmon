@@ -122,8 +122,7 @@ This observation is central to PITMonitor's design:
     $\Rightarrow$ not exchangeable
 \end{itemize}
 
-By testing exchangeability rather than uniformity, we avoid triggering on stable
-calibration error.
+By testing exchangeability rather than uniformity, we avoid triggering on stable calibration error.
 
 It should be noted, however, that non-exchangeability can also result from temporal dependence: autocorrelated PITs can trigger alarms even when the calibration distribution is unchanged. This can occur in time series models, models with lagged features, or whenever predictions are not independent across time. Practitioners should check for autocorrelation in the PIT sequence and be cautious when interpreting alarms in settings where temporal dependence is expected.
 
@@ -429,47 +428,27 @@ Table~\ref{tab:results} presents the full results. Figure~\ref{fig:detection_rat
 visualizes TPR and FPR per method and scenario, and Figure~\ref{fig:single_run}
 shows a representative single-run monitoring trace for the GRA scenario.
 
-\begin{table}[H]
+\begin{table}[t]
 \centering
-\caption{Detection performance across three FriedmanDrift scenarios.}
+\small
+\caption{Drift detection results on FriedmanDrift (1,000 trials, $\alpha=0.05$). Mean delay and changepoint error are in samples. Best TPR per scenario is \textbf{bolded}; FPR exceeding $\alpha$ is \underline{underlined}.}
 \label{tab:results}
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}llcccc@{}}
+\begin{tabular}{l ccc ccc ccc c}
 \toprule
-Scenario & Method & TPR & FPR & Mean Delay & Mean CP Error \\
+\multicolumn{1}{l}{} & \multicolumn{3}{c}{GRA} & \multicolumn{3}{c}{GSG} & \multicolumn{3}{c}{LEA} & \multicolumn{1}{c}{} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10}
+Method & TPR & FPR & Delay & TPR & FPR & Delay & TPR & FPR & Delay & $\overline{|\hat\tau - \tau|}$ \\
 \midrule
-\multirow{8}{*}{\parbox{1.8cm}{GRA}}
- & \textbf{PITMonitor} & \textbf{99\%} & \textbf{1\%}  & 100  \\
- & ADWIN               & 97\%          & 3\%           & 23   \\
- & DDM                 & 89\%          & 11\%          & 307  \\
- & HDDM\_A             & 88\%          & 12\%          & 54   \\
- & KSWIN     & 1\%           & 99\%          & --   \\
- & PageHinkley & 0\%         & 100\%         & --   \\
- & EDDM      & 10\%          & 90\%          & 678  \\
- & HDDM\_W   & 0\%           & 100\%         & --   \\
-\midrule
-\multirow{8}{*}{\parbox{1.8cm}{GSG}}
- & \textbf{PITMonitor} & \textbf{99\%} & \textbf{1\%}  & 165  \\
- & ADWIN               & 97\%          & 3\%           & 23   \\
- & DDM                 & 89\%          & 11\%          & 371  \\
- & HDDM\_A             & 88\%          & 12\%          & 126  \\
- & KSWIN     & 0\%           & 100\%         & --   \\
- & PageHinkley & 0\%         & 100\%         & --   \\
- & EDDM      & 10\%          & 90\%          & 798  \\
- & HDDM\_W   & 0\%           & 100\%         & --   \\
-\midrule
-\multirow{8}{*}{\parbox{1.8cm}{LEA}}
- & PITMonitor          & 0\%           & \textbf{1\%}  & --   \\
- & \textbf{ADWIN}      & \textbf{97\%} & 3\%           & 87   \\
- & DDM                 & 1\%           & 11\%          & 1429 \\
- & HDDM\_A             & 4\%           & 12\%          & 2452 \\
- & KSWIN     & 0\%           & 100\%         & --   \\
- & PageHinkley & 0\%         & 100\%         & --   \\
- & EDDM      & 0\%           & 90\%          & --   \\
- & HDDM\_W   & 0\%           & 100\%         & --   \\
+PITMonitor & \textbf{95.9\%} & 4.1\% & 76 & \textbf{95.9\%} & 4.1\% & 185 & 0.0\% & 4.1\% & — & 4 \\
+ADWIN & 82.3\% & \underline{17.7\%} & 27 & 82.3\% & \underline{17.7\%} & 27 & \textbf{82.3\%} & \underline{17.7\%} & 110 & — \\
+KSWIN & 3.0\% & \underline{97.0\%} & 16 & 2.2\% & \underline{97.8\%} & 163 & 3.2\% & \underline{96.7\%} & 853 & — \\
+PageHinkley & 0.2\% & \underline{99.8\%} & 2 & 0.2\% & \underline{99.8\%} & 5 & 0.2\% & \underline{99.8\%} & 119 & — \\
+DDM & 91.8\% & \underline{8.2\%} & 381 & 91.0\% & \underline{8.2\%} & 636 & 2.1\% & \underline{8.2\%} & 1303 & — \\
+EDDM & 8.6\% & \underline{91.4\%} & 307 & 8.6\% & \underline{91.4\%} & 512 & 0.7\% & \underline{91.4\%} & 1347 & — \\
+HDDM\_A & 94.2\% & \underline{5.8\%} & 57 & 94.2\% & \underline{5.8\%} & 162 & 4.8\% & \underline{5.8\%} & 1068 & — \\
+HDDM\_W & 9.8\% & \underline{90.2\%} & 15 & 9.8\% & \underline{90.2\%} & 48 & 9.6\% & \underline{90.2\%} & 565 & — \\
 \bottomrule
 \end{tabular}
-\smallskip
 \end{table}
 
 

@@ -9,22 +9,6 @@ Each Monte-Carlo trial:
 The model is trained *once* (by ``train_model.py``) and shared across all
 trials.  This correctly models the scenario of a fixed deployed model whose
 calibration is being monitored over time.
-
-n_bins sweep
-------------
-``run_experiment`` automatically runs the n_bins sensitivity sweep for every
-value in ``cfg.n_bins_list``.  The sweep reuses the PIT sequences already
-computed for each trial — only the PITMonitor instance changes — so no extra
-data generation or model inference is needed.  The canonical comparison table
-uses ``cfg.n_monitor_bins`` (the first entry of ``n_bins_list``); the sweep
-results are stored under the ``"bins_sweep"`` key of the returned dict.
-
-Single-run artifacts
---------------------
-For each drift scenario ``run_experiment`` also collects one fully-detailed
-run (per-step evidence trace, PIT stream, predictions) suitable for the
-four-panel visualization in ``plots.py``.  These are stored under
-``"single_runs"``.
 """
 
 from __future__ import annotations
@@ -63,6 +47,7 @@ def run_single_trial(
     transition_window: int,
     trial_idx: int,
     all_n_bins: tuple[int, ...],
+    binary_threshold: float,
 ) -> dict:
     """Run one Monte-Carlo trial for all n_bins values simultaneously.
 
@@ -86,6 +71,9 @@ def run_single_trial(
     all_n_bins : tuple of int
         All PITMonitor bin sizes to evaluate.  ``all_n_bins[0]`` is the
         canonical value used in the main comparison table.
+    binary_threshold : float
+        Median absolute residual from the training set, used to binarize
+        residuals for DDM / EDDM / HDDM_A / HDDM_W.
 
     Returns
     -------
@@ -94,8 +82,7 @@ def run_single_trial(
 
             {
                 "by_n_bins": {
-                    10: {"PITMonitor": result_dict, "ADWIN": result_dict, ...},
-                    20: {"PITMonitor": result_dict, "ADWIN": result_dict, ...},
+                    100: {"PITMonitor": result_dict, "ADWIN": result_dict, ...},
                     ...
                 }
             }
@@ -114,10 +101,8 @@ def run_single_trial(
     residuals = compute_residuals(bundle, X_mon, y_mon)
     sq_residuals = residuals**2
 
-    # Binary error threshold computed on the stable window only (no leakage)
-    pre_drift_abs = np.abs(residuals[: cfg.n_stable])
-    threshold = float(np.median(pre_drift_abs))
-    binary_errors = (np.abs(residuals) > threshold).astype(np.float64)
+    # Binary error threshold from training data (no leakage)
+    binary_errors = (np.abs(residuals) > binary_threshold).astype(np.float64)
 
     # ── Run baseline detectors once (they don't depend on n_bins) ────
     baseline_detectors = build_all_detectors(
@@ -148,12 +133,19 @@ def run_single_trial(
         fired = alarm_idx is not None
         false_alarm = fired and alarm_idx < cfg.n_stable
         delay = (alarm_idx - cfg.n_stable) if (fired and not false_alarm) else None
+
+        # Changepoint estimation (only meaningful if alarm fired)
+        cp = mon.changepoint()
+        # Convert PITMonitor's 1-based changepoint to 0-based monitoring index
+        cp_idx = (cp - 1) if cp is not None else None
+
         pit_results[n_bins] = {
             "name": "PITMonitor",
             "alarm_fired": fired,
             "alarm_index": alarm_idx,
             "false_alarm": false_alarm,
             "detection_delay": delay,
+            "changepoint_estimate": cp_idx,
         }
 
     # ── Assemble per-n_bins output ────────────────────────────────────
@@ -193,7 +185,7 @@ def collect_single_run(
     dict
         Keys: ``true_shift_point``, ``true_labels``, ``predictions``,
         ``pits``, ``evidence_trace``, ``alarm_fired``, ``alarm_time``,
-        ``monitor_alpha``, ``changepoint``.
+        ``monitor_alpha``, ``changepoint``, ``scenario_key``.
     """
     from pitmon import PITMonitor
 
@@ -215,6 +207,7 @@ def collect_single_run(
             alarm_time = i + 1  # 1-based index within monitoring stream
 
     cp = mon.changepoint()
+    scenario_key = f"{drift_type}_tw{transition_window}"
 
     return {
         "true_shift_point": cfg.n_stable + 1,  # 1-based within monitoring stream
@@ -226,6 +219,7 @@ def collect_single_run(
         "alarm_time": alarm_time,
         "monitor_alpha": cfg.alpha,
         "changepoint": int(cp) if cp is not None else None,
+        "scenario_key": scenario_key,
     }
 
 
@@ -273,8 +267,8 @@ def aggregate_results(trial_results_for_bins: list[dict], n_stable: int) -> dict
     -------
     dict
         ``{detector_name: summary_dict}`` with keys: n_trials, alarm_rate,
-        tpr, tpr_ci, fpr, fpr_ci, median_delay, mean_delay, std_delay,
-        n_detections, delays.
+        tpr, tpr_ci, fpr, fpr_ci, mean_delay, std_delay, median_delay,
+        n_detections, delays, mean_cp_error (PITMonitor only).
     """
     summaries = {}
     for det_name in ALL_DETECTOR_NAMES:
@@ -293,19 +287,37 @@ def aggregate_results(trial_results_for_bins: list[dict], n_stable: int) -> dict
         tpr = n_true_detect / n
         fpr = n_false / n
 
-        summaries[det_name] = {
+        summary = {
             "n_trials": n,
             "alarm_rate": n_fired / n,
             "tpr": tpr,
             "tpr_ci": _wilson_ci(n_true_detect, n),
             "fpr": fpr,
             "fpr_ci": _wilson_ci(n_false, n),
-            "median_delay": float(np.median(delays)) if delays else float("nan"),
             "mean_delay": float(np.mean(delays)) if delays else float("nan"),
             "std_delay": float(np.std(delays)) if delays else float("nan"),
+            "median_delay": float(np.median(delays)) if delays else float("nan"),
             "n_detections": n_true_detect,
             "delays": delays,
         }
+
+        # Changepoint error for PITMonitor (mean absolute error vs true drift)
+        if det_name == "PITMonitor":
+            cp_errors = []
+            for r in rows:
+                cp = r.get("changepoint_estimate")
+                if cp is not None and r["alarm_fired"] and not r["false_alarm"]:
+                    # True drift is at index n_stable (0-based)
+                    cp_errors.append(abs(cp - n_stable))
+            summary["mean_cp_error"] = (
+                float(np.mean(cp_errors)) if cp_errors else float("nan")
+            )
+            summary["median_cp_error"] = (
+                float(np.median(cp_errors)) if cp_errors else float("nan")
+            )
+            summary["n_cp_estimates"] = len(cp_errors)
+
+        summaries[det_name] = summary
     return summaries
 
 
@@ -320,11 +332,12 @@ def run_experiment(
 
     This is the single entry point for all computation.  It:
 
-    1. Runs ``cfg.n_trials`` Monte-Carlo trials per drift scenario.
-    2. Within each trial, evaluates *all* ``cfg.n_bins_list`` PITMonitor
+    1. Computes the binary error threshold from training data (once).
+    2. Runs ``cfg.n_trials`` Monte-Carlo trials per drift scenario.
+    3. Within each trial, evaluates *all* ``cfg.n_bins_list`` PITMonitor
        variants and all baseline detectors using the same data stream.
-    3. Collects one detailed single-run artifact per scenario for visualization.
-    4. Aggregates results separately for every n_bins value.
+    4. Collects one detailed single-run artifact per scenario for visualization.
+    5. Aggregates results separately for every n_bins value.
 
     The main comparison table uses ``cfg.n_monitor_bins`` (= ``n_bins_list[0]``).
     The n_bins sensitivity data is stored alongside under ``"bins_sweep"``.
@@ -351,21 +364,7 @@ def run_experiment(
         ``"single_runs"``
             Per-step visualization data: ``{scenario_key: artifact_dict}``.
         ``"bins_sweep"``
-            n_bins sensitivity data::
-
-                {
-                  "n_bins_list": [10, 5, 20, 50, 100],
-                  "scenarios": {
-                      "gra_tw0": {
-                          10: {"tpr": ..., "tpr_ci": ..., "fpr": ...,
-                               "fpr_ci": ..., "median_delay": ...},
-                          5:  {...},
-                          ...
-                      },
-                      ...
-                  }
-                }
-
+            n_bins sensitivity data.
         ``"elapsed_seconds"``
             Wall-clock time for the full experiment.
     """
@@ -379,6 +378,22 @@ def run_experiment(
 
     all_n_bins = tuple(cfg.n_bins_list)  # evaluated together in every trial
     canonical_bins = cfg.n_monitor_bins
+
+    # ── Compute binary error threshold from TRAINING data ────────────
+    # This avoids information leakage: the threshold is determined before
+    # any monitoring data is seen, exactly as in a real deployment.
+    drift_type_0, tw_0 = cfg.drift_scenarios[0]
+    X_for_threshold, y_for_threshold = generate_stream(
+        cfg, drift_type=drift_type_0, transition_window=tw_0, seed=cfg.seed
+    )
+    X_train = X_for_threshold[: cfg.n_train]
+    y_train = y_for_threshold[: cfg.n_train]
+    train_residuals = compute_residuals(bundle, X_train, y_train)
+    binary_threshold = float(np.median(np.abs(train_residuals)))
+    print(
+        f"Binary error threshold (training-data median |residual|): "
+        f"{binary_threshold:.4f}"
+    )
 
     print(
         f"Running experiment: {cfg.n_trials} trials × "
@@ -414,6 +429,7 @@ def run_experiment(
                     tw,
                     trial_idx,
                     all_n_bins,
+                    binary_threshold,
                 ): trial_idx
                 for trial_idx in range(cfg.n_trials)
             }
@@ -431,10 +447,15 @@ def run_experiment(
             s = summary.get(name)
             if s is None:
                 continue
+            cp_str = ""
+            if name == "PITMonitor" and not np.isnan(
+                s.get("mean_cp_error", float("nan"))
+            ):
+                cp_str = f"  mean_cp_err={s['mean_cp_error']:.0f}"
             print(
                 f"    {name:>12s}  TPR={s['tpr']:.2%}  "
                 f"FPR={s['fpr']:.2%}  "
-                f"median_delay={s['median_delay']:.0f}"
+                f"mean_delay={s['mean_delay']:.0f}{cp_str}"
             )
 
         # ── Aggregate: every n_bins (sweep) ───────────────────────────
@@ -448,6 +469,7 @@ def run_experiment(
                 "tpr_ci": pit_s.get("tpr_ci", (float("nan"), float("nan"))),
                 "fpr": pit_s.get("fpr", float("nan")),
                 "fpr_ci": pit_s.get("fpr_ci", (float("nan"), float("nan"))),
+                "mean_delay": pit_s.get("mean_delay", float("nan")),
                 "median_delay": pit_s.get("median_delay", float("nan")),
             }
 
@@ -463,10 +485,12 @@ def run_experiment(
             "n_stable": cfg.n_stable,
             "n_post": cfg.n_post,
             "alpha": cfg.alpha,
+            "delta": cfg.delta,
             "n_bins": canonical_bins,
             "n_bins_list": list(all_n_bins),
             "n_trials": cfg.n_trials,
             "drift_scenarios": list(cfg.drift_scenarios),
+            "binary_threshold": binary_threshold,
         },
         "results": all_results,
         "single_runs": all_single_runs,

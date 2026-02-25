@@ -73,7 +73,7 @@ class PITMonitor:
     def __init__(
         self,
         alpha=0.05,
-        n_bins=10,
+        n_bins=100,
         weight_schedule=None,
         rng=None,
     ):

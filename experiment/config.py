@@ -78,7 +78,7 @@ class Config:
 
     # ── Detector settings ──────────────────────────────────────────
     alpha: float = 0.05  # PITMonitor
-    delta = 0.05  # ADWIN
+    delta: float = 0.05  # ADWIN
 
     # Bin sizes for the sensitivity sweep. The first value is used for the
     # main experiment; all values appear in the n_bins sensitivity plot.

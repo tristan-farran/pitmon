@@ -55,6 +55,10 @@ class DetectorResult:
     detection_delay : int or None
         Number of samples between the true drift onset and the alarm.
         ``None`` if no true-positive detection occurred.
+    changepoint_estimate : int or None
+        Estimated changepoint index (0-based within the monitoring stream).
+        Only populated by PITMonitor; ``None`` for all other detectors and
+        when no alarm fires.
     """
 
     name: str
@@ -62,6 +66,7 @@ class DetectorResult:
     alarm_index: Optional[int]
     false_alarm: bool
     detection_delay: Optional[int]
+    changepoint_estimate: Optional[int] = None
 
 
 # ─── PITMonitor wrapper ──────────────────────────────────────────────
@@ -74,13 +79,13 @@ class PITMonitorDetector:
     ----------
     alpha : float, default=0.05
         Anytime-valid false alarm level.
-    n_bins : int, default=10
+    n_bins : int, default=100
         Histogram bins for the e-value density estimator.
     seed : int, default=42
         RNG seed passed to PITMonitor for tie-randomized p-values.
     """
 
-    def __init__(self, alpha: float = 0.05, n_bins: int = 10, seed: int = 42):
+    def __init__(self, alpha: float = 0.05, n_bins: int = 100, seed: int = 42):
         self.name = "PITMonitor"
         self._alpha = alpha
         self._n_bins = n_bins
@@ -222,7 +227,9 @@ def build_all_detectors(
     ----------
     alpha : float, default=0.05
         False alarm level for PITMonitor.
-    n_monitor_bins : int, default=10
+    delta : float, default=0.05
+        Significance level for ADWIN (controls its false alarm rate).
+    n_monitor_bins : int, default=100
         n_bins for PITMonitor's histogram density estimator.
     seed : int, default=42
         RNG seed for PITMonitor's tie-randomized p-values.
@@ -233,7 +240,7 @@ def build_all_detectors(
     """
     return [
         PITMonitorDetector(alpha=alpha, n_bins=n_monitor_bins, seed=seed),
-        RiverDetector("ADWIN", lambda: ADWIN(), "continuous"),
+        RiverDetector("ADWIN", lambda d=delta: ADWIN(delta=d), "continuous"),
         RiverDetector("KSWIN", lambda: KSWIN(), "continuous"),
         RiverDetector("PageHinkley", lambda: PageHinkley(), "continuous"),
         RiverDetector("DDM", lambda: DDM(), "binary"),

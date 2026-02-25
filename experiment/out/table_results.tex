@@ -1,0 +1,22 @@
+\begin{table}[t]
+\centering
+\small
+\caption{Drift detection results on FriedmanDrift (1,000 trials, $\alpha=0.05$). Mean delay and changepoint error are in samples. Best TPR per scenario is \textbf{bolded}; FPR exceeding $\alpha$ is \underline{underlined}.}
+\label{tab:results}
+\begin{tabular}{l ccc ccc ccc c}
+\toprule
+\multicolumn{1}{l}{} & \multicolumn{3}{c}{GRA} & \multicolumn{3}{c}{GSG} & \multicolumn{3}{c}{LEA} & \multicolumn{1}{c}{} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10}
+Method & TPR & FPR & Delay & TPR & FPR & Delay & TPR & FPR & Delay & $\overline{|\hat\tau - \tau|}$ \\
+\midrule
+PITMonitor & \textbf{95.9%} & 4.1% & 76 & \textbf{95.9%} & 4.1% & 185 & 0.0% & 4.1% & — & 4 \\
+ADWIN & 82.3% & \underline{17.7%} & 27 & 82.3% & \underline{17.7%} & 27 & \textbf{82.3%} & \underline{17.7%} & 110 & — \\
+KSWIN & 3.0% & \underline{97.0%} & 16 & 2.2% & \underline{97.8%} & 163 & 3.2% & \underline{96.7%} & 853 & — \\
+PageHinkley & 0.2% & \underline{99.8%} & 2 & 0.2% & \underline{99.8%} & 5 & 0.2% & \underline{99.8%} & 119 & — \\
+DDM & 91.8% & \underline{8.2%} & 381 & 91.0% & \underline{8.2%} & 636 & 2.1% & \underline{8.2%} & 1303 & — \\
+EDDM & 8.6% & \underline{91.4%} & 307 & 8.6% & \underline{91.4%} & 512 & 0.7% & \underline{91.4%} & 1347 & — \\
+HDDM\_A & 94.2% & \underline{5.8%} & 57 & 94.2% & \underline{5.8%} & 162 & 4.8% & \underline{5.8%} & 1068 & — \\
+HDDM\_W & 9.8% & \underline{90.2%} & 15 & 9.8% & \underline{90.2%} & 48 & 9.6% & \underline{90.2%} & 565 & — \\
+\bottomrule
+\end{tabular}
+\end{table}

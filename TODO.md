@@ -1,3 +1,4 @@
+- After the last upgrade the model now seems to perform worse according to veriy-model, even when restoring to 200 epochs, why could that be? What changes did were made to training in the last edit apart from the epoch change?
 
 - TPR and FPR are identical across several scenarios for some of the detectors, this seems suspicious
 

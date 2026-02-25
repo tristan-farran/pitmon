@@ -125,6 +125,11 @@ INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/graphics-cfg/color.cfg
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/graphics/mathcolor.ltx
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/graphics/mathcolor.ltx
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/graphics/mathcolor.ltx
+INPUT ../experiment/out/experiment_macros.tex
+INPUT ../experiment/out/experiment_macros.tex
+INPUT ../experiment/out/experiment_macros.tex
+INPUT ../experiment/out/experiment_macros.tex
+INPUT ../experiment/out/experiment_macros.tex
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 INPUT %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.aux
@@ -215,6 +220,11 @@ INPUT /usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.e
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/cm/cmbx10.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/cm/cmbx8.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/cm/cmbx6.tfm
+INPUT ../experiment/out/table_results.tex
+INPUT ../experiment/out/table_results.tex
+INPUT ../experiment/out/table_results.tex
+INPUT ../experiment/out/table_results.tex
+INPUT ../experiment/out/table_results.tex
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/cm/cmbx10.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/cm/cmbx7.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/cm/cmbx5.tfm
@@ -223,6 +233,11 @@ INPUT ../experiment/out/fig_detection_rates.png
 INPUT ../experiment/out/fig_detection_rates.png
 INPUT ../experiment/out/fig_detection_rates.png
 INPUT ../experiment/out/fig_detection_rates.png
+INPUT ../experiment/out/fig_cp_error_distribution.png
+INPUT ../experiment/out/fig_cp_error_distribution.png
+INPUT ../experiment/out/fig_cp_error_distribution.png
+INPUT ../experiment/out/fig_cp_error_distribution.png
+INPUT ../experiment/out/fig_cp_error_distribution.png
 INPUT %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.bbl
 INPUT %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.bbl
 INPUT %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.bbl

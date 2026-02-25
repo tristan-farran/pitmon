@@ -316,6 +316,7 @@ def aggregate_results(trial_results_for_bins: list[dict], n_stable: int) -> dict
                 float(np.median(cp_errors)) if cp_errors else float("nan")
             )
             summary["n_cp_estimates"] = len(cp_errors)
+            summary["cp_errors"] = cp_errors
 
         summaries[det_name] = summary
     return summaries

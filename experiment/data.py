@@ -3,7 +3,7 @@
 FriedmanDrift streams simulate a regression problem with 10 input features
 (``x0``–``x9``) and a continuous target.  Drift is introduced at a
 configurable position and can be abrupt or gradual.  Only features ``x0``–``x4``
-and ``x9`` appear in the true function; the remaining features are noise.
+appear in the true function; the remaining features are noise.
 
 Supported drift types
 ---------------------

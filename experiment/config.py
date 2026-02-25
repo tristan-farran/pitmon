@@ -57,10 +57,10 @@ class Config:
     """
 
     # ── Reproducibility ──────────────────────────────────────────────
-    seed: int = 42
+    seed: int = 0
 
     # ── Training ─────────────────────────────────────────────────────
-    epochs: int = 10_000
+    epochs: int = 500
     lr: float = 3e-4
 
     # ── Data geometry ────────────────────────────────────────────────
@@ -85,7 +85,7 @@ class Config:
     n_bins_list: Tuple = (100,)
 
     # ── Monte-Carlo trials ───────────────────────────────────────────
-    n_trials: int = 10_000
+    n_trials: int = 1_000
     max_workers: int = 8
 
     # ── Output ───────────────────────────────────────────────────────

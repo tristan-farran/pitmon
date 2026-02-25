@@ -423,15 +423,16 @@ class PITMonitor:
 
     def calibration_score(self):
         """
-        Compute calibration score (Kolmogorov-Smirnov statistic).
+        Compute calibration score from PIT uniformity.
 
-        Measures maximum deviation of empirical CDF from uniform.
-        Returns value in [0, 1], where 1 = perfect calibration.
+        Measures 1 minus the maximum deviation of the empirical CDF from uniform.
+        Returns value in [0, 1], where 1 = perfect calibration (PITs exactly uniform)
+        and lower values indicate poorer calibration.
 
         Returns
         -------
         float
-            KS statistic: max|ECDF - Uniform|
+            1 - KS statistic, where KS = max|ECDF(x) - x|.
         """
         if self.t == 0:
             return 0.0

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.9.19)  25 FEB 2026 20:00
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.9.19)  25 FEB 2026 20:53
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -333,30 +333,30 @@ Package xcolor Info: Model `wave' substituted by `hsb' on input line 1372.
 \c@lemma=\count327
 \c@definition=\count328
 \c@remark=\count329
- (/usr/local/texlive/2025/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
+ (../experiment/out/experiment_macros.tex) (/usr/local/texlive/2025/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 File: l3backend-pdftex.def 2025-06-09 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count330
 ) (%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.aux)
 \openout1 = `"When Your Model Stops Working - Anytime-Valid Calibration Monitoring.aux"'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 47.
-LaTeX Font Info:    ... okay on input line 47.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 47.
-LaTeX Font Info:    ... okay on input line 47.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 47.
-LaTeX Font Info:    ... okay on input line 47.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 47.
-LaTeX Font Info:    ... okay on input line 47.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 47.
-LaTeX Font Info:    ... okay on input line 47.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 47.
-LaTeX Font Info:    ... okay on input line 47.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 47.
-LaTeX Font Info:    ... okay on input line 47.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 47.
-LaTeX Font Info:    ... okay on input line 47.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 47.
-LaTeX Font Info:    ... okay on input line 47.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 50.
+LaTeX Font Info:    ... okay on input line 50.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 50.
+LaTeX Font Info:    ... okay on input line 50.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 50.
+LaTeX Font Info:    ... okay on input line 50.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 50.
+LaTeX Font Info:    ... okay on input line 50.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 50.
+LaTeX Font Info:    ... okay on input line 50.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 50.
+LaTeX Font Info:    ... okay on input line 50.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 50.
+LaTeX Font Info:    ... okay on input line 50.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 50.
+LaTeX Font Info:    ... okay on input line 50.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 50.
+LaTeX Font Info:    ... okay on input line 50.
  (/usr/local/texlive/2025/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count331
@@ -376,7 +376,7 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 48
  (/usr/local/texlive/2025/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
 ))
-Package hyperref Info: Link coloring OFF on input line 47.
+Package hyperref Info: Link coloring OFF on input line 50.
  (%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.out) (%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.out)
 \@outlinefile=\write3
 \openout3 = `"When Your Model Stops Working - Anytime-Valid Calibration Monitoring.out"'.
@@ -416,11 +416,11 @@ Package hyperref Info: Link coloring OFF on input line 47.
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-LaTeX Font Info:    Trying to load font information for U+msa on input line 50.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 53.
 (/usr/local/texlive/2025/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 50.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 53.
  (/usr/local/texlive/2025/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
@@ -438,35 +438,42 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 [5]
 
 [6]
-Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on input line 340.
+Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on input line 343.
 
 
 [7]
 
 [8]
 
-LaTeX Warning: Reference `fig:single_run' on page 9 undefined on input line 428.
+LaTeX Warning: Reference `fig:single_run' on page 9 undefined on input line 430.
 
-<../experiment/out/fig_detection_rates.png, id=221, 514.0806pt x 536.4843pt>
+(../experiment/out/table_results.tex)
+<../experiment/out/fig_detection_rates.png, id=222, 514.0806pt x 536.4843pt>
 File: ../experiment/out/fig_detection_rates.png Graphic file (type png)
 <use ../experiment/out/fig_detection_rates.png>
-Package pdftex.def Info: ../experiment/out/fig_detection_rates.png  used on input line 457.
+Package pdftex.def Info: ../experiment/out/fig_detection_rates.png  used on input line 438.
 (pdftex.def)             Requested size: 469.75502pt x 490.2398pt.
 
 
 [9]
-Overfull \vbox (68.69905pt too high) has occurred while \output is active []
+Overfull \vbox (67.59912pt too high) has occurred while \output is active []
 
 
 
 [10 <../experiment/out/fig_detection_rates.png>]
+<../experiment/out/fig_cp_error_distribution.png, id=243, 586.3506pt x 269.3262pt>
+File: ../experiment/out/fig_cp_error_distribution.png Graphic file (type png)
+<use ../experiment/out/fig_cp_error_distribution.png>
+Package pdftex.def Info: ../experiment/out/fig_cp_error_distribution.png  used on input line 461.
+(pdftex.def)             Requested size: 469.75502pt x 215.76947pt.
+
 
 [11]
+
+[12 <../experiment/out/fig_cp_error_distribution.png>]
 LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10.95> not available
-(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 531.
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 519.
 
-
-[12]
 
 [13] (%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.bbl
 
@@ -487,18 +494,18 @@ Package rerunfilecheck Info: File `"When Your Model Stops Working - Anytime-Vali
 (rerunfilecheck)             Checksum: F0B7BF7A3BD20F63B290733EE334D753;2299.
  ) 
 Here is how much of TeX's memory you used:
- 12426 strings out of 467797
- 188651 string characters out of 5431803
- 612832 words of memory out of 5000000
- 40763 multiletter control sequences out of 15000+600000
+ 12500 strings out of 467797
+ 190269 string characters out of 5431803
+ 613419 words of memory out of 5000000
+ 40829 multiletter control sequences out of 15000+600000
  651472 words of font info for 104 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,12n,79p,951b,612s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,11n,79p,1037b,590s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1728.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm0600.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm0800.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm0900.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfti1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfti1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfti1200.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sftt1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sftt1200.pfb>
-Output written on "%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.pdf" (16 pages, 749661 bytes).
+Output written on "%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.pdf" (16 pages, 850224 bytes).
 PDF statistics:
- 488 PDF objects out of 1000 (max. 8388607)
- 406 compressed objects within 5 object streams
- 123 named destinations out of 1000 (max. 500000)
- 150 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 494 PDF objects out of 1000 (max. 8388607)
+ 410 compressed objects within 5 object streams
+ 124 named destinations out of 1000 (max. 500000)
+ 155 words of extra memory for PDF output out of 10000 (max. 10000000)
 

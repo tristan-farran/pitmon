@@ -1,5 +1,8 @@
-- Clarify what ECE actually means for us: "We report the Expected Calibration Error (ECE), defined as the average absolute deviation between the empirical PIT CDF and the identity line over a uniform grid on [0,1]."
 
-- ADWIN is now showing a very high (and suspiciously consistent) false alarm rate way above the $\delta = 0.05$, the sublety is that ADWIN's any-time valid false alarm guarantee is different from PITMonitor's, it's something like a bound on the amount of streams that will false alarm at least once, not the FPR itself I think. Check the code isn't doing something funky here and causing this error, then investigate how the ADWIN guarantee works and make the paper actually reflect this.
+- TPR and FPR are identical across several scenarios for some of the detectors, this seems suspicious
 
-- The LaTeX table is outputting with un-escaped %s which is breaking the LaTeX compiler, fix this. And is it possible to embed the table directly from the table .tex file in the paper rather than copying it over every time?
+- ADWIN is now showing a very high false alarm rate way above the $\delta = 0.05$, the sublety is that ADWIN's any-time valid false alarm guarantee is different from PITMonitor's, it's something like a bound on the amount of streams that will false alarm at least once, not the FPR itself I think so setting delta=0.05 gives an unfair comparison, have to think of a better way of doing this.
+
+- More generally, I feel the parameter defaults might be setting up many of the detectors to perform unfairly bad, these should be set according to the right methodology for each if that's necessary. I dont know...
+
+- Fix this error: Font 'default' does not have a glyph for '\u2212' [U+2212], substituting with a dummy symbol.

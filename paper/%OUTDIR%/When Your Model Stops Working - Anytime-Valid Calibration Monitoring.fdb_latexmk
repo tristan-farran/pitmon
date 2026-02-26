@@ -1,23 +1,23 @@
 # Fdb version 4
-["bibtex %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring"] 1772064011.98413 "%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.aux" "%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.bbl" "%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring" 1772064015.29047 0
-  "%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.aux" 1772064014.86918 11109 f63a373a5aea2d1f66aed6c8818b5009 "pdflatex"
+["bibtex %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring"] 1772109610.27521 "%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.aux" "%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.bbl" "%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring" 1772109613.56825 0
+  "%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.aux" 1772109613.14086 11109 f22c468468ed8ef953cdda147e134dfd "pdflatex"
   "./pitmon_references.bib" 1772025452 10425 4525294f917faf76309dd23c49ec9838 ""
   "/usr/local/texlive/2025/texmf-dist/bibtex/bst/natbib/plainnat.bst" 1233624470 26816 ffe5423d2019860bad9f54bc402fac15 ""
   (generated)
   "%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.bbl"
   "%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.blg"
   (rewritten before read)
-["pdflatex"] 1772064012.13285 "/Users/tristanfarran/Documents/Code/Pitmon/paper/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.tex" "When Your Model Stops Working - Anytime-Valid Calibration Monitoring.pdf" "When Your Model Stops Working - Anytime-Valid Calibration Monitoring" 1772064015.29066 0
-  "%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.aux" 1772064014.86918 11109 f63a373a5aea2d1f66aed6c8818b5009 "pdflatex"
-  "%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.bbl" 1772064012.127 7631 b753fa03e09e4782ec4269000c794424 "bibtex %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring"
-  "%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.out" 1772064014.87048 2299 f0b7bf7a3bd20f63b290733ee334d753 "pdflatex"
-  "../experiment/out/experiment_macros.tex" 1772063682.45132 1832 0df0dea4eb86c7a10e3e7b3c9474b956 ""
-  "../experiment/out/fig_cp_error_distribution.png" 1772063682.45008 105816 42108ef252dacfdd1db793b9cabf74dd ""
-  "../experiment/out/fig_delay_distributions.png" 1772063682.15433 357148 9502039c859b411b637deddcc04d0c34 ""
-  "../experiment/out/fig_detection_rates.png" 1772063681.71631 217991 32076ce4c31e25b96c4ea9c2cf790b33 ""
-  "../experiment/out/fig_single_run_gra_tw0.png" 1772063683.24485 1384187 71c169447b607680c912fa6f338714a7 ""
-  "../experiment/out/table_results.tex" 1772063682.45103 1454 5bd7d3ecfc03dad1f0a10bc52914ee04 ""
-  "/Users/tristanfarran/Documents/Code/Pitmon/paper/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.tex" 1772064008.45097 44801 d82439552b55603b88bb10ad638cd78e ""
+["pdflatex"] 1772109610.45184 "/Users/tristanfarran/Documents/Code/Pitmon/paper/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.tex" "When Your Model Stops Working - Anytime-Valid Calibration Monitoring.pdf" "When Your Model Stops Working - Anytime-Valid Calibration Monitoring" 1772109613.56845 0
+  "%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.aux" 1772109613.14086 11109 f22c468468ed8ef953cdda147e134dfd "pdflatex"
+  "%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.bbl" 1772109610.44584 7631 b753fa03e09e4782ec4269000c794424 "bibtex %OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring"
+  "%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.out" 1772109613.1422 2299 f0b7bf7a3bd20f63b290733ee334d753 "pdflatex"
+  "../experiment/out/experiment_macros.tex" 1772107988.80429 1832 0df0dea4eb86c7a10e3e7b3c9474b956 ""
+  "../experiment/out/fig_cp_error_distribution.png" 1772107988.80312 107147 3dbfbdcabf57f4fdf1171490cfbcd2d9 ""
+  "../experiment/out/fig_delay_distributions.png" 1772107988.52466 317299 0dcc6158d40796fed2f4e55b71e492fd ""
+  "../experiment/out/fig_detection_rates.png" 1772107988.08219 240187 b408a1df7707f985ea76d5fac05cb813 ""
+  "../experiment/out/fig_single_run_gra_tw0.png" 1772107989.43103 1259677 7787e8ca576e0279152f9b23ccc787c5 ""
+  "../experiment/out/table_results.tex" 1772107988.80407 1454 5bd7d3ecfc03dad1f0a10bc52914ee04 ""
+  "/Users/tristanfarran/Documents/Code/Pitmon/paper/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.tex" 1772109606.72759 49175 06dced5c4bb115710dd7f23d7932fd77 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1136849721 2971 def0b6c1f0b107b3b936def894055589 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1136849721 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
@@ -163,7 +163,7 @@
   "/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1758283706 5528139 daf1353d2d3d7fed9df2ebbf1b26218e ""
   "/usr/local/texlive/2025/texmf-var/web2c/pdftex/pdflatex.fmt" 1758283913 3621562 8fc84f6285b626b5020e88637b3b50b5 ""
   "/usr/local/texlive/2025/texmf.cnf" 1741450484 577 418a7058ec8e006d8704f60ecd22c938 ""
-  "When Your Model Stops Working - Anytime-Valid Calibration Monitoring.tex" 1772064008.45097 44801 d82439552b55603b88bb10ad638cd78e ""
+  "When Your Model Stops Working - Anytime-Valid Calibration Monitoring.tex" 1772109606.72759 49175 06dced5c4bb115710dd7f23d7932fd77 ""
   (generated)
   "%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.aux"
   "%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.log"

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.9.19)  26 FEB 2026 01:00
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.9.19)  26 FEB 2026 13:40
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -446,50 +446,55 @@ Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on inp
 [8]
 
 [9] (../experiment/out/table_results.tex)
-<../experiment/out/fig_detection_rates.png, id=233, 514.0806pt x 536.4843pt>
+<../experiment/out/fig_detection_rates.png, id=233, 457.4691pt x 575.5101pt>
 File: ../experiment/out/fig_detection_rates.png Graphic file (type png)
 <use ../experiment/out/fig_detection_rates.png>
 Package pdftex.def Info: ../experiment/out/fig_detection_rates.png  used on input line 439.
-(pdftex.def)             Requested size: 469.75502pt x 490.2398pt.
+(pdftex.def)             Requested size: 469.75502pt x 590.99937pt.
 
 
 [10]
-<../experiment/out/fig_single_run_gra_tw0.png, id=246, 586.3506pt x 427.3566pt>
+<../experiment/out/fig_single_run_gra_tw0.png, id=246, 529.7391pt x 443.0151pt>
 File: ../experiment/out/fig_single_run_gra_tw0.png Graphic file (type png)
 <use ../experiment/out/fig_single_run_gra_tw0.png>
 Package pdftex.def Info: ../experiment/out/fig_single_run_gra_tw0.png  used on input line 446.
-(pdftex.def)             Requested size: 469.75502pt x 342.3748pt.
+(pdftex.def)             Requested size: 469.75502pt x 392.86263pt.
 
 
 [11 <../experiment/out/fig_detection_rates.png>]
 
 [12 <../experiment/out/fig_single_run_gra_tw0.png>]
-<../experiment/out/fig_delay_distributions.png, id=261, 983.8356pt x 369.5406pt>
+<../experiment/out/fig_delay_distributions.png, id=260, 806.7741pt x 370.986pt>
 File: ../experiment/out/fig_delay_distributions.png Graphic file (type png)
 <use ../experiment/out/fig_delay_distributions.png>
 Package pdftex.def Info: ../experiment/out/fig_delay_distributions.png  used on input line 466.
-(pdftex.def)             Requested size: 469.75502pt x 176.44707pt.
-<../experiment/out/fig_cp_error_distribution.png, id=263, 586.3506pt x 269.3262pt>
+(pdftex.def)             Requested size: 469.75502pt x 216.01547pt.
+
+
+[13]
+<../experiment/out/fig_cp_error_distribution.png, id=270, 549.4929pt x 306.6657pt>
 File: ../experiment/out/fig_cp_error_distribution.png Graphic file (type png)
 <use ../experiment/out/fig_cp_error_distribution.png>
 Package pdftex.def Info: ../experiment/out/fig_cp_error_distribution.png  used on input line 476.
-(pdftex.def)             Requested size: 469.75502pt x 215.76947pt.
+(pdftex.def)             Requested size: 469.75502pt x 262.1738pt.
 
 
-[13 <../experiment/out/fig_delay_distributions.png>]
+[14 <../experiment/out/fig_delay_distributions.png>]
 
-[14 <../experiment/out/fig_cp_error_distribution.png>]
+[15 <../experiment/out/fig_cp_error_distribution.png>]
 LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10.95> not available
-(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 534.
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 535.
 
 
-[15]
+[16]
 
-[16] (%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.bbl
+[17] (%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.bbl
 
-[17])
+[18]
 
-[18] (%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.aux)
+[19])
+
+[20] (%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.aux)
  ***********
 LaTeX2e <2025-06-01> patch level 1
 L3 programming layer <2025-09-02>
@@ -498,18 +503,18 @@ Package rerunfilecheck Info: File `"When Your Model Stops Working - Anytime-Vali
 (rerunfilecheck)             Checksum: F0B7BF7A3BD20F63B290733EE334D753;2299.
  ) 
 Here is how much of TeX's memory you used:
- 12518 strings out of 467797
- 191027 string characters out of 5431803
+ 12520 strings out of 467797
+ 191041 string characters out of 5431803
  614155 words of memory out of 5000000
  40843 multiletter control sequences out of 15000+600000
  651472 words of font info for 104 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,11n,79p,1186b,586s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,11n,79p,1643b,590s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1728.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm0600.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm0800.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm0900.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfti1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfti1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfti1200.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sftt1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sftt1200.pfb>
-Output written on "%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.pdf" (18 pages, 2559771 bytes).
+Output written on "%OUTDIR%/When Your Model Stops Working - Anytime-Valid Calibration Monitoring.pdf" (20 pages, 2473809 bytes).
 PDF statistics:
- 515 PDF objects out of 1000 (max. 8388607)
- 424 compressed objects within 5 object streams
- 128 named destinations out of 1000 (max. 500000)
+ 524 PDF objects out of 1000 (max. 8388607)
+ 431 compressed objects within 5 object streams
+ 130 named destinations out of 1000 (max. 500000)
  165 words of extra memory for PDF output out of 10000 (max. 10000000)
 

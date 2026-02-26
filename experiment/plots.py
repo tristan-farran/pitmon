@@ -5,7 +5,6 @@ Produces:
     fig_delay_distributions.png  – violin + strip plots of detection delay
     fig_cp_error_distribution.png – histogram of PITMonitor changepoint estimation error
     fig_single_run_<scen>.png    – 4-panel single-run diagnostic per scenario
-    fig_nbins_sweep.png          – PITMonitor TPR / FPR / delay vs n_bins
     table_results.tex            – LaTeX booktabs table for the paper
     experiment_macros.tex         – LaTeX \\newcommand macros for experiment params & results
 
@@ -245,10 +244,10 @@ def plot_detection_rates(results: dict, save_dir: Path) -> plt.Figure:
     fig, axes = plt.subplots(
         n_scenarios,
         2,
-        figsize=(7.0, 2.4 * n_scenarios),
-        gridspec_kw={"wspace": 0.35, "hspace": 0.4},
-        constrained_layout=True,
+        figsize=(7.0, 2.7 * n_scenarios + 0.6),
+        gridspec_kw={"wspace": 0.35, "hspace": 0.55},
     )
+    fig.subplots_adjust(top=0.93)
     if n_scenarios == 1:
         axes = np.array([axes])
 
@@ -294,12 +293,20 @@ def plot_detection_rates(results: dict, save_dir: Path) -> plt.Figure:
         ax.set_title(f"{scen_label} — TPR")
         ax.xaxis.set_major_formatter(mticker.PercentFormatter(1.0, 0))
 
-        # FPR panel
+        # FPR panel — capped at FPR_CAP; bars exceeding it are annotated
+        FPR_CAP = 0.15
         ax = axes[i, 1]
+        fprs_display = [min(f, FPR_CAP) for f in fprs]
+        # Suppress error bars on clipped bars (they'd extend beyond cap)
+        fpr_err_display = [
+            e if f < FPR_CAP * 0.98 else [0.0, 0.0]
+            for f, e in zip(fprs, fpr_err)
+        ]
+        fpr_err_arr_display = np.abs(np.array(fpr_err_display).T)
         bars = ax.barh(
             y,
-            fprs,
-            xerr=fpr_err_arr,
+            fprs_display,
+            xerr=fpr_err_arr_display,
             color=colors,
             alpha=0.88,
             edgecolor="white",
@@ -308,6 +315,18 @@ def plot_detection_rates(results: dict, save_dir: Path) -> plt.Figure:
         )
         for bar, method in zip(bars, methods):
             bar.set_hatch(METHOD_HATCHES.get(method, ""))
+        # Annotate clipped bars with actual value
+        for bar, fpr in zip(bars, fprs):
+            if fpr >= FPR_CAP * 0.98:
+                ax.text(
+                    FPR_CAP * 1.02,
+                    bar.get_y() + bar.get_height() / 2,
+                    f"{fpr:.0%}",
+                    va="center",
+                    ha="left",
+                    fontsize=6.5,
+                    color="0.3",
+                )
         ax.axvline(
             alpha,
             color="crimson",
@@ -318,8 +337,7 @@ def plot_detection_rates(results: dict, save_dir: Path) -> plt.Figure:
         )
         ax.set_yticks(y)
         ax.set_yticklabels([])
-        max_fpr = max(max(fprs), alpha * 3)
-        ax.set_xlim(0, min(max_fpr * 1.15, 1.08))
+        ax.set_xlim(0, FPR_CAP * 1.40)
         ax.set_title(f"{scen_label} — FPR")
         ax.xaxis.set_major_formatter(mticker.PercentFormatter(1.0, 0))
         if i == 0:
@@ -329,7 +347,6 @@ def plot_detection_rates(results: dict, save_dir: Path) -> plt.Figure:
         "Drift Detection: True and False Positive Rates",
         fontsize=11,
         fontweight="bold",
-        y=1.01,
     )
 
     out = save_dir / "fig_detection_rates.png"
@@ -368,10 +385,10 @@ def plot_delay_distributions(results: dict, save_dir: Path) -> plt.Figure:
     fig, axes = plt.subplots(
         1,
         n_scenarios,
-        figsize=(4.5 * n_scenarios, 5.0),
+        figsize=(4.5 * n_scenarios, 5.5),
         sharey=False,
-        constrained_layout=True,
     )
+    fig.subplots_adjust(top=0.88, bottom=0.18, wspace=0.3)
     if n_scenarios == 1:
         axes = [axes]
 
@@ -675,10 +692,10 @@ def plot_cp_error_distribution(results: dict, save_dir: Path) -> Optional[plt.Fi
     fig, axes = plt.subplots(
         1,
         n_panels,
-        figsize=(4.0 * n_panels, 3.5),
-        constrained_layout=True,
+        figsize=(4.5 * n_panels, 4.2),
         squeeze=False,
     )
+    fig.subplots_adjust(top=0.82, wspace=0.35)
     axes = axes[0]
 
     color = METHOD_COLORS["PITMonitor"]
@@ -726,7 +743,6 @@ def plot_cp_error_distribution(results: dict, save_dir: Path) -> Optional[plt.Fi
         "PITMonitor Changepoint Estimation Error",
         fontsize=11,
         fontweight="bold",
-        y=1.02,
     )
 
     out = save_dir / "fig_cp_error_distribution.png"
@@ -777,9 +793,9 @@ def plot_single_run_panels(
     fig, axes = plt.subplots(
         2,
         2,
-        figsize=(8.0, 5.8),
-        constrained_layout=True,
+        figsize=(8.5, 6.4),
     )
+    fig.subplots_adjust(top=0.90, hspace=0.45, wspace=0.35)
     fig.suptitle(
         f"PITMonitor Single Run — {scen_label}",
         fontsize=11,
@@ -975,109 +991,6 @@ def plot_single_run_panels(
     return fig
 
 
-# ─── Figure 5: n_bins sensitivity sweep ──────────────────────────────
-
-
-def plot_nbins_sweep(sweep: dict, save_dir: Path, alpha: float = 0.05) -> plt.Figure:
-    """Line plots of PITMonitor TPR / FPR / delay vs n_bins.
-
-    Parameters
-    ----------
-    sweep : dict
-    save_dir : Path
-    alpha : float
-
-    Returns
-    -------
-    plt.Figure
-    """
-    _apply_style()
-    scenarios = list(sweep["scenarios"].keys())
-    n_bins_vals = sorted({int(k) for scen in sweep["scenarios"].values() for k in scen})
-
-    n_scenarios = len(scenarios)
-    fig, axes = plt.subplots(
-        3,
-        n_scenarios,
-        figsize=(3.5 * n_scenarios, 7.0),
-        gridspec_kw={"hspace": 0.35, "wspace": 0.30},
-        constrained_layout=True,
-    )
-    if n_scenarios == 1:
-        axes = axes.reshape(3, 1)
-
-    color = METHOD_COLORS["PITMonitor"]
-
-    for col, scen in enumerate(scenarios):
-        scen_data = sweep["scenarios"][scen]
-        xs = [nb for nb in n_bins_vals if nb in scen_data or str(nb) in scen_data]
-
-        def get_d(nb):
-            return scen_data.get(nb, scen_data.get(str(nb), {}))
-
-        tprs = [get_d(nb).get("tpr", float("nan")) for nb in xs]
-        fprs = [get_d(nb).get("fpr", float("nan")) for nb in xs]
-        delas = [
-            get_d(nb).get("mean_delay", get_d(nb).get("median_delay", float("nan")))
-            for nb in xs
-        ]
-
-        tpr_lo = [get_d(nb).get("tpr_ci", [float("nan"), float("nan")])[0] for nb in xs]
-        tpr_hi = [get_d(nb).get("tpr_ci", [float("nan"), float("nan")])[1] for nb in xs]
-        fpr_lo = [get_d(nb).get("fpr_ci", [float("nan"), float("nan")])[0] for nb in xs]
-        fpr_hi = [get_d(nb).get("fpr_ci", [float("nan"), float("nan")])[1] for nb in xs]
-
-        scen_label = SCENARIO_LABELS.get(scen, scen)
-
-        # TPR
-        ax = axes[0, col]
-        ax.plot(xs, tprs, "o-", color=color, lw=1.5, ms=4)
-        ax.fill_between(xs, tpr_lo, tpr_hi, color=color, alpha=0.15)
-        ax.set_ylim(-0.05, 1.05)
-        ax.set_title(scen_label)
-        if col == 0:
-            ax.set_ylabel("TPR")
-        ax.yaxis.set_major_formatter(mticker.PercentFormatter(1.0, 0))
-
-        # FPR
-        ax = axes[1, col]
-        ax.plot(xs, fprs, "o-", color=color, lw=1.5, ms=4)
-        ax.fill_between(xs, fpr_lo, fpr_hi, color=color, alpha=0.15)
-        ax.axhline(alpha, color="crimson", ls="--", lw=1.0, label=f"α = {alpha}")
-        valid_fprs = [f for f in fprs if not np.isnan(f)]
-        ax.set_ylim(
-            -0.01,
-            max(max(valid_fprs, default=alpha), alpha) * 1.6,
-        )
-        if col == 0:
-            ax.set_ylabel("FPR")
-            ax.legend(fontsize=7)
-        ax.yaxis.set_major_formatter(mticker.PercentFormatter(1.0, 0))
-
-        # Delay
-        ax = axes[2, col]
-        valid = [(x, d) for x, d in zip(xs, delas) if not np.isnan(d)]
-        if valid:
-            vx, vd = zip(*valid)
-            ax.plot(vx, vd, "o-", color=color, lw=1.5, ms=4)
-        if col == 0:
-            ax.set_ylabel("Mean delay (samples)")
-        ax.set_xlabel("n_bins")
-
-    fig.suptitle(
-        "PITMonitor Sensitivity to n_bins",
-        fontsize=11,
-        fontweight="bold",
-        y=1.01,
-    )
-
-    out = save_dir / "fig_nbins_sweep.png"
-    fig.savefig(out, bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Saved {out}")
-    return fig
-
-
 # ─── Master plot function ────────────────────────────────────────────
 
 
@@ -1108,11 +1021,5 @@ def make_all_plots(results: dict, save_dir: Path) -> None:
     for scenario_key, artifacts in results.get("single_runs", {}).items():
         out_path = save_dir / f"fig_single_run_{scenario_key}.png"
         plot_single_run_panels(artifacts, save_path=out_path)
-
-    # n_bins sweep
-    bins_sweep = results.get("bins_sweep")
-    if bins_sweep:
-        alpha = results["config"].get("alpha", 0.05)
-        plot_nbins_sweep(bins_sweep, save_dir, alpha=alpha)
 
     print("Done.")

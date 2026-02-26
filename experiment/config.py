@@ -15,7 +15,7 @@ The drift point is placed at index ``drift_index = n_train + n_stable``
 so the model is always trained entirely on pre-drift data.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Tuple
 
@@ -44,10 +44,8 @@ class Config:
     alpha : float
         False alarm rate bound passed to PITMonitor (and used as the FPR
         reference line in plots).
-    n_bins_list : tuple of int
-        PITMonitor histogram sizes to sweep over.  The first entry is used for
-        the primary experiment; all entries are used in the n_bins sensitivity
-        plot.
+    n_bins : int
+        PITMonitor histogram bin count.
     n_trials : int
         Number of Monte-Carlo trials per drift scenario.
     max_workers : int
@@ -77,7 +75,7 @@ class Config:
     )
 
     # ── Detector settings ──────────────────────────────────────────
-    n_bins_list: Tuple = (100,)  # PITMonitor
+    n_bins: int = 100  # PITMonitor histogram bins
     alpha: float = 0.05  # PITMonitor
     # All river baselines use library-default parameters.
 
@@ -89,11 +87,6 @@ class Config:
     output_dir: str = "out"
 
     # ── Derived helpers ──────────────────────────────────────────────
-
-    @property
-    def n_monitor_bins(self) -> int:
-        """Default (primary) number of PITMonitor histogram bins."""
-        return self.n_bins_list[0]
 
     @property
     def n_total(self) -> int:

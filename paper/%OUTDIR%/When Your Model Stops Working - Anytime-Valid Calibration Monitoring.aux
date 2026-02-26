@@ -40,34 +40,36 @@
 \@writefile{toc}{\contentsline {paragraph}{PIT construction.}{9}{section*.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Detector settings.}{9}{section*.5}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Baselines.}{9}{section*.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Evaluation protocol.}{9}{section*.7}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Drift detection results on FriedmanDrift (100{} trials, $\alpha =0.05$). Mean delay is in samples. Best TPR per scenario is \textbf  {bolded}; FPR exceeding $\alpha $ is \underline  {underlined}.}}{10}{table.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Drift detection results on FriedmanDrift (1{,}000{} trials, $\alpha =0.05$). Mean delay is in samples. Best TPR per scenario is \textbf  {bolded}; FPR exceeding $\alpha $ is \underline  {underlined}.}}{10}{table.1}\protected@file@percent }
 \newlabel{tab:results}{{1}{10}{Drift detection results on FriedmanDrift (\expNtrials {} trials, $\alpha =\expAlpha $). Mean delay is in samples. Best TPR per scenario is \textbf {bolded}; FPR exceeding $\alpha $ is \underline {underlined}}{table.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Evaluation protocol.}{10}{section*.7}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Results}{10}{subsection.4.2}\protected@file@percent }
-\citation{bifet2007learning}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces TPR and FPR across all detectors and drift scenarios. The red dashed line marks PITMonitor's false alarm guarantee $\alpha = 0.05$.}}{11}{figure.1}\protected@file@percent }
-\newlabel{fig:detection_rates}{{1}{11}{TPR and FPR across all detectors and drift scenarios. The red dashed line marks PITMonitor's false alarm guarantee $\alpha = \expAlpha $}{figure.1}{}}
-\@writefile{toc}{\contentsline {paragraph}{Type I error control.}{11}{section*.8}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces TPR and FPR across all detectors and drift scenarios. The red dashed line marks $\alpha = 0.05$. River baselines are run at library defaults; PITMonitor is the only method with a proven stream-level FPR guarantee (Theorem~\ref {thm:type1}).}}{11}{figure.1}\protected@file@percent }
+\newlabel{fig:detection_rates}{{1}{11}{TPR and FPR across all detectors and drift scenarios. The red dashed line marks $\alpha = \expAlpha $. River baselines are run at library defaults; PITMonitor is the only method with a proven stream-level FPR guarantee (Theorem~\ref {thm:type1})}{figure.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Single-run PITMonitor trace on the GRA (abrupt) scenario. (a) Predicted vs.\ actual values with alarm marker. (b) PIT stream with 50-sample rolling mean. (c) Mixture e-process on a log scale; the dashed red line is the alarm threshold $1/\alpha = 20$. (d) Pre- and post-shift PIT histograms illustrating the calibration change detected by the algorithm.}}{12}{figure.2}\protected@file@percent }
+\newlabel{fig:single_run}{{2}{12}{Single-run PITMonitor trace on the GRA (abrupt) scenario. (a) Predicted vs.\ actual values with alarm marker. (b) PIT stream with 50-sample rolling mean. (c) Mixture e-process on a log scale; the dashed red line is the alarm threshold $1/\alpha = 20$. (d) Pre- and post-shift PIT histograms illustrating the calibration change detected by the algorithm}{figure.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{Type I error control.}{12}{section*.8}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Global drift (GRA, GSG).}{12}{section*.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Local expanding drift (LEA).}{12}{section*.10}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Detectors with collapsed FPR.}{12}{section*.11}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Changepoint localization.}{12}{section*.12}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Distribution of PITMonitor changepoint estimation error $|\hat  \tau - \tau |$ across true-positive trials. The abrupt (GRA) scenario yields highly concentrated estimates; the gradual (GSG) scenario shows slightly larger errors due to the extended transition window.}}{13}{figure.2}\protected@file@percent }
-\newlabel{fig:cp_error}{{2}{13}{Distribution of PITMonitor changepoint estimation error $|\hat \tau - \tau |$ across true-positive trials. The abrupt (GRA) scenario yields highly concentrated estimates; the gradual (GSG) scenario shows slightly larger errors due to the extended transition window}{figure.2}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{13}{section.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{When to use PITMonitor.}{13}{section*.13}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Limitations.}{13}{section*.14}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Local expanding drift (LEA).}{13}{section*.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Detection delays.}{13}{section*.11}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Detection delay distributions (true-positive trials only) across all detectors and drift scenarios. Methods with zero true-positive detections are marked with $\times $ at the bottom. Violins show the full delay distribution; the white bar marks the median.}}{13}{figure.3}\protected@file@percent }
+\newlabel{fig:delay_dists}{{3}{13}{Detection delay distributions (true-positive trials only) across all detectors and drift scenarios. Methods with zero true-positive detections are marked with $\times $ at the bottom. Violins show the full delay distribution; the white bar marks the median}{figure.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{Changepoint localization.}{13}{section*.12}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Distribution of PITMonitor changepoint estimation error $|\hat  \tau - \tau |$ across true-positive trials. The abrupt (GRA) scenario yields highly concentrated estimates; the gradual (GSG) scenario shows slightly larger errors due to the extended transition window.}}{14}{figure.4}\protected@file@percent }
+\newlabel{fig:cp_error}{{4}{14}{Distribution of PITMonitor changepoint estimation error $|\hat \tau - \tau |$ across true-positive trials. The abrupt (GRA) scenario yields highly concentrated estimates; the gradual (GSG) scenario shows slightly larger errors due to the extended transition window}{figure.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{14}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{When to use PITMonitor.}{14}{section*.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Limitations.}{14}{section*.14}\protected@file@percent }
 \citation{naeini2015obtaining}
 \citation{degroot1983comparison}
 \citation{gneiting2007strictly}
 \citation{diebold1998evaluating}
 \citation{gneiting2014probabilistic}
+\@writefile{toc}{\contentsline {paragraph}{Practical recommendations.}{15}{section*.15}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Comparison to \texttt  {river} baselines.}{15}{section*.16}\protected@file@percent }
 \citation{rabanser2019failing}
 \citation{lipton2018detecting}
 \citation{podkopaev2021distribution}
-\@writefile{toc}{\contentsline {paragraph}{Practical recommendations.}{14}{section*.15}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Comparison to \texttt  {river} baselines.}{14}{section*.16}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6}Related Work}{14}{section.6}\protected@file@percent }
 \citation{arnold2023sequentially}
 \citation{vovk2021values,ramdas2023game,grunwald2024safe}
 \citation{johari2022always}
@@ -76,9 +78,10 @@
 \citation{shin2022detectors}
 \citation{page1954continuous}
 \citation{shiryaev1963,pollak1985optimal}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Related Work}{16}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Conclusion}{16}{section.7}\protected@file@percent }
 \bibstyle{plainnat}
 \bibdata{pitmon_references}
-\@writefile{toc}{\contentsline {section}{\numberline {7}Conclusion}{15}{section.7}\protected@file@percent }
 \bibcite{arnold2023sequentially}{{1}{2023}{{Arnold et~al.}}{{Arnold, Henzi, and Ziegel}}}
 \bibcite{bifet2007learning}{{2}{2007}{{Bifet and Gavald{\`a}}}{{}}}
 \bibcite{brockwell2007}{{3}{2007}{{Brockwell}}{{}}}
@@ -91,12 +94,12 @@
 \bibcite{grunwald2024safe}{{10}{2024}{{Gr{\"u}nwald et~al.}}{{Gr{\"u}nwald, de~Heide, and Koolen}}}
 \bibcite{jeffreys1961}{{11}{1961}{{Jeffreys}}{{}}}
 \bibcite{johari2022always}{{12}{2022}{{Johari et~al.}}{{Johari, Koomen, Pekelis, and Walsh}}}
+\@writefile{toc}{\contentsline {paragraph}{Code Availability.}{17}{section*.22}\protected@file@percent }
 \bibcite{lipton2018detecting}{{13}{2018}{{Lipton et~al.}}{{Lipton, Wang, and Smola}}}
 \bibcite{montiel2021river}{{14}{2021}{{Montiel et~al.}}{{Montiel, Halford, Mastelini, Bolmier, Sourty, Vaysse, Zouitine, Gomes, Read, Abdessalem, and Bifet}}}
 \bibcite{naeini2015obtaining}{{15}{2015}{{Naeini et~al.}}{{Naeini, Cooper, and Hauskrecht}}}
 \bibcite{page1954continuous}{{16}{1954}{{Page}}{{}}}
 \bibcite{podkopaev2021distribution}{{17}{2021}{{Podkopaev and Ramdas}}{{}}}
-\@writefile{toc}{\contentsline {paragraph}{Code Availability.}{16}{section*.22}\protected@file@percent }
 \bibcite{pollak1985optimal}{{18}{1985}{{Pollak}}{{}}}
 \bibcite{rabanser2019failing}{{19}{2019}{{Rabanser et~al.}}{{Rabanser, G{\"u}nnemann, and Lipton}}}
 \bibcite{ramdas2023game}{{20}{2023}{{Ramdas et~al.}}{{Ramdas, Gr{\"u}nwald, Vovk, and Shafer}}}
@@ -107,4 +110,4 @@
 \bibcite{vovk2021values}{{25}{2021}{{Vovk and Wang}}{{}}}
 \bibcite{vovk2005algorithmic}{{26}{2005}{{Vovk et~al.}}{{Vovk, Gammerman, and Shafer}}}
 \bibcite{wassmer2016group}{{27}{2016}{{Wassmer and Brannath}}{{}}}
-\gdef \@abspage@last{17}
+\gdef \@abspage@last{18}

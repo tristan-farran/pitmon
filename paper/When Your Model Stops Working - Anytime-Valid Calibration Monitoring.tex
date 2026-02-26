@@ -65,7 +65,7 @@ These approaches suffer from a fundamental statistical problem: \emph{they do no
 
 More principled alternatives are provided by online drift detectors, such as those implemented in the \texttt{river} library \citep{montiel2021river}. Classical detectors including DDM, EDDM, and KSWIN are lightweight, easy to deploy, and effective at detecting abrupt changes, but are typically based on heuristic thresholds or fixed-sample statistical arguments and do not provide explicit long-run false alarm guarantees under continuous monitoring or changepoint localisation.
 
-ADWIN employs adaptive windowing with statistical change detection via Hoeffding bounds \citep{bifet2007learning}. Its parameter $\delta$ bounds the false alarm probability \emph{per comparison at each time step} (with a Bonferroni-style correction $\delta' = \delta/n$ for window length $n$), not the probability of ever raising a false alarm over an unbounded stream. Over a long monitoring window the probability of at least one spurious alarm can substantially exceed $\delta$, as our experiments confirm. Furthermore, ADWIN operates on generic performance statistics such as squared residuals and does not provide changepoint estimates, only partially addressing the problem of reliable, informative, long-term calibration monitoring.
+ADWIN employs adaptive windowing with statistical change detection via Hoeffding bounds \citep{bifet2007learning}. Its parameter $\delta$ bounds the false alarm probability \emph{per comparison at each time step} (with a Bonferroni-style correction $\delta' = \delta/n$ for window length $n$), not the probability of ever raising a false alarm over an unbounded stream. Aligning $\delta$ with a desired stream-level FPR requires knowing the monitoring window length in advance and deriving or calibrating the relationship — neither of which is required for PITMonitor. Furthermore, ADWIN operates on generic performance statistics such as squared residuals and does not provide changepoint estimates, only partially addressing the problem of reliable, informative, long-term calibration monitoring.
 
 We propose PITMonitor, an anytime-valid calibration monitoring method with four key properties:
 
@@ -400,18 +400,18 @@ For each monitoring sample $(x_t, y_t)$ the PIT is:
 where $\mu_t$, $\sigma_t$ are the predicted mean and standard deviation and $\Phi$ is the standard normal CDF.
 
 \paragraph{Detector settings.}
+All \texttt{river} baselines are run with their library-default parameters.  This is the most defensible comparison: it reflects the out-of-the-box experience a practitioner receives, avoids any implicit tuning in favour of a particular detector, and sidesteps the need for held-out null data or advance knowledge of the monitoring window length.  Aligning a baseline's internal parameters with a target stream-level FPR would require one of these --- exactly what PITMonitor obviates.
 \begin{itemize}
-    \item \textbf{PITMonitor}: false alarm bound $\alpha = \expAlpha$, bin number $B = \expNbins$.
-    \item \textbf{ADWIN} significance parameter $\delta = \expDelta$, otherwise \texttt{river} defaults. Note that ADWIN's $\delta$ is not directly comparable to PITMonitor's $\alpha$: $\delta$ bounds the per-step false alarm probability (subject to a Bonferroni correction over the window length), while $\alpha$ bounds the probability of \emph{ever} raising a false alarm.
-    \item \textbf{Other}: Default \texttt{river} parameters.
+    \item \textbf{PITMonitor}: $\alpha = \expAlpha$, $B = \expNbins$.  A key practical advantage is that PITMonitor has only two interpretable parameters: $\alpha$ directly and provably controls the stream-level false alarm probability (Theorem~\ref{thm:type1}), and $B$ controls the histogram resolution.  No pre-specified monitoring horizon, held-out null data, or calibration step is required.
+    \item \textbf{Continuous-input baselines (ADWIN, KSWIN, PageHinkley)}: library-default parameters.  Their internal sensitivity parameters (ADWIN's $\delta$, KSWIN's significance level, PageHinkley's threshold) have indirect, horizon-dependent relationships to stream-level FPR.
+    \item \textbf{Binary-input baselines (DDM, EDDM, HDDM\_A, HDDM\_W)}: library-default parameters.  These detectors require a binary error signal; we binarize via $b_t = \mathbf{1}[|r_t| > \theta]$ where $\theta$ is the \emph{median} of $|r_t|$ on the training data (giving $\approx 50\%$ pre-drift error rate).  The median is the most neutral, assumption-free threshold choice: it makes no assumption about the detectors' preferred operating error rate.  That binary detectors were designed for lower error rates ($\sim 5$--$20\%$) is an inherent limitation of applying them to regression monitoring, and one that PITMonitor avoids by consuming PIT values directly.
 \end{itemize}
 
 \paragraph{Baselines.}
 We compare against seven stream-drift detectors from \texttt{river}. Different detector families consume different input streams, reflecting their design assumptions:
 \begin{itemize}
     \item \textbf{Continuous input} (squared residuals $r_t^2 = (y_t - \mu_t)^2$): ADWIN, KSWIN, PageHinkley. These methods track a running statistic of the input stream and alarm when it changes significantly.
-    \item \textbf{Binary input} (error indicator $b_t = \mathbf{1}[|r_t| > \theta]$ where $\theta$ is the median absolute residual on the training data): DDM, EDDM, HDDM\_A, HDDM\_W. These methods are designed for binary error streams and alarm when the
-    error rate increases.
+    \item \textbf{Binary input} (error indicator $b_t = \mathbf{1}[|r_t| > \theta]$ where $\theta$ is the median of $|r_t|$ on the training data, giving $\approx 50\%$ pre-drift error rate): DDM, EDDM, HDDM\_A, HDDM\_W. These methods are designed for binary error streams and alarm when the error rate increases.
 \end{itemize}
 
 PITMonitor receives PIT values; all baselines receive the appropriate residual-derived signal. This is the fairest comparison: each method gets the input it was designed for.
@@ -427,8 +427,9 @@ We run $N = \expNtrials$ Monte Carlo trials per scenario, each using a distinct 
 \subsection{Results}
 
 Table~\ref{tab:results} presents the full results. Figure~\ref{fig:detection_rates}
-visualizes TPR and FPR per method and scenario, and Figure~\ref{fig:single_run}
-shows a representative single-run monitoring trace for the GRA scenario.
+visualizes TPR and FPR per method and scenario, Figure~\ref{fig:single_run}
+shows a representative single-run monitoring trace for the GRA scenario, and
+Figure~\ref{fig:delay_dists} shows the distribution of detection delays.
 
 \input{../experiment/out/table_results}
 
@@ -436,22 +437,36 @@ shows a representative single-run monitoring trace for the GRA scenario.
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{../experiment/out/fig_detection_rates.png}
-\caption{TPR and FPR across all detectors and drift scenarios. The red dashed line marks PITMonitor's false alarm guarantee $\alpha = \expAlpha$.}
+\caption{TPR and FPR across all detectors and drift scenarios. The red dashed line marks $\alpha = \expAlpha$. River baselines are run at library defaults; PITMonitor is the only method with a proven stream-level FPR guarantee (Theorem~\ref{thm:type1}).}
 \label{fig:detection_rates}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../experiment/out/fig_single_run_gra_tw0.png}
+\caption{Single-run PITMonitor trace on the GRA (abrupt) scenario. (a) Predicted vs.\ actual values with alarm marker. (b) PIT stream with 50-sample rolling mean. (c) Mixture e-process on a log scale; the dashed red line is the alarm threshold $1/\alpha = 20$. (d) Pre- and post-shift PIT histograms illustrating the calibration change detected by the algorithm.}
+\label{fig:single_run}
 \end{figure}
 
 
 \paragraph{Type I error control.}
-PITMonitor achieves FPR of \resPMGRAFPR, within the nominal $\alpha = \expAlpha$ guarantee. This is consistent across all three scenarios, as expected since the pre-drift monitoring window is identical. ADWIN shows a consistent FPR of \resADGRAFPR, well above its $\delta = \expDelta$ parameter; this is expected because ADWIN's $\delta$ provides a per-comparison bound (Theorem~3.1 of \citet{bifet2007learning}), not an anytime-valid guarantee on the probability of ever alarming. Over a \expNstable-sample stable window with many subwindow comparisons, the cumulative false alarm probability substantially exceeds the per-step bound.
+PITMonitor achieves FPR of \resPMGRAFPR{} across all scenarios, consistent with the nominal $\alpha = \expAlpha$ guarantee proved in Theorem~\ref{thm:type1}.  This is the only detector in the comparison for which FPR control is formally guaranteed regardless of monitoring horizon.  Among the baselines, ADWIN and HDDM\_A maintain moderate FPR at library defaults; however, KSWIN, PageHinkley, EDDM, and HDDM\_W exhibit FPR exceeding $89\%$ --- these detectors alarm on nearly every null run, rendering them unusable for practical monitoring without re-tuning.  This illustrates the fundamental challenge of deploying library-default baselines: parameters tuned for one setting (e.g., very short streams or very large drifts) can fail catastrophically in others.
 
 \paragraph{Global drift (GRA, GSG).}
-PITMonitor achieves \resPMGRATPR{} TPR with \resPMGRAFPR{} FPR on both global drift scenarios, the highest power of any method with controlled false alarm rate. ADWIN achieves \resADGRATPR{} TPR with \resADGRAFPR{} FPR; its consistently elevated FPR is an artifact of ADWIN's per-step guarantee, not a code error (see Type I error discussion above). PITMonitor's detection delay is \resPMGRADelay{} samples on GRA and \resPMGSGDelay{} on GSG, compared to ADWIN's \resADGRADelay{} on both. DDM and HDDM\_A achieve \resDDMGRATPR{} and \resHDDMAGRATPR{} TPR respectively but with elevated FPR (\resDDMGRAFPR{} and \resHDDMAGRAFPR{}), while DDM's mean delay of \resDDMGRADelay{} samples (GRA) reflects its slower adaptation on the binary-thresholded input stream.
+PITMonitor achieves \resPMGRATPR{} TPR with \resPMGRAFPR{} FPR on both global drift scenarios, with detection delay of \resPMGRADelay{} samples on GRA and \resPMGSGDelay{} on GSG.  ADWIN achieves \resADGRATPR{} TPR with \resADGRAFPR{} FPR and a mean delay of \resADGRADelay{} samples on both GRA and GSG; the identical delay across these scenarios reflects that ADWIN's Hoeffding bound is sensitive enough to detect even the early portion of the gradual transition window.  Among the binary baselines, DDM and HDDM\_A achieve \resDDMGRATPR{} and \resHDDMAGRATPR{} TPR respectively; DDM's mean delay of \resDDMGRADelay{} samples on GRA reflects slower adaptation on the binarized error stream.  The remaining detectors (KSWIN, PageHinkley, EDDM, HDDM\_W) have near-zero TPR as a direct consequence of their high FPR: having already fired during the null window, they are never credited with a true-positive detection.
 
 \paragraph{Local expanding drift (LEA).}
-PITMonitor achieves \resPMLEATPR{} TPR on the LEA scenario, correctly maintaining FPR control but failing to detect the drift. ADWIN achieves \resADLEATPR{} TPR (its identical detection rate across all scenarios reflects the fact that ADWIN fires on every trial; what varies is only whether the alarm occurs before or after drift onset). This result reveals a meaningful limitation of PITMonitor in the current configuration: LEA drift begins on a subset of the five relevant features, producing a small initial perturbation to the Gaussian predictive distribution that the histogram e-value does not accumulate evidence for quickly enough within the \expNpost-sample post-drift window. ADWIN's squared-residual statistic appears more sensitive to partial distributional shifts than PITMonitor's PIT-based approach.
+PITMonitor achieves \resPMLEATPR{} TPR on the LEA scenario, correctly maintaining FPR control but failing to detect the drift. This reveals a meaningful limitation: LEA drift begins on a subset of the five relevant features, producing a small initial perturbation to the Gaussian predictive distribution that the histogram e-value does not accumulate evidence for quickly enough within the \expNpost-sample post-drift window. ADWIN's squared-residual statistic is more sensitive to partial distributional shifts than PITMonitor's PIT-based approach.
 
-\paragraph{Detectors with collapsed FPR.}
-KSWIN, PageHinkley, HDDM\_W, and EDDM exhibit FPR near 1, indicating they alarm on virtually every trial and do so predominantly during the pre-drift window. For KSWIN and PageHinkley this occurs because their default sensitivity parameters are not suited to monitoring squared residuals from a well-fitted Gaussian model, causing them to alarm during the burn-in period. HDDM\_W and EDDM similarly alarm aggressively on the binary-thresholded input stream, where the pre-drift error rate is approximately 50\% by construction (threshold is the median). These detectors would likely behave more reasonably with tuned hyperparameters; we report default-parameter results throughout to keep comparisons fair.
+\paragraph{Detection delays.}
+Figure~\ref{fig:delay_dists} shows the full distribution of detection delays across true-positive trials. PITMonitor's delay distribution is unimodal and moderately concentrated. ADWIN's distribution reflects the Hoeffding bound of its adaptive window; its mean delay is identical on GRA and GSG because its sensitivity at library defaults is sufficient to detect even the earliest portion of the gradual transition window. HDDM\_A achieves shorter delay than PITMonitor on GRA (\resHDDMAGRADelay{} vs \resPMGRADelay{} samples) but lacks any formal FPR guarantee.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../experiment/out/fig_delay_distributions.png}
+\caption{Detection delay distributions (true-positive trials only) across all detectors and drift scenarios. Methods with zero true-positive detections are marked with $\times$ at the bottom. Violins show the full delay distribution; the white bar marks the median.}
+\label{fig:delay_dists}
+\end{figure}
 
 \paragraph{Changepoint localization.}
 A unique property of PITMonitor is the Bayes-factor changepoint estimate available after each alarm. None of the \texttt{river} baselines provide an analogous estimate; they expose only a binary alarm flag. Figure~\ref{fig:cp_error} shows the distribution of absolute changepoint error $|\hat\tau - \tau|$ across true-positive trials. PITMonitor's mean absolute changepoint error is \resPMGRACPErr{} samples on GRA and \resPMGSGCPErr{} on GSG, demonstrating that the estimated changepoint closely tracks the true onset. This provides the practitioner with a starting point for diagnosing and correcting the drift.
@@ -516,7 +531,11 @@ larger $B$ adapts faster but at the cost of more variance in the estimated densi
 \end{itemize}
 
 \paragraph{Comparison to \texttt{river} baselines.}
-The experiments reveal a clear partitioning of methods. PITMonitor and ADWIN are the only detectors achieving meaningful TPR across global drift scenarios. Their tradeoff is qualitatively different: ADWIN detects roughly 3$\times$ faster but with substantially higher FPR (\resADGRAFPR{} vs.\ \resPMGRAFPR). Crucially, ADWIN's elevated FPR is expected given its per-step guarantee semantics: $\delta = \expDelta$ bounds the false alarm probability per comparison, not over the full stream, whereas PITMonitor's $\alpha = \expAlpha$ bounds the probability of \emph{ever} alarming. On local expanding drift ADWIN is dominant. The remaining methods either have collapsed FPR (KSWIN, PageHinkley, HDDM\_W, EDDM with default parameters) or elevated FPR (DDM at \resDDMGRAFPR, HDDM\_A at \resHDDMAGRAFPR), limiting their practical utility in this monitoring setting without careful tuning.
+The experiments highlight two structural dimensions on which PITMonitor differs from the \texttt{river} baselines.
+
+\textit{Parameter simplicity and FPR guarantees.}  PITMonitor has two interpretable parameters: $\alpha$, which directly and provably controls stream-level FPR for any monitoring horizon, and $B$, the histogram resolution.  The \texttt{river} baselines expose multiple internal parameters whose relationship to stream-level FPR is indirect, horizon-dependent, and not formally guaranteed.  Even ADWIN's $\delta$ --- the most interpretable among them --- bounds per-comparison error, not per-stream error, so achieving a target FPR requires advance knowledge of the monitoring window length or empirical calibration.  Binary baselines additionally require a binarization threshold with no guidance from the library.
+
+\textit{Detection power.}  On global drift (GRA, GSG), ADWIN achieves \resADGRATPR{} TPR with mean delay \resADGRADelay{} samples at FPR \resADGRAFPR{}; HDDM\_A achieves \resHDDMAGRATPR{} TPR with delay \resHDDMAGRADelay{} samples at FPR \resHDDMAGRAFPR{}.  PITMonitor achieves \resPMGRATPR{} TPR with \resPMGRADelay{}-sample delay at \resPMGRAFPR{} FPR, with the unique property that its FPR bound holds anytime.  On local expanding drift (LEA) ADWIN is dominant while PITMonitor has essentially zero power.  KSWIN, PageHinkley, HDDM\_W, and EDDM are effectively inoperable at library defaults in this setting: their FPR exceeds $89\%$, meaning they alarm during the null window on nearly every trial and thus cannot register a true-positive detection.  Their near-zero TPR is a consequence of their high FPR, not of their detection mechanism per se.
 
 %------------------------------------------------------------------------------
 \section{Related Work}
@@ -570,12 +589,7 @@ probability integral transforms using a mixture e-process, PITMonitor enables
 continuous monitoring without inflating Type I error, regardless of when or why
 monitoring stops.
 
-Experiments on three FriedmanDrift scenarios demonstrate that PITMonitor matches or
-exceeds the best competing method on global drift (GRA and GSG), achieving \resPMGRATPR{} TPR
-with \resPMGRAFPR{} FPR and a unique changepoint localization capability. The results also surface
-an honest limitation: PITMonitor has zero detection power on local expanding drift
-(LEA) at the tested window sizes, while ADWIN detects this scenario with \resADLEATPR{} TPR
-(though at \resADLEAFPR{} FPR).
+Experiments on three FriedmanDrift scenarios, with all baselines run at library defaults, demonstrate that PITMonitor achieves competitive detection performance on global drift (GRA and GSG) --- \resPMGRATPR{} TPR with \resPMGRAFPR{} FPR and a unique changepoint localization capability absent from all \texttt{river} baselines --- while providing the only formally proven stream-level FPR guarantee (Theorem~\ref{thm:type1}).  The results also surface an honest limitation: PITMonitor has zero detection power on local expanding drift (LEA), while ADWIN detects this scenario with \resADLEATPR{} TPR at \resADLEAFPR{} FPR.  PITMonitor requires only two interpretable parameters ($\alpha$ and $B$) with no pre-specified monitoring horizon, held-out null data, or binarization step required.
 Practitioners should therefore view PITMonitor as the right tool for global calibration
 monitoring with strict FPR control, and consider complementing it with simpler
 residual-based detectors when feature-level drift is anticipated.

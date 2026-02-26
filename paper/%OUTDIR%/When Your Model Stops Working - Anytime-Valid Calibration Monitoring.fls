@@ -233,6 +233,16 @@ INPUT ../experiment/out/fig_detection_rates.png
 INPUT ../experiment/out/fig_detection_rates.png
 INPUT ../experiment/out/fig_detection_rates.png
 INPUT ../experiment/out/fig_detection_rates.png
+INPUT ../experiment/out/fig_single_run_gra_tw0.png
+INPUT ../experiment/out/fig_single_run_gra_tw0.png
+INPUT ../experiment/out/fig_single_run_gra_tw0.png
+INPUT ../experiment/out/fig_single_run_gra_tw0.png
+INPUT ../experiment/out/fig_single_run_gra_tw0.png
+INPUT ../experiment/out/fig_delay_distributions.png
+INPUT ../experiment/out/fig_delay_distributions.png
+INPUT ../experiment/out/fig_delay_distributions.png
+INPUT ../experiment/out/fig_delay_distributions.png
+INPUT ../experiment/out/fig_delay_distributions.png
 INPUT ../experiment/out/fig_cp_error_distribution.png
 INPUT ../experiment/out/fig_cp_error_distribution.png
 INPUT ../experiment/out/fig_cp_error_distribution.png

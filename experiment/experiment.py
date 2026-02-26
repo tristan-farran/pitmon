@@ -107,7 +107,6 @@ def run_single_trial(
     # ── Run baseline detectors once (they don't depend on n_bins) ────
     baseline_detectors = build_all_detectors(
         alpha=cfg.alpha,
-        delta=cfg.delta,
         n_monitor_bins=all_n_bins[0],  # n_bins irrelevant for baselines
         seed=seed,
     )
@@ -383,6 +382,15 @@ def run_experiment(
     # ── Compute binary error threshold from TRAINING data ────────────
     # This avoids information leakage: the threshold is determined before
     # any monitoring data is seen, exactly as in a real deployment.
+    #
+    # We use the median of |residual| on training data.  This is the most
+    # neutral, assumption-free choice: it requires no knowledge of the
+    # "right" operating regime for binary detectors and treats large vs small
+    # errors symmetrically (roughly 50% pre-drift error rate).  The River docs
+    # give no guidance on how to set this threshold for regression tasks.  That
+    # the binary detectors are designed for lower error rates (~5-20%) is an
+    # inherent limitation of applying them to a regression setting — one that
+    # PITMonitor avoids by consuming PIT values directly.
     drift_type_0, tw_0 = cfg.drift_scenarios[0]
     X_for_threshold, y_for_threshold = generate_stream(
         cfg, drift_type=drift_type_0, transition_window=tw_0, seed=cfg.seed
@@ -486,7 +494,6 @@ def run_experiment(
             "n_stable": cfg.n_stable,
             "n_post": cfg.n_post,
             "alpha": cfg.alpha,
-            "delta": cfg.delta,
             "n_bins": canonical_bins,
             "n_bins_list": list(all_n_bins),
             "n_trials": cfg.n_trials,

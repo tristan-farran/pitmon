@@ -79,7 +79,7 @@ class Config:
     # ── Detector settings ──────────────────────────────────────────
     n_bins_list: Tuple = (100,)  # PITMonitor
     alpha: float = 0.05  # PITMonitor
-    delta: float = 0.05  # ADWIN
+    # All river baselines use library-default parameters.
 
     # ── Monte-Carlo trials ───────────────────────────────────────────
     n_trials: int = 1_000

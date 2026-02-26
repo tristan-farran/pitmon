@@ -14,7 +14,7 @@ Different detector families expect different input types:
 
     PITMonitor ← PIT values in [0, 1]  (distributional)
     ADWIN / KSWIN / PageHinkley  ← squared residuals  (continuous, non-negative)
-    DDM / EDDM / HDDM_A / HDDM_W ← binary errors 0/1  (thresholded by median)
+    DDM / EDDM / HDDM_A / HDDM_W ← binary errors 0/1  (thresholded by 90th-pct |residual|)
 
 All three signal streams are computed once per trial by the experiment loop
 and passed to every detector's ``feed`` method; each detector takes only the
@@ -217,18 +217,23 @@ class RiverDetector:
 
 def build_all_detectors(
     alpha: float = 0.05,
-    delta: float = 0.05,
     n_monitor_bins: int = 100,
     seed: int = 42,
 ) -> list:
     """Instantiate one of every detector type for a single trial.
 
+    All river baselines are instantiated with their library-default parameters.
+    This reflects the realistic out-of-the-box deployment scenario, avoids any
+    appearance of parameter tuning, and sidesteps the need for held-out null
+    data or advance knowledge of the monitoring window length.
+
     Parameters
     ----------
     alpha : float, default=0.05
-        False alarm level for PITMonitor.
-    delta : float, default=0.05
-        Significance level for ADWIN (controls its false alarm rate).
+        False alarm level for PITMonitor.  This is the only parameter in the
+        comparison that directly and provably controls stream-level FPR for
+        any monitoring horizon; the river baselines' internal parameters have
+        indirect relationships to stream-level FPR.
     n_monitor_bins : int, default=100
         n_bins for PITMonitor's histogram density estimator.
     seed : int, default=42
@@ -240,7 +245,7 @@ def build_all_detectors(
     """
     return [
         PITMonitorDetector(alpha=alpha, n_bins=n_monitor_bins, seed=seed),
-        RiverDetector("ADWIN", lambda d=delta: ADWIN(delta=d), "continuous"),
+        RiverDetector("ADWIN", lambda: ADWIN(), "continuous"),
         RiverDetector("KSWIN", lambda: KSWIN(), "continuous"),
         RiverDetector("PageHinkley", lambda: PageHinkley(), "continuous"),
         RiverDetector("DDM", lambda: DDM(), "binary"),

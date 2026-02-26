@@ -68,6 +68,11 @@ _RC_OVERRIDES = {
     "font.family": "serif",
     "font.serif": ["CMU Serif", "Computer Modern Roman", "DejaVu Serif"],
     "mathtext.fontset": "cm",
+    # Use ASCII hyphen-minus instead of Unicode minus (U+2212) to avoid missing
+    # glyph warnings when the active font does not include that code point.
+    # Applied globally at import time AND inside _apply_style() to ensure the
+    # setting is in effect before any matplotlib rendering begins.
+    "axes.unicode_minus": False,
     "font.size": 9,
     "axes.titlesize": 10,
     "axes.titleweight": "bold",
@@ -88,6 +93,11 @@ _RC_OVERRIDES = {
     "lines.linewidth": 1.5,
     "patch.linewidth": 0.5,
 }
+
+
+# Apply globally at import time so the settings are in effect before any
+# matplotlib code runs (e.g. log-scale tick formatters created at figure build).
+plt.rcParams.update(_RC_OVERRIDES)
 
 
 def _apply_style() -> None:
@@ -139,7 +149,6 @@ def generate_experiment_macros(results: dict, save_dir: Path) -> str:
         rf"\newcommand{{\expNstable}}{{{cfg['n_stable']:,}}}".replace(",", "{,}"),
         rf"\newcommand{{\expNpost}}{{{cfg['n_post']:,}}}".replace(",", "{,}"),
         rf"\newcommand{{\expAlpha}}{{{cfg['alpha']}}}",
-        rf"\newcommand{{\expDelta}}{{{cfg['delta']}}}",
         rf"\newcommand{{\expNbins}}{{{cfg['n_bins']}}}",
         rf"\newcommand{{\expNtrials}}{{{cfg['n_trials']:,}}}".replace(",", "{,}"),
         rf"\newcommand{{\expBinaryThreshold}}{{{cfg['binary_threshold']:.4f}}}",
@@ -359,7 +368,7 @@ def plot_delay_distributions(results: dict, save_dir: Path) -> plt.Figure:
     fig, axes = plt.subplots(
         1,
         n_scenarios,
-        figsize=(4.0 * n_scenarios, 4.5),
+        figsize=(4.5 * n_scenarios, 5.0),
         sharey=False,
         constrained_layout=True,
     )
@@ -381,13 +390,14 @@ def plot_delay_distributions(results: dict, save_dir: Path) -> plt.Figure:
         # Classify each method
         violin_data, violin_pos, violin_colors = [], [], []
         strip_data, strip_pos, strip_colors = [], [], []
-        no_detection_pos, no_detection_labels = [], []
+        no_detection_pos, no_detection_labels, no_detection_colors = [], [], []
 
         for method, pos, color in zip(all_methods, positions, method_colors):
             delays = method_delays[method]
             if len(delays) == 0:
                 no_detection_pos.append(pos)
                 no_detection_labels.append(method)
+                no_detection_colors.append(color)
             elif len(delays) <= 2 or np.std(delays) < 1.0:
                 # Near-zero variance or too few points for a violin
                 strip_data.append(np.array(delays))
@@ -450,11 +460,8 @@ def plot_delay_distributions(results: dict, save_dir: Path) -> plt.Figure:
                 zorder=4,
             )
 
-        ax.set_xticks(positions)
-        ax.set_xticklabels(all_methods, rotation=40, ha="right", fontsize=7.5)
-        ax.set_title(scen_label)
-
-        # Tight y-limits based on all available data
+        # Tight y-limits based on all available data; must be set before
+        # placing no-detection annotations so we know the axis range.
         all_delays = [d for m in all_methods for d in method_delays[m]]
         if all_delays:
             all_vals = np.array(all_delays)
@@ -463,12 +470,35 @@ def plot_delay_distributions(results: dict, save_dir: Path) -> plt.Figure:
             pad = max((hi - lo) * 0.08, 5)
             ax.set_ylim(lo - pad, hi + pad)
 
+        # Ensure all method positions are visible regardless of data presence.
+        ax.set_xlim(0.5, len(all_methods) + 0.5)
+
+        # Annotate methods with zero true-positive detections with a marker
+        # at the bottom of the axis so they are still visible at their position.
+        if no_detection_pos:
+            y_lo, y_hi = ax.get_ylim()
+            marker_y = y_lo + (y_hi - y_lo) * 0.04
+            for pos, color in zip(no_detection_pos, no_detection_colors):
+                ax.plot(
+                    pos,
+                    marker_y,
+                    marker="x",
+                    markersize=7,
+                    color=color,
+                    markeredgewidth=1.5,
+                    zorder=5,
+                    clip_on=False,
+                )
+
+        ax.set_xticks(positions)
+        ax.set_xticklabels(all_methods, rotation=40, ha="right", fontsize=7.5)
+        ax.set_title(scen_label)
+
     axes[0].set_ylabel("Detection delay (samples)")
     fig.suptitle(
         "Detection Delay Distributions (True Positives Only)",
         fontsize=11,
         fontweight="bold",
-        y=1.01,
     )
 
     out = save_dir / "fig_delay_distributions.png"
@@ -747,8 +777,7 @@ def plot_single_run_panels(
     fig, axes = plt.subplots(
         2,
         2,
-        figsize=(7.5, 5.5),
-        gridspec_kw={"hspace": 0.38, "wspace": 0.32},
+        figsize=(8.0, 5.8),
         constrained_layout=True,
     )
     fig.suptitle(
@@ -888,7 +917,7 @@ def plot_single_run_panels(
             ls="--",
             lw=1.2,
             alpha=0.8,
-            label=f"CP est. (t≈{artifacts['changepoint']})",
+            label=f"CP est. (t~{artifacts['changepoint']})",
         )
     if artifacts["alarm_fired"] and artifacts["alarm_time"] is not None:
         ax.axvline(

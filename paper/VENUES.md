@@ -1,0 +1,8 @@
+- ICML
+- NeurIPS
+- AISTATS
+- AOAS
+- Biometrika
+- JMLR
+- Electronic Journal of Statistics
+- Statistics and Computing

@@ -108,6 +108,11 @@ class Config:
         """Path to the saved model bundle produced by train_model.py."""
         return self.out_path / "model.pkl"
 
+    @property
+    def n_monitor_bins(self) -> int:
+        """Alias for n_bins (backward-compatible name)."""
+        return self.n_bins
+
     def positions_for(self, drift_type: str) -> Tuple:
         """Return the FriedmanDrift ``position`` tuple for *drift_type*.
 

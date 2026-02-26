@@ -305,13 +305,10 @@ def run_experiment(
 
     1. Computes the binary error threshold from training data (once).
     2. Runs ``cfg.n_trials`` Monte-Carlo trials per drift scenario.
-    3. Within each trial, evaluates *all* ``cfg.n_bins_list`` PITMonitor
-       variants and all baseline detectors using the same data stream.
+    3. Within each trial, evaluates PITMonitor (``cfg.n_bins`` bins) and
+       all baseline detectors using the same data stream.
     4. Collects one detailed single-run artifact per scenario for visualization.
-    5. Aggregates results separately for every n_bins value.
-
-    The main comparison table uses ``cfg.n_monitor_bins`` (= ``n_bins_list[0]``).
-    The n_bins sensitivity data is stored alongside under ``"bins_sweep"``.
+    5. Aggregates results by scenario.
 
     If *bundle* is None, the model is loaded from ``cfg.bundle_path``.
     Raises ``FileNotFoundError`` if no saved model exists.

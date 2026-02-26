@@ -363,12 +363,12 @@ class PITMonitor:
         # Score each admissible split with a log Bayes factor
         scores = []
         B = self.n_bins
-        alpha = 0.5
-        alpha0 = B * alpha
+        kappa = 0.5          # Jeffreys prior concentration (Dirichlet Dir(κ,...,κ))
+        kappa0 = B * kappa   # total Dirichlet concentration
 
         # Precompute constants
-        log_gamma_alpha = math.lgamma(alpha)
-        log_gamma_alpha0 = math.lgamma(alpha0)
+        log_gamma_kappa = math.lgamma(kappa)
+        log_gamma_kappa0 = math.lgamma(kappa0)
         log_B = math.log(B)
 
         for k in range(1, max_k):
@@ -379,9 +379,9 @@ class PITMonitor:
 
             counts, _ = np.histogram(after, bins=B, range=(0, 1))
 
-            log_p_h1 = log_gamma_alpha0 - math.lgamma(N + alpha0)
+            log_p_h1 = log_gamma_kappa0 - math.lgamma(N + kappa0)
             log_p_h1 += sum(
-                math.lgamma(int(c) + alpha) - log_gamma_alpha for c in counts
+                math.lgamma(int(c) + kappa) - log_gamma_kappa for c in counts
             )
 
             log_p_h0 = -N * log_B

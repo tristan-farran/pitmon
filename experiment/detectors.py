@@ -14,7 +14,7 @@ Different detector families expect different input types:
 
     PITMonitor ← PIT values in [0, 1]  (distributional)
     ADWIN / KSWIN / PageHinkley  ← squared residuals  (continuous, non-negative)
-    DDM / EDDM / HDDM_A / HDDM_W ← binary errors 0/1  (thresholded by 90th-pct |residual|)
+    DDM / EDDM / HDDM_A / HDDM_W ← binary errors 0/1  (thresholded by median |residual|)
 
 All three signal streams are computed once per trial by the experiment loop
 and passed to every detector's ``feed`` method; each detector takes only the

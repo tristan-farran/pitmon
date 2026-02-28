@@ -363,8 +363,8 @@ class PITMonitor:
         # Score each admissible split with a log Bayes factor
         scores = []
         B = self.n_bins
-        kappa = 0.5          # Jeffreys prior concentration (Dirichlet Dir(κ,...,κ))
-        kappa0 = B * kappa   # total Dirichlet concentration
+        kappa = 0.5  # Jeffreys prior concentration (Dirichlet Dir(κ,...,κ))
+        kappa0 = B * kappa  # total Dirichlet concentration
 
         # Precompute constants
         log_gamma_kappa = math.lgamma(kappa)

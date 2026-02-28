@@ -223,6 +223,10 @@ def generate_experiment_macros(results: dict, save_dir: Path) -> str:
 def plot_detection_rates(results: dict, save_dir: Path) -> plt.Figure:
     """Grouped bar chart for TPR and FPR per method and scenario.
 
+    Layout: 2 rows (TPR top, FPR bottom) × n_scenarios columns.
+    PITMonitor is shown at the *top* of each panel (y-axis inverted).
+    Method labels appear only on the leftmost column to avoid clutter.
+
     Parameters
     ----------
     results : dict
@@ -240,26 +244,27 @@ def plot_detection_rates(results: dict, save_dir: Path) -> plt.Figure:
 
     alpha = results["config"]["alpha"]
     n_scenarios = len(scenarios)
+    FPR_CAP = 0.15
 
     fig, axes = plt.subplots(
-        n_scenarios,
         2,
-        figsize=(7.0, 2.7 * n_scenarios + 0.6),
-        gridspec_kw={"wspace": 0.35, "hspace": 0.55},
+        n_scenarios,
+        figsize=(3.4 * n_scenarios + 0.9, 5.8),
+        gridspec_kw={"wspace": 0.10, "hspace": 0.52},
     )
-    fig.subplots_adjust(top=0.93)
+    fig.subplots_adjust(top=0.88)
     if n_scenarios == 1:
-        axes = np.array([axes])
+        axes = axes.reshape(2, 1)
 
     for i, scen in enumerate(scenarios):
         scen_label = SCENARIO_LABELS.get(scen, scen)
-        methods, tprs, fprs, tpr_err, fpr_err, colors = [], [], [], [], [], []
+        methods = list(ALL_DETECTOR_NAMES)
+        tprs, fprs, tpr_err, fpr_err, colors = [], [], [], [], []
 
-        for method in ALL_DETECTOR_NAMES:
+        for method in methods:
             s = results["results"][scen].get(method, {})
             tpr = s.get("tpr", 0.0)
             fpr = s.get("fpr", 0.0)
-            methods.append(method)
             tprs.append(tpr)
             fprs.append(fpr)
 
@@ -273,8 +278,8 @@ def plot_detection_rates(results: dict, save_dir: Path) -> plt.Figure:
         tpr_err_arr = np.abs(np.array(tpr_err).T)
         fpr_err_arr = np.abs(np.array(fpr_err).T)
 
-        # TPR panel
-        ax = axes[i, 0]
+        # ── TPR panel (row 0) ──────────────────────────────────────────
+        ax = axes[0, i]
         bars = ax.barh(
             y,
             tprs,
@@ -287,17 +292,20 @@ def plot_detection_rates(results: dict, save_dir: Path) -> plt.Figure:
         )
         for bar, method in zip(bars, methods):
             bar.set_hatch(METHOD_HATCHES.get(method, ""))
+        ax.invert_yaxis()
         ax.set_yticks(y)
-        ax.set_yticklabels(methods, fontsize=8)
         ax.set_xlim(0, 1.08)
-        ax.set_title(f"{scen_label} — TPR")
+        ax.set_title(scen_label, fontsize=9)
         ax.xaxis.set_major_formatter(mticker.PercentFormatter(1.0, 0))
+        if i == 0:
+            ax.set_yticklabels(methods, fontsize=7.5)
+            ax.set_ylabel("TPR", fontsize=9, labelpad=4)
+        else:
+            ax.set_yticklabels([])
 
-        # FPR panel — capped at FPR_CAP; bars exceeding it are annotated
-        FPR_CAP = 0.15
-        ax = axes[i, 1]
+        # ── FPR panel (row 1) — capped at FPR_CAP ─────────────────────
+        ax = axes[1, i]
         fprs_display = [min(f, FPR_CAP) for f in fprs]
-        # Suppress error bars on clipped bars (they'd extend beyond cap)
         fpr_err_display = [
             e if f < FPR_CAP * 0.98 else [0.0, 0.0]
             for f, e in zip(fprs, fpr_err)
@@ -315,16 +323,17 @@ def plot_detection_rates(results: dict, save_dir: Path) -> plt.Figure:
         )
         for bar, method in zip(bars, methods):
             bar.set_hatch(METHOD_HATCHES.get(method, ""))
-        # Annotate clipped bars with actual value
+        ax.invert_yaxis()
+        # Annotate clipped bars with actual value (clipped bars all hit FPR_CAP)
         for bar, fpr in zip(bars, fprs):
             if fpr >= FPR_CAP * 0.98:
                 ax.text(
-                    FPR_CAP * 1.02,
+                    FPR_CAP + 0.003,
                     bar.get_y() + bar.get_height() / 2,
                     f"{fpr:.0%}",
                     va="center",
                     ha="left",
-                    fontsize=6.5,
+                    fontsize=6.0,
                     color="0.3",
                 )
         ax.axvline(
@@ -336,12 +345,14 @@ def plot_detection_rates(results: dict, save_dir: Path) -> plt.Figure:
             label=f"α = {alpha}",
         )
         ax.set_yticks(y)
-        ax.set_yticklabels([])
-        ax.set_xlim(0, FPR_CAP * 1.40)
-        ax.set_title(f"{scen_label} — FPR")
+        ax.set_xlim(0, FPR_CAP * 1.60)
         ax.xaxis.set_major_formatter(mticker.PercentFormatter(1.0, 0))
         if i == 0:
+            ax.set_yticklabels(methods, fontsize=7.5)
+            ax.set_ylabel("FPR", fontsize=9, labelpad=4)
             ax.legend(fontsize=7, loc="lower right")
+        else:
+            ax.set_yticklabels([])
 
     fig.suptitle(
         "Drift Detection: True and False Positive Rates",
@@ -483,7 +494,7 @@ def plot_delay_distributions(results: dict, save_dir: Path) -> plt.Figure:
         if all_delays:
             all_vals = np.array(all_delays)
             lo = max(0, float(np.percentile(all_vals, 1)))
-            hi = float(np.percentile(all_vals, 99))
+            hi = float(np.percentile(all_vals, 90))
             pad = max((hi - lo) * 0.08, 5)
             ax.set_ylim(lo - pad, hi + pad)
 
@@ -944,6 +955,7 @@ def plot_single_run_panels(
             label=f"Alarm (t={artifacts['alarm_time']})",
         )
     ax.legend(fontsize=6.5, loc="upper left")
+    ax.set_ylim(bottom=1e-2)
     ax.set(xlabel="Sample", ylabel="Evidence (log scale)", title="(c) E-process")
 
     # ── Bottom-right: PIT histograms ─────────────────────────────────

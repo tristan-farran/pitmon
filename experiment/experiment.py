@@ -115,7 +115,7 @@ def run_single_trial(
 
     # ── Baseline detectors ────────────────────────────────────────────
     baseline_detectors = build_all_detectors(
-        alpha=cfg.alpha, n_monitor_bins=cfg.n_bins, seed=seed
+        alpha=cfg.alpha, n_bins=cfg.n_bins, seed=seed
     )
     for det in baseline_detectors:
         if det.name == "PITMonitor":
@@ -140,7 +140,7 @@ def collect_single_run(
 
     The evidence trace records PITMonitor's running e-process value at every
     step, even after an alarm fires, so the full trajectory can be plotted.
-    Uses ``cfg.n_monitor_bins`` (the canonical bin size).
+    Uses ``cfg.n_bins`` (the canonical bin size).
 
     Parameters
     ----------
@@ -167,7 +167,7 @@ def collect_single_run(
     pits = compute_pits(bundle, X_mon, y_mon)
     mu, _ = compute_predictions(bundle, X_mon)
 
-    mon = PITMonitor(alpha=cfg.alpha, n_bins=cfg.n_monitor_bins, rng=seed)
+    mon = PITMonitor(alpha=cfg.alpha, n_bins=cfg.n_bins, rng=seed)
     evidence_trace = []
     alarm_time = None
     for i, pit in enumerate(pits):

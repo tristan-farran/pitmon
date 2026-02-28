@@ -69,7 +69,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument(
         "--plot", action="store_true", help="Generate plots from saved results"
     )
-    p.add_argument("--trials", type=int, default=1_000, help="MC trials per scenario")
+    p.add_argument("--trials", type=int, default=10_000, help="MC trials per scenario")
     p.add_argument("--epochs", type=int, default=500, help="NN training epochs")
     p.add_argument("--workers", type=int, default=8, help="Parallel workers")
     p.add_argument("--seed", type=int, default=42, help="RNG seed")
@@ -118,8 +118,6 @@ def main() -> None:
             print(f"Bundle saved to {cfg.bundle_path}")
 
     # ── Step 2: Compute ──────────────────────────────────────────────
-    # run_experiment automatically includes the n_bins sweep and single-run
-    # artifacts; no separate sweep step is needed.
     if args.compute:
         bundle = load_bundle(cfg.bundle_path)
         results = run_experiment(cfg, bundle=bundle)

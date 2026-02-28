@@ -1,6 +1,6 @@
 # PITMonitor
 
-An anytime-valid monitor for Probability Integral Transform (PIT) values. Detects changes in model calibration without needing a baseline period, controlling the false alarm probability over the entire monitoring horizon. A stable but miscalibrated model will not trigger alarms — only *changes* in calibration are detected.
+An anytime-valid monitor for Probability Integral Transform (PIT) values. Detects and locates changes in model calibration without needing a baseline period, controlling the false alarm probability over the entire monitoring horizon. A stable but miscalibrated model will not trigger alarms - only *changes* in calibration are detected.
 
 ## Installation
 
@@ -25,10 +25,7 @@ for prediction, outcome in data_stream:
 
 ## How it works
 
-Each PIT is ranked among all previous PITs.  Under exchangeability the ranks
-are uniform.  PITMonitor converts each rank into an e-value and tracks a
-mixture e-process that accumulates evidence against exchangeability:
-
+Each PIT is ranked among all previous PITs.  Under exchangeability the ranks are uniform.  PITMonitor converts each rank into an e-value and tracks a mixture e-process that accumulates evidence against exchangeability:
 - **Under exchangeability:** p_t ~ Uniform(0,1), E[e_t] = 1, M_t is a supermartingale
 - **Under change:** p_t concentrates, e_t > 1 on average, M_t grows exponentially
 - **Ville's inequality** constrains the false alarm rate: P(sup M_t ≥ 1/α | H₀) ≤ α

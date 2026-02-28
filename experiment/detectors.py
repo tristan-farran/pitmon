@@ -13,7 +13,7 @@ Input conventions
 Different detector families expect different input types:
 
     PITMonitor ← PIT values in [0, 1]  (distributional)
-    ADWIN / KSWIN / PageHinkley  ← squared residuals  (continuous, non-negative)
+    ADWIN / KSWIN / PageHinkley  ← squared residuals  (continuous)
     DDM / EDDM / HDDM_A / HDDM_W ← binary errors 0/1  (thresholded by median |residual|)
 
 All three signal streams are computed once per trial by the experiment loop
@@ -217,7 +217,7 @@ class RiverDetector:
 
 def build_all_detectors(
     alpha: float = 0.05,
-    n_monitor_bins: int = 100,
+    n_bins: int = 100,
     seed: int = 42,
 ) -> list:
     """Instantiate one of every detector type for a single trial.
@@ -234,7 +234,7 @@ def build_all_detectors(
         comparison that directly and provably controls stream-level FPR for
         any monitoring horizon; the river baselines' internal parameters have
         indirect relationships to stream-level FPR.
-    n_monitor_bins : int, default=100
+    n_bins : int, default=100
         n_bins for PITMonitor's histogram density estimator.
     seed : int, default=42
         RNG seed for PITMonitor's tie-randomized p-values.
@@ -244,7 +244,7 @@ def build_all_detectors(
     list of detector instances
     """
     return [
-        PITMonitorDetector(alpha=alpha, n_bins=n_monitor_bins, seed=seed),
+        PITMonitorDetector(alpha=alpha, n_bins=n_bins, seed=seed),
         RiverDetector("ADWIN", lambda: ADWIN(), "continuous"),
         RiverDetector("KSWIN", lambda: KSWIN(), "continuous"),
         RiverDetector("PageHinkley", lambda: PageHinkley(), "continuous"),

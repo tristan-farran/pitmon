@@ -80,7 +80,7 @@ class Config:
     # All river baselines use library-default parameters.
 
     # ── Monte-Carlo trials ───────────────────────────────────────────
-    n_trials: int = 1_000
+    n_trials: int = 10_000
     max_workers: int = 8
 
     # ── Output ───────────────────────────────────────────────────────
@@ -107,11 +107,6 @@ class Config:
     def bundle_path(self) -> Path:
         """Path to the saved model bundle produced by train_model.py."""
         return self.out_path / "model.pkl"
-
-    @property
-    def n_monitor_bins(self) -> int:
-        """Alias for n_bins (backward-compatible name)."""
-        return self.n_bins
 
     def positions_for(self, drift_type: str) -> Tuple:
         """Return the FriedmanDrift ``position`` tuple for *drift_type*.

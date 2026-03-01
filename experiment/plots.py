@@ -1,12 +1,12 @@
 """Publication-quality plots for the drift detection comparison.
 
 Produces:
-    fig_detection_rates.png      – grouped bar chart: TPR / FPR per method × scenario
-    fig_delay_distributions.png  – violin + strip plots of detection delay
+    fig_detection_rates.png      – lollipop chart: TPR / FPR per method × scenario
+    fig_delay_distributions.png  – horizontal violin + box plots of detection delay
     fig_cp_error_distribution.png – histogram of PITMonitor changepoint estimation error
     fig_single_run_<scen>.png    – 4-panel single-run diagnostic per scenario
     table_results.tex            – LaTeX booktabs table for the paper
-    experiment_macros.tex         – LaTeX \\newcommand macros for experiment params & results
+    experiment_macros.tex        – LaTeX \\newcommand macros for experiment params & results
 
 All plot helpers accept a *save_dir* Path and save to that directory.
 They also return the Figure so callers can embed figures programmatically.
@@ -20,112 +20,764 @@ from typing import Optional
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 from matplotlib.lines import Line2D
+from matplotlib.transforms import blended_transform_factory
 import numpy as np
 
 from detectors import ALL_DETECTOR_NAMES
 
 
-# ─── Style ───────────────────────────────────────────────────────────
+# ── Design tokens ─────────────────────────────────────────────────────────────
 
 SCENARIO_LABELS: dict[str, str] = {
-    "gra_tw0": "Abrupt (GRA)",
+    "gra_tw0":   "Abrupt (GRA)",
     "gsg_tw500": "Gradual (GSG)",
-    "lea_tw0": "Local (LEA)",
+    "lea_tw0":   "Local (LEA)",
 }
 
-# Short labels for compact table/axis use
 SCENARIO_SHORT: dict[str, str] = {
-    "gra_tw0": "GRA",
+    "gra_tw0":   "GRA",
     "gsg_tw500": "GSG",
-    "lea_tw0": "LEA",
+    "lea_tw0":   "LEA",
 }
 
+# Okabe–Ito colorblind-safe palette — deep blue reserved for PITMonitor.
 METHOD_COLORS: dict[str, str] = {
-    "PITMonitor": "#1b6ec2",
-    "ADWIN": "#7c3aed",
-    "KSWIN": "#0d9488",
-    "PageHinkley": "#16a34a",
-    "DDM": "#ca8a04",
-    "EDDM": "#ea580c",
-    "HDDM_A": "#db2777",
-    "HDDM_W": "#9d174d",
+    "PITMonitor":  "#0072B2",   # deep blue    ← our method
+    "ADWIN":       "#D55E00",   # vermillion
+    "KSWIN":       "#009E73",   # bluish-green
+    "PageHinkley": "#CC79A7",   # reddish-purple
+    "DDM":         "#E69F00",   # amber
+    "EDDM":        "#56B4E9",   # sky blue
+    "HDDM_A":      "#A07800",   # dark gold
+    "HDDM_W":      "#777777",   # neutral grey
 }
 
-# Hatching patterns to distinguish methods in greyscale printing
+# Marker shapes for secondary encoding (greyscale / accessibility)
+METHOD_SHAPES: dict[str, str] = {
+    "PITMonitor":  "D",   # filled diamond
+    "ADWIN":       "o",   # circle
+    "KSWIN":       "s",   # square
+    "PageHinkley": "^",   # triangle-up
+    "DDM":         "v",   # triangle-down
+    "EDDM":        "P",   # fat plus
+    "HDDM_A":      "X",   # fat cross
+    "HDDM_W":      "h",   # hexagon
+}
+
+# Kept for backward-compatibility (no longer used in plots, but may be imported)
 METHOD_HATCHES: dict[str, str] = {
     "PITMonitor": "",
-    "ADWIN": "//",
-    "KSWIN": "\\\\",
+    "ADWIN":      "//",
+    "KSWIN":      "\\\\",
     "PageHinkley": "xx",
-    "DDM": "..",
-    "EDDM": "++",
-    "HDDM_A": "--",
-    "HDDM_W": "||",
+    "DDM":        "..",
+    "EDDM":       "++",
+    "HDDM_A":     "--",
+    "HDDM_W":     "||",
 }
 
 _RC_OVERRIDES = {
-    "font.family": "serif",
-    "font.serif": ["CMU Serif", "Computer Modern Roman", "DejaVu Serif"],
-    "mathtext.fontset": "cm",
-    # Use ASCII hyphen-minus instead of Unicode minus (U+2212) to avoid missing
-    # glyph warnings when the active font does not include that code point.
-    # Applied globally at import time AND inside _apply_style() to ensure the
-    # setting is in effect before any matplotlib rendering begins.
-    "axes.unicode_minus": False,
-    "font.size": 9,
-    "axes.titlesize": 10,
-    "axes.titleweight": "bold",
-    "axes.labelsize": 9,
-    "xtick.labelsize": 8,
-    "ytick.labelsize": 8,
-    "legend.fontsize": 7.5,
-    "legend.framealpha": 0.85,
-    "legend.edgecolor": "0.7",
-    "figure.dpi": 200,
-    "savefig.dpi": 300,
-    "savefig.bbox": "tight",
-    "axes.spines.top": False,
-    "axes.spines.right": False,
-    "axes.grid": True,
-    "grid.alpha": 0.25,
-    "grid.linewidth": 0.5,
-    "lines.linewidth": 1.5,
-    "patch.linewidth": 0.5,
+    # Font — Computer Modern for LaTeX visual consistency
+    "font.family":         "serif",
+    "font.serif":          ["CMU Serif", "Computer Modern Roman", "DejaVu Serif"],
+    "mathtext.fontset":    "cm",
+    "axes.unicode_minus":  False,
+    # Sizes — calibrated for 3.3" single-col / 6.8" double-col paper figures
+    "font.size":           8,
+    "axes.titlesize":      9,
+    "axes.titleweight":    "bold",
+    "axes.labelsize":      8,
+    "xtick.labelsize":     7,
+    "ytick.labelsize":     7,
+    "legend.fontsize":     7,
+    "legend.title_fontsize": 7.5,
+    # Legend aesthetics
+    "legend.framealpha":   0.94,
+    "legend.edgecolor":    "0.78",
+    "legend.handlelength": 1.5,
+    "legend.handletextpad": 0.4,
+    "legend.borderpad":    0.5,
+    # Resolution
+    "figure.dpi":          150,
+    "savefig.dpi":         300,
+    "savefig.bbox":        "tight",
+    "savefig.pad_inches":  0.04,
+    # Axes
+    "axes.spines.top":     False,
+    "axes.spines.right":   False,
+    "axes.linewidth":      0.7,
+    "axes.grid":           True,
+    "grid.alpha":          0.22,
+    "grid.linewidth":      0.35,
+    "grid.linestyle":      ":",
+    # Ticks
+    "xtick.major.size":    2.5,
+    "ytick.major.size":    2.5,
+    "xtick.major.width":   0.6,
+    "ytick.major.width":   0.6,
+    # Lines & patches
+    "lines.linewidth":     1.2,
+    "patch.linewidth":     0.5,
 }
 
-
-# Apply globally at import time so the settings are in effect before any
-# matplotlib code runs (e.g. log-scale tick formatters created at figure build).
 plt.rcParams.update(_RC_OVERRIDES)
 
 
 def _apply_style() -> None:
-    """Apply shared rcParams to all subsequent matplotlib calls."""
+    """Re-apply shared rcParams (idempotent)."""
     plt.rcParams.update(_RC_OVERRIDES)
 
 
+def _c(method: str) -> str:
+    return METHOD_COLORS.get(method, "#666666")
+
+
+def _m(method: str) -> str:
+    return METHOD_SHAPES.get(method, "o")
+
+
 def _fmt_pct(x: float) -> str:
-    """Format a rate as a LaTeX-safe percentage string."""
     if np.isnan(x):
         return "—"
     return f"{x:.1%}".replace("%", r"\%")
 
 
 def _fmt_delay(x: float) -> str:
-    """Format a delay value."""
     if np.isnan(x):
         return "—"
     return f"{x:.0f}"
 
 
-# ─── Figure 1: Detection rate comparison ────────────────────────────
+def _save(fig: plt.Figure, path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(path)
+    plt.close(fig)
+    print(f"  Saved {path}")
 
+
+def _canonical_order(results: dict) -> list[str]:
+    """Return ALL_DETECTOR_NAMES sorted by mean TPR on non-LEA scenarios (desc).
+
+    Applied consistently to every figure so the same method always occupies
+    the same row/column, making cross-figure comparison effortless.
+    """
+    base = [s for s in results["results"] if "lea" not in s]
+    if not base:
+        base = list(results["results"].keys())
+    mean_tprs = {
+        m: np.mean([results["results"][s].get(m, {}).get("tpr", 0.0) for s in base])
+        for m in ALL_DETECTOR_NAMES
+    }
+    return sorted(ALL_DETECTOR_NAMES, key=lambda m: mean_tprs[m], reverse=True)
+
+
+# ── Figure 1: Detection rates (lollipop) ──────────────────────────────────────
+
+def plot_detection_rates(results: dict, save_dir: Path) -> plt.Figure:
+    """Lollipop chart: TPR (top row) and FPR (bottom row) per detector × scenario.
+
+    Methods are sorted by mean TPR on non-local scenarios so the best
+    performers consistently appear at the top of every panel.
+    FPR is capped at 15 % for readability; clipped values annotated.
+    PITMonitor rows receive a subtle blue tint as a visual anchor.
+    95 % confidence intervals shown as thin horizontal whiskers.
+    """
+    _apply_style()
+    scenarios = [k for k in SCENARIO_LABELS if k in results["results"]]
+    if not scenarios:
+        scenarios = list(results["results"].keys())
+
+    alpha = results["config"]["alpha"]
+    n = len(scenarios)
+    FPR_CAP = 0.15
+
+    fig, axes = plt.subplots(
+        2, n,
+        figsize=(2.9 * n, 5.5),
+        gridspec_kw={"wspace": 0.10, "hspace": 0.50},
+    )
+    fig.subplots_adjust(top=0.90)
+    if n == 1:
+        axes = axes.reshape(2, 1)
+
+    ordered = _canonical_order(results)
+    y = np.arange(len(ordered))
+    pm_row = ordered.index("PITMonitor")
+
+    for col, scen in enumerate(scenarios):
+        is_left = col == 0
+
+        # Collect metrics
+        tprs, tpr_cis = [], []
+        fprs_raw, fprs_disp, fpr_cis = [], [], []
+        for m in ordered:
+            s = results["results"][scen].get(m, {})
+            tpr = s.get("tpr", 0.0)
+            fpr = s.get("fpr", 0.0)
+            tprs.append(tpr)
+            ci_t = s.get("tpr_ci", [tpr, tpr])
+            tpr_cis.append([tpr - ci_t[0], ci_t[1] - tpr])
+            fprs_raw.append(fpr)
+            fprs_disp.append(min(fpr, FPR_CAP))
+            ci_f = s.get("fpr_ci", [fpr, fpr])
+            fpr_cis.append(
+                [fpr - ci_f[0], ci_f[1] - fpr] if fpr < FPR_CAP * 0.97 else [0.0, 0.0]
+            )
+
+        # ── TPR panel (row 0) ──────────────────────────────────────────────────
+        ax = axes[0, col]
+        ax.axhspan(pm_row - 0.44, pm_row + 0.44,
+                   color=_c("PITMonitor"), alpha=0.06, linewidth=0, zorder=0)
+        for i, (m, tpr, ci) in enumerate(zip(ordered, tprs, tpr_cis)):
+            c = _c(m)
+            ax.plot([0, tpr], [i, i], color=c, lw=0.9, alpha=0.38, solid_capstyle="round")
+            ax.errorbar(
+                tpr, i, xerr=[[ci[0]], [ci[1]]],
+                fmt=_m(m), color=c,
+                markersize=6.5 if m == "PITMonitor" else 4.5,
+                markeredgewidth=0,
+                elinewidth=0.7, capsize=1.8, capthick=0.7,
+                zorder=5 if m == "PITMonitor" else 3,
+            )
+        ax.set_xlim(0, 1.06)
+        ax.set_yticks(y)
+        ax.set_ylim(len(ordered) - 0.4, -0.6)
+        ax.xaxis.set_major_formatter(mticker.PercentFormatter(1.0, 0))
+        ax.set_title(SCENARIO_LABELS.get(scen, scen), pad=5, fontsize=9)
+        if is_left:
+            ax.set_yticklabels(ordered, fontsize=7)
+            ax.set_ylabel("True positive rate", labelpad=3)
+        else:
+            ax.set_yticklabels([])
+
+        # ── FPR panel (row 1) ──────────────────────────────────────────────────
+        ax = axes[1, col]
+        ax.axhspan(pm_row - 0.44, pm_row + 0.44,
+                   color=_c("PITMonitor"), alpha=0.06, linewidth=0, zorder=0)
+        for i, (m, fpr_d, fpr_raw, ci) in enumerate(
+            zip(ordered, fprs_disp, fprs_raw, fpr_cis)
+        ):
+            c = _c(m)
+            ax.plot([0, fpr_d], [i, i], color=c, lw=0.9, alpha=0.38, solid_capstyle="round")
+            ax.errorbar(
+                fpr_d, i, xerr=[[ci[0]], [ci[1]]],
+                fmt=_m(m), color=c,
+                markersize=6.5 if m == "PITMonitor" else 4.5,
+                markeredgewidth=0,
+                elinewidth=0.7, capsize=1.8, capthick=0.7,
+                zorder=5 if m == "PITMonitor" else 3,
+            )
+        ax.axvline(alpha, color="0.25", ls="--", lw=0.9, alpha=0.8,
+                   label=f"α = {alpha}")
+        ax.set_xlim(0, FPR_CAP * 1.65)
+        ax.set_yticks(y)
+        ax.set_ylim(len(ordered) - 0.4, -0.6)
+        ax.xaxis.set_major_formatter(mticker.PercentFormatter(1.0, 0))
+        if is_left:
+            ax.set_yticklabels(ordered, fontsize=7)
+            ax.set_ylabel("False positive rate", labelpad=3)
+            ax.legend(fontsize=6.5, loc="upper right")
+        else:
+            ax.set_yticklabels([])
+
+    fig.suptitle("Drift Detection: True and False Positive Rates",
+                 fontsize=10, fontweight="bold")
+    out = save_dir / "fig_detection_rates.png"
+    _save(fig, out)
+    return fig
+
+
+# ── Figure 2: Detection delay distributions ───────────────────────────────────
+
+def plot_delay_distributions(results: dict, save_dir: Path) -> plt.Figure:
+    """Horizontal violin + box overlay for detection delays (true positives only).
+
+    Uses horizontal orientation for better method-label readability.
+    Methods use the global canonical ordering (by mean TPR on non-LEA scenarios)
+    so the row assignment is identical to fig_detection_rates.
+    Violin widths are scaled by sqrt(n_TP / max_n_TP) to warn the reader about
+    methods whose distribution rests on very few events (e.g. PageHinkley).
+    Zero-detection methods show a slim bar at x=0 in lieu of a violin.
+    Sample counts annotated on the right margin of each row.
+    """
+    _apply_style()
+    scenarios = [k for k in SCENARIO_LABELS if k in results["results"]]
+    if not scenarios:
+        scenarios = list(results["results"].keys())
+
+    ordered = _canonical_order(results)
+    y = np.arange(len(ordered))
+    pm_row = ordered.index("PITMonitor")
+    n = len(scenarios)
+
+    fig, axes = plt.subplots(
+        1, n,
+        figsize=(4.0 * n, 6.2),
+        gridspec_kw={"wspace": 0.55},
+    )
+    if n == 1:
+        axes = [axes]
+
+    for ax, scen in zip(axes, scenarios):
+        scen_label = SCENARIO_LABELS.get(scen, scen)
+
+        method_delays = {
+            m: np.array(results["results"][scen].get(m, {}).get("delays", []))
+            for m in ordered
+        }
+
+        # PITMonitor highlight band
+        ax.axhspan(pm_row - 0.44, pm_row + 0.44,
+                   color=_c("PITMonitor"), alpha=0.06, linewidth=0, zorder=0)
+
+        violin_data, violin_pos, violin_cols, violin_ndets = [], [], [], []
+        strip_data,  strip_pos,  strip_cols               = [], [], []
+        no_det_indices                                      = []
+
+        for i, m in enumerate(ordered):
+            d = method_delays[m]
+            c = _c(m)
+            if len(d) == 0:
+                no_det_indices.append(i)
+            elif len(d) < 5 or float(np.std(d)) < 1.0:
+                strip_data.append(d)
+                strip_pos.append(i)
+                strip_cols.append(c)
+            else:
+                violin_data.append(d)
+                violin_pos.append(i)
+                violin_cols.append(c)
+                violin_ndets.append(len(d))
+
+        # ── Violin plots with width ∝ sqrt(n_TP) ──────────────────────────────
+        x_right_violin = 0.0
+        if violin_data:
+            max_n = max(violin_ndets)
+            widths = [max(0.65, np.sqrt(nd / max_n)) * 0.72 for nd in violin_ndets]
+            parts = ax.violinplot(
+                violin_data, positions=violin_pos,
+                vert=False, showmedians=False, showextrema=False,
+                widths=widths,
+            )
+            for body, col in zip(parts["bodies"], violin_cols):
+                body.set_facecolor(col)
+                body.set_alpha(0.20)
+                body.set_edgecolor(col)
+                body.set_linewidth(0.9)
+                # Track actual violin x-extent (KDE can extend past data range)
+                verts = body.get_paths()[0].vertices
+                x_right_violin = max(x_right_violin, float(verts[:, 0].max()))
+
+            # IQR box + white median line
+            bp = ax.boxplot(
+                violin_data, positions=violin_pos,
+                vert=False, patch_artist=True, widths=0.22,
+                showfliers=False,
+                medianprops={"color": "white", "linewidth": 2.0,
+                             "solid_capstyle": "round"},
+                whiskerprops={"linewidth": 0.7, "color": "0.5"},
+                capprops={"linewidth": 0.7, "color": "0.5"},
+                boxprops={"linewidth": 0.6},
+            )
+            for patch, col in zip(bp["boxes"], violin_cols):
+                patch.set_facecolor(col)
+                patch.set_alpha(0.85)
+
+        # ── Strip plots for low-variance / small-n methods ────────────────────
+        x_right_strip = 0.0
+        rng = np.random.default_rng(42)
+        for d, i, col in zip(strip_data, strip_pos, strip_cols):
+            jitter = rng.normal(0, 0.10, size=len(d))
+            ax.scatter(d, i + jitter, s=18, alpha=0.55, color=col,
+                       zorder=4, rasterized=True)
+            med = float(np.median(d))
+            ax.plot([med, med], [i - 0.18, i + 0.18], color=col, lw=2.2,
+                    solid_capstyle="round", zorder=5)
+            x_right_strip = max(x_right_strip, float(np.max(d)))
+
+        # ── No-detection: thin bar at x=0 ────────────────────────────────────
+        # A clean vertical tick mark — visually distinct from the violin shapes
+        # so it is not mistaken for a distribution of delays at zero.
+        for i in no_det_indices:
+            m = ordered[i]
+            c = _c(m)
+            ax.vlines(0, i - 0.32, i + 0.32, lw=1.5, colors=c,
+                      alpha=0.80, zorder=6)
+
+        # ── X-axis limits from actual rendered violin extent ──────────────────
+        x_right_data = max(x_right_violin, x_right_strip)
+        if x_right_data == 0.0:
+            all_flat = np.concatenate(
+                [d for d in method_delays.values() if len(d) > 0]
+            )
+            x_right_data = float(np.percentile(all_flat, 99.5)) if len(all_flat) > 0 else 100.0
+        right = x_right_data * 1.06
+        ax.set_xlim(left=-right * 0.02, right=right)
+
+        # ── Sample-count annotations on right margin ──────────────────────────
+        trans_ay = blended_transform_factory(ax.transAxes, ax.transData)
+        for i, m in enumerate(ordered):
+            n_tp = len(method_delays[m])
+            label = f"n={n_tp:,}" if n_tp > 0 else "n=0"
+            ax.text(1.02, i, label, transform=trans_ay,
+                    va="center", ha="left", fontsize=5.5,
+                    color=_c(m), alpha=0.85, clip_on=False)
+
+        ax.set_yticks(y)
+        ax.set_yticklabels(ordered, fontsize=7)
+        ax.invert_yaxis()
+        ax.set_xlabel("Detection delay (samples)")
+        ax.set_title(scen_label)
+        ax.set_ylim(len(ordered) - 0.5, -0.5)
+
+    fig.suptitle("Detection Delay Distributions (True Positives Only)",
+                 fontsize=10, fontweight="bold")
+    out = save_dir / "fig_delay_distributions.png"
+    _save(fig, out)
+    return fig
+
+
+# ── Figure 3: Changepoint estimation error ────────────────────────────────────
+
+def plot_cp_error_distribution(
+    results: dict, save_dir: Path
+) -> Optional[plt.Figure]:
+    """Histogram of PITMonitor changepoint estimation error across scenarios.
+
+    Scenarios with no PITMonitor true-positive detections (e.g. LEA) are omitted.
+    Mean (red dashed) and median (blue dotted) are shown as vertical lines.
+    """
+    _apply_style()
+    scenarios = [k for k in SCENARIO_LABELS if k in results["results"]]
+    if not scenarios:
+        scenarios = list(results["results"].keys())
+
+    plot_data = []
+    for scen in scenarios:
+        pm = results["results"][scen].get("PITMonitor", {})
+        errs = pm.get("cp_errors", [])
+        if errs:
+            plot_data.append({
+                "label":  SCENARIO_LABELS.get(scen, scen),
+                "errors": np.array(errs),
+                "mean":   pm.get("mean_cp_error", float("nan")),
+                "median": pm.get("median_cp_error", float("nan")),
+            })
+
+    if not plot_data:
+        print("  Skipped fig_cp_error_distribution.png (no CP data)")
+        return None
+
+    n = len(plot_data)
+    fig, axes = plt.subplots(1, n, figsize=(3.8 * n, 3.5),
+                             gridspec_kw={"wspace": 0.45},
+                             squeeze=False)
+    fig.subplots_adjust(top=0.82)
+    axes = axes[0]
+
+    c_bar    = _c("PITMonitor")
+    C_MEAN   = "#C0392B"   # red  — mean
+    C_MEDIAN = "#0072B2"   # blue — median
+
+    for ax, data in zip(axes, plot_data):
+        errs = data["errors"]
+        p995 = int(np.ceil(np.percentile(errs, 99.5)))
+        bins = np.arange(-0.5, p995 + 1.5, 1)
+
+        ax.hist(errs, bins=bins, color=c_bar, alpha=0.75,
+                edgecolor="white", linewidth=0.4, density=False, zorder=2)
+
+        ax.axvline(data["mean"],   color=C_MEAN,   ls="--", lw=1.2,
+                   label=f"Mean = {data['mean']:.1f}")
+        ax.axvline(data["median"], color=C_MEDIAN, ls=":",  lw=1.6,
+                   label=f"Median = {data['median']:.1f}")
+
+        ax.set_xlabel(r"Changepoint error $|\hat{\tau} - \tau|$ (samples)")
+        ax.set_ylabel("Count")
+        ax.set_title(data["label"])
+        ax.set_xlim(-0.5, p995 + 0.5)
+        ax.legend(fontsize=6.5, handlelength=1.2)
+
+    fig.suptitle("PITMonitor Changepoint Estimation Error",
+                 fontsize=10, fontweight="bold")
+    out = save_dir / "fig_cp_error_distribution.png"
+    _save(fig, out)
+    return fig
+
+
+# ── Figure 4: Single-run diagnostic panels ────────────────────────────────────
+
+def plot_single_run_panels(
+    artifacts: dict,
+    save_path: Optional[Path] = None,
+) -> plt.Figure:
+    """Four-panel diagnostic for a single monitoring run.
+
+    Panels:
+        (a) Predictions vs actual — scatter coloured by pre/post drift region.
+        (b) PIT stream — dots coloured pre/post + 50-sample rolling mean.
+            Only the true-shift line is shown here; alarm/CP appear in (c).
+        (c) E-process — log scale with threshold / alarm / CP-estimate lines,
+            each annotated with a staggered label to disambiguate close events.
+        (d) PIT distributions — overlapping density histograms pre vs post shift.
+    """
+    _apply_style()
+
+    shift = int(artifacts["true_shift_point"])
+    y_all = np.asarray(artifacts["true_labels"],    dtype=float)
+    preds = np.asarray(artifacts["predictions"],    dtype=float)
+    pits  = np.asarray(artifacts["pits"],           dtype=float)
+    evid  = np.asarray(artifacts["evidence_trace"], dtype=float)
+    t     = np.arange(1, len(y_all) + 1)
+
+    scen_label = SCENARIO_LABELS.get(artifacts.get("scenario_key", ""), "")
+
+    C_PRE   = "#4A90D9"   # pre-drift: cool blue
+    C_POST  = "#C0392B"   # post-drift: warm red
+    C_SHIFT = "#2C3E50"   # true shift: near-black
+    C_ALARM = "#E67E22"   # alarm: orange
+    C_CP    = "#27AE60"   # changepoint estimate: green
+    C_EVID  = _c("PITMonitor")
+
+    alarm_fired = bool(artifacts.get("alarm_fired", False))
+    alarm_time  = artifacts.get("alarm_time")
+    cp_est      = artifacts.get("changepoint")
+    threshold   = 1.0 / float(artifacts["monitor_alpha"])
+
+    fig, axes = plt.subplots(2, 2, figsize=(8.5, 5.6))
+    fig.subplots_adjust(top=0.92, hspace=0.52, wspace=0.40)
+    fig.suptitle(f"PITMonitor Single Run — {scen_label}",
+                 fontsize=10, fontweight="bold")
+
+    # ── (a) Predictions vs reality ────────────────────────────────────────────
+    ax = axes[0, 0]
+    ax.axvspan(t[0],  shift,  color=C_PRE,  alpha=0.035, linewidth=0)
+    ax.axvspan(shift, t[-1], color=C_POST, alpha=0.035, linewidth=0)
+
+    mask = t < shift
+    ax.scatter(t[mask],  y_all[mask],  s=2.0, alpha=0.20, c=C_PRE,  rasterized=True)
+    ax.scatter(t[~mask], y_all[~mask], s=2.0, alpha=0.20, c=C_POST, rasterized=True)
+    ax.scatter(t, preds, s=1.5, alpha=0.15, c="0.40", rasterized=True)
+
+    ax.axvline(shift, color=C_SHIFT, ls="--", lw=1.4, alpha=0.85, zorder=2)
+    if alarm_fired and alarm_time is not None:
+        ax.axvline(int(alarm_time), color=C_ALARM, ls="-", lw=1.8, alpha=0.85, zorder=2)
+
+    leg = [
+        Line2D([0], [0], marker="o", ls="", color=C_PRE,  ms=3.5, label="Actual (pre)"),
+        Line2D([0], [0], marker="o", ls="", color=C_POST, ms=3.5, label="Actual (post)"),
+        Line2D([0], [0], color=C_SHIFT, ls="--", lw=1.4, label="True shift"),
+    ]
+    if alarm_fired and alarm_time is not None:
+        leg.append(Line2D([0], [0], color=C_ALARM, ls="-", lw=1.8,
+                          label=f"Alarm (t={int(alarm_time)})"))
+    ax.legend(handles=leg, fontsize=6, loc="upper right",
+              ncol=2, columnspacing=0.6, handlelength=1.2)
+    ax.set(xlabel="Sample", ylabel="Target value", title="(a) Predictions vs reality")
+
+    # ── (b) PIT stream ────────────────────────────────────────────────────────
+    # Separate scatter calls (not a colour array) prevent rasterisation
+    # artefacts at the panel bottom.  Only the true-shift line is drawn here;
+    # the alarm and CP are shown in panel (c) to keep this panel clean.
+    ax = axes[0, 1]
+    mask = t < shift
+    ax.scatter(t[mask],  pits[mask],  s=2.0, alpha=0.09, c=C_PRE,
+               rasterized=False, linewidths=0, zorder=3)
+    ax.scatter(t[~mask], pits[~mask], s=2.0, alpha=0.09, c=C_POST,
+               rasterized=False, linewidths=0, zorder=3)
+
+    w = 50
+    if len(pits) >= w:
+        roll = np.convolve(pits, np.ones(w) / w, mode="valid")
+        ax.plot(np.arange(w, len(pits) + 1), roll,
+                color="0.10", lw=1.1, alpha=0.90, zorder=4)
+
+    ax.axhline(0.5, color="0.55", ls=":", lw=0.8)
+
+    # True-shift line only — alarm omitted (alarm & CP are shown fully in panel c)
+    ax.axvline(shift, color=C_SHIFT, ls="--", lw=1.4, alpha=0.85, zorder=2)
+
+    leg = [
+        Line2D([0], [0], marker="o", ls="", color=C_PRE,  ms=3.5, label="Pre-shift"),
+        Line2D([0], [0], marker="o", ls="", color=C_POST, ms=3.5, label="Post-shift"),
+        Line2D([0], [0], color="0.10", lw=1.1, label="Roll. mean (w=50)"),
+        Line2D([0], [0], color=C_SHIFT, ls="--", lw=1.2, label="True shift"),
+    ]
+    ax.legend(handles=leg, fontsize=6, loc="upper right",
+              ncol=2, columnspacing=0.6, handlelength=1.2)
+    ax.set(xlabel="Sample", ylabel="PIT value",
+           title="(b) PIT stream")
+    ax.set_ylim(0, 1)
+
+    # ── (c) E-process ─────────────────────────────────────────────────────────
+    ax = axes[1, 0]
+    evid_pos = np.maximum(evid, 1e-12)
+
+    ax.semilogy(t, evid_pos, color=C_EVID, lw=1.1, zorder=4)
+    ax.fill_between(t, threshold, evid_pos,
+                    where=evid_pos >= threshold,
+                    color=C_EVID, alpha=0.12, linewidth=0)
+
+    # Horizontal threshold line
+    ax.axhline(threshold, color=C_ALARM, ls="--", lw=1.0, alpha=0.85)
+
+    # Vertical event lines — three visually distinct styles.
+    # Always draw shift and CP separately (even when they coincide spatially)
+    # so the legend structure is identical across all single-run figures.
+    leg_c = [Line2D([0], [0], color=C_ALARM, ls="--", lw=1.0,
+                    label=f"Threshold 1/α = {threshold:.0f}")]
+
+    ax.axvline(shift, color=C_SHIFT, ls="--", lw=1.4, alpha=0.85, zorder=2)
+    leg_c.append(Line2D([0], [0], color=C_SHIFT, ls="--", lw=1.4,
+                         label=f"True shift (t={shift})"))
+
+    if cp_est is not None:
+        cp_int = int(cp_est)
+        ax.axvline(cp_int, color=C_CP, ls=":", lw=2.0, alpha=0.90, zorder=2)
+        leg_c.append(Line2D([0], [0], color=C_CP, ls=":", lw=2.0,
+                             label=f"CP est. (t={cp_int})"))
+
+    if alarm_fired and alarm_time is not None:
+        ax.axvline(int(alarm_time), color=C_ALARM, ls="-", lw=1.8, alpha=0.85, zorder=2)
+        leg_c.append(Line2D([0], [0], color=C_ALARM, ls="-", lw=1.8,
+                             label=f"Alarm (t={int(alarm_time)})"))
+
+    ax.legend(handles=leg_c, fontsize=6, loc="upper left", handlelength=1.4)
+
+    valid = evid_pos[evid_pos > 1e-11]
+    y_bot = float(valid.min()) * 0.3 if len(valid) > 0 else 1e-8
+    y_top = max(float(evid_pos.max()), threshold) * 4.0
+    ax.set_ylim(y_bot, y_top)
+    ax.set_xlim(t[0], t[-1])
+    ax.set(xlabel="Sample", ylabel="Evidence (log scale)", title="(c) E-process")
+
+    # ── (d) PIT distributions ─────────────────────────────────────────────────
+    ax = axes[1, 1]
+    bins = np.linspace(0, 1, 21)
+    pre_pits  = pits[:shift - 1]
+    post_pits = pits[shift - 1:]
+    kw = dict(bins=bins, density=True, edgecolor="white", linewidth=0.4)
+    if len(pre_pits) > 0:
+        ax.hist(pre_pits,  alpha=0.55, color=C_PRE,
+                label=f"Pre-shift  (n={len(pre_pits):,})", **kw)
+    if len(post_pits) > 0:
+        ax.hist(post_pits, alpha=0.55, color=C_POST,
+                label=f"Post-shift (n={len(post_pits):,})", **kw)
+    ax.axhline(1.0, color="0.35", ls=":", lw=1.0, label="U[0,1] reference")
+    ax.legend(fontsize=6.5)
+    ax.set(xlabel="PIT value", ylabel="Density",
+           title="(d) PIT distributions", xlim=(0, 1))
+
+    if save_path is not None:
+        save_path = Path(save_path)
+        _save(fig, save_path)
+    else:
+        plt.close(fig)
+    return fig
+
+
+# ── LaTeX table ───────────────────────────────────────────────────────────────
+
+def generate_latex_table(results: dict, save_dir: Path) -> str:
+    r"""Generate a LaTeX booktabs table with all summary statistics.
+
+    Columns per scenario: TPR, FPR, Mean Delay.
+
+    Parameters
+    ----------
+    results : dict
+    save_dir : Path
+
+    Returns
+    -------
+    str
+        Complete LaTeX table source (ready to \\input{} in a paper).
+    """
+    scenarios = [k for k in results["results"] if k in SCENARIO_LABELS]
+    if not scenarios:
+        scenarios = list(results["results"].keys())
+
+    n_scen = len(scenarios)
+    alpha = results["config"]["alpha"]
+
+    col_spec = "l" + " ccc" * n_scen
+
+    lines = []
+    lines.append(r"\begin{table}[t]")
+    lines.append(r"\centering")
+    lines.append(r"\small")
+    lines.append(
+        r"\caption{Drift detection results on FriedmanDrift "
+        rf"(\expNtrials{{}} trials, $\alpha=\expAlpha$). "
+        r"Mean delay is in samples. "
+        r"Best TPR per scenario is \textbf{bolded}; "
+        r"FPR exceeding $\alpha$ is \underline{underlined}.}"
+    )
+    lines.append(r"\label{tab:results}")
+    lines.append(rf"\begin{{tabular}}{{{col_spec}}}")
+    lines.append(r"\toprule")
+
+    header1_parts = [r"\multicolumn{1}{l}{}"]
+    for scen in scenarios:
+        label = SCENARIO_SHORT.get(scen, scen)
+        header1_parts.append(rf"\multicolumn{{3}}{{c}}{{{label}}}")
+    lines.append(" & ".join(header1_parts) + r" \\")
+
+    cmidrules = []
+    for i in range(n_scen):
+        start = 2 + i * 3
+        end = start + 2
+        cmidrules.append(rf"\cmidrule(lr){{{start}-{end}}}")
+    lines.append(" ".join(cmidrules))
+
+    header2_parts = ["Method"]
+    for _ in scenarios:
+        header2_parts.extend(["TPR", "FPR", "Delay"])
+    lines.append(" & ".join(header2_parts) + r" \\")
+    lines.append(r"\midrule")
+
+    best_tpr = {}
+    for scen in scenarios:
+        tprs = [results["results"][scen].get(m, {}).get("tpr", 0.0)
+                for m in ALL_DETECTOR_NAMES]
+        best_tpr[scen] = max(tprs)
+
+    for method in ALL_DETECTOR_NAMES:
+        row_parts = [method.replace("_", r"\_")]
+        for scen in scenarios:
+            s = results["results"][scen].get(method, {})
+            tpr   = s.get("tpr",        float("nan"))
+            fpr   = s.get("fpr",        float("nan"))
+            delay = s.get("mean_delay", float("nan"))
+
+            tpr_str = _fmt_pct(tpr)
+            if not np.isnan(tpr) and abs(tpr - best_tpr[scen]) < 1e-6:
+                tpr_str = rf"\textbf{{{tpr_str}}}"
+
+            fpr_str = _fmt_pct(fpr)
+            if not np.isnan(fpr) and fpr > alpha:
+                fpr_str = rf"\underline{{{fpr_str}}}"
+
+            row_parts.extend([tpr_str, fpr_str, _fmt_delay(delay)])
+
+        lines.append(" & ".join(row_parts) + r" \\")
+
+    lines.append(r"\bottomrule")
+    lines.append(r"\end{tabular}")
+    lines.append(r"\end{table}")
+
+    latex_src = "\n".join(lines)
+    out = save_dir / "table_results.tex"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(latex_src)
+    print(f"  Saved {out}")
+    return latex_src
+
+
+# ── LaTeX macros ──────────────────────────────────────────────────────────────
 
 def generate_experiment_macros(results: dict, save_dir: Path) -> str:
-    r"""Generate a LaTeX file of \newcommand macros for experiment params and key results.
-
-    This allows the paper to use macros like \expEpochs, \expNtrials, etc.
-    so that all numbers stay in sync with the experiment automatically.
+    r"""Generate a LaTeX file of \newcommand macros for experiment params and results.
 
     Parameters
     ----------
@@ -157,13 +809,13 @@ def generate_experiment_macros(results: dict, save_dir: Path) -> str:
 
     res = results["results"]
     for scen_key, short in SCENARIO_SHORT.items():
-        tag = short  # e.g. GRA, GSG, LEA
+        tag = short
         pm = res.get(scen_key, {}).get("PITMonitor", {})
         if not pm:
             continue
-        tpr = pm.get("tpr", float("nan"))
-        fpr = pm.get("fpr", float("nan"))
-        delay = pm.get("mean_delay", float("nan"))
+        tpr    = pm.get("tpr",        float("nan"))
+        fpr    = pm.get("fpr",        float("nan"))
+        delay  = pm.get("mean_delay", float("nan"))
         cp_err = pm.get("mean_cp_error", float("nan"))
 
         lines.append(f"% {tag}")
@@ -174,7 +826,6 @@ def generate_experiment_macros(results: dict, save_dir: Path) -> str:
         if not np.isnan(cp_err):
             lines.append(rf"\newcommand{{\resPM{tag}CPErr}}{{{cp_err:.1f}}}")
 
-    # ADWIN results
     lines.append("")
     lines.append("% Per-scenario result macros (ADWIN)")
     for scen_key, short in SCENARIO_SHORT.items():
@@ -182,8 +833,8 @@ def generate_experiment_macros(results: dict, save_dir: Path) -> str:
         ad = res.get(scen_key, {}).get("ADWIN", {})
         if not ad:
             continue
-        tpr = ad.get("tpr", float("nan"))
-        fpr = ad.get("fpr", float("nan"))
+        tpr   = ad.get("tpr",        float("nan"))
+        fpr   = ad.get("fpr",        float("nan"))
         delay = ad.get("mean_delay", float("nan"))
         lines.append(f"% {tag}")
         lines.append(rf"\newcommand{{\resAD{tag}TPR}}{{{tpr:.1%}}}".replace("%", r"\%"))
@@ -191,7 +842,6 @@ def generate_experiment_macros(results: dict, save_dir: Path) -> str:
         if not np.isnan(delay):
             lines.append(rf"\newcommand{{\resAD{tag}Delay}}{{{delay:.0f}}}")
 
-    # DDM and HDDM_A (mentioned in paper text)
     lines.append("")
     lines.append("% Other detectors mentioned in text")
     for det_name, prefix in [("DDM", "DDM"), ("HDDM_A", "HDDMA")]:
@@ -199,10 +849,10 @@ def generate_experiment_macros(results: dict, save_dir: Path) -> str:
             d = res.get(scen_key, {}).get(det_name, {})
             if not d:
                 continue
-            tpr = d.get("tpr", float("nan"))
-            fpr = d.get("fpr", float("nan"))
+            tpr   = d.get("tpr",        float("nan"))
+            fpr   = d.get("fpr",        float("nan"))
             delay = d.get("mean_delay", float("nan"))
-            tag = short
+            tag   = short
             lines.append(
                 rf"\newcommand{{\res{prefix}{tag}TPR}}{{{tpr:.1%}}}".replace("%", r"\%")
             )
@@ -220,818 +870,19 @@ def generate_experiment_macros(results: dict, save_dir: Path) -> str:
     return latex_src
 
 
-def plot_detection_rates(results: dict, save_dir: Path) -> plt.Figure:
-    """Grouped bar chart for TPR and FPR per method and scenario.
-
-    Layout: 2 rows (TPR top, FPR bottom) × n_scenarios columns.
-    PITMonitor is shown at the *top* of each panel (y-axis inverted).
-    Method labels appear only on the leftmost column to avoid clutter.
-
-    Parameters
-    ----------
-    results : dict
-        Output from ``run_experiment`` (loaded from JSON).
-    save_dir : Path
-
-    Returns
-    -------
-    plt.Figure
-    """
-    _apply_style()
-    scenarios = [k for k in results["results"] if k in SCENARIO_LABELS]
-    if not scenarios:
-        scenarios = list(results["results"].keys())
-
-    alpha = results["config"]["alpha"]
-    n_scenarios = len(scenarios)
-    FPR_CAP = 0.15
-
-    fig, axes = plt.subplots(
-        2,
-        n_scenarios,
-        figsize=(3.4 * n_scenarios + 0.9, 5.8),
-        gridspec_kw={"wspace": 0.10, "hspace": 0.52},
-    )
-    fig.subplots_adjust(top=0.88)
-    if n_scenarios == 1:
-        axes = axes.reshape(2, 1)
-
-    for i, scen in enumerate(scenarios):
-        scen_label = SCENARIO_LABELS.get(scen, scen)
-        methods = list(ALL_DETECTOR_NAMES)
-        tprs, fprs, tpr_err, fpr_err, colors = [], [], [], [], []
-
-        for method in methods:
-            s = results["results"][scen].get(method, {})
-            tpr = s.get("tpr", 0.0)
-            fpr = s.get("fpr", 0.0)
-            tprs.append(tpr)
-            fprs.append(fpr)
-
-            ci = s.get("tpr_ci", (tpr, tpr))
-            tpr_err.append([tpr - ci[0], ci[1] - tpr])
-            ci = s.get("fpr_ci", (fpr, fpr))
-            fpr_err.append([fpr - ci[0], ci[1] - fpr])
-            colors.append(METHOD_COLORS.get(method, "#999999"))
-
-        y = np.arange(len(methods))
-        tpr_err_arr = np.abs(np.array(tpr_err).T)
-        fpr_err_arr = np.abs(np.array(fpr_err).T)
-
-        # ── TPR panel (row 0) ──────────────────────────────────────────
-        ax = axes[0, i]
-        bars = ax.barh(
-            y,
-            tprs,
-            xerr=tpr_err_arr,
-            color=colors,
-            alpha=0.88,
-            edgecolor="white",
-            linewidth=0.5,
-            error_kw={"lw": 0.8, "capsize": 2, "capthick": 0.8},
-        )
-        for bar, method in zip(bars, methods):
-            bar.set_hatch(METHOD_HATCHES.get(method, ""))
-        ax.invert_yaxis()
-        ax.set_yticks(y)
-        ax.set_xlim(0, 1.08)
-        ax.set_title(scen_label, fontsize=9)
-        ax.xaxis.set_major_formatter(mticker.PercentFormatter(1.0, 0))
-        if i == 0:
-            ax.set_yticklabels(methods, fontsize=7.5)
-            ax.set_ylabel("TPR", fontsize=9, labelpad=4)
-        else:
-            ax.set_yticklabels([])
-
-        # ── FPR panel (row 1) — capped at FPR_CAP ─────────────────────
-        ax = axes[1, i]
-        fprs_display = [min(f, FPR_CAP) for f in fprs]
-        fpr_err_display = [
-            e if f < FPR_CAP * 0.98 else [0.0, 0.0]
-            for f, e in zip(fprs, fpr_err)
-        ]
-        fpr_err_arr_display = np.abs(np.array(fpr_err_display).T)
-        bars = ax.barh(
-            y,
-            fprs_display,
-            xerr=fpr_err_arr_display,
-            color=colors,
-            alpha=0.88,
-            edgecolor="white",
-            linewidth=0.5,
-            error_kw={"lw": 0.8, "capsize": 2, "capthick": 0.8},
-        )
-        for bar, method in zip(bars, methods):
-            bar.set_hatch(METHOD_HATCHES.get(method, ""))
-        ax.invert_yaxis()
-        # Annotate clipped bars with actual value (clipped bars all hit FPR_CAP)
-        for bar, fpr in zip(bars, fprs):
-            if fpr >= FPR_CAP * 0.98:
-                ax.text(
-                    FPR_CAP + 0.003,
-                    bar.get_y() + bar.get_height() / 2,
-                    f"{fpr:.0%}",
-                    va="center",
-                    ha="left",
-                    fontsize=6.0,
-                    color="0.3",
-                )
-        ax.axvline(
-            alpha,
-            color="crimson",
-            ls="--",
-            lw=1.2,
-            alpha=0.8,
-            label=f"α = {alpha}",
-        )
-        ax.set_yticks(y)
-        ax.set_xlim(0, FPR_CAP * 1.60)
-        ax.xaxis.set_major_formatter(mticker.PercentFormatter(1.0, 0))
-        if i == 0:
-            ax.set_yticklabels(methods, fontsize=7.5)
-            ax.set_ylabel("FPR", fontsize=9, labelpad=4)
-            ax.legend(fontsize=7, loc="lower right")
-        else:
-            ax.set_yticklabels([])
-
-    fig.suptitle(
-        "Drift Detection: True and False Positive Rates",
-        fontsize=11,
-        fontweight="bold",
-    )
-
-    out = save_dir / "fig_detection_rates.png"
-    fig.savefig(out, bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Saved {out}")
-    return fig
-
-
-# ─── Figure 2: Detection delay distributions ────────────────────────
-
-
-def plot_delay_distributions(results: dict, save_dir: Path) -> plt.Figure:
-    """Violin + jittered strip plots of detection delay (true positives).
-
-    All detectors appear on the x-axis regardless of whether they fired.
-    Methods with zero detections show an annotation.  Methods with near-zero
-    variance (e.g. ADWIN firing deterministically) show a jittered strip
-    with a median marker instead of a violin.
-
-    Parameters
-    ----------
-    results : dict
-    save_dir : Path
-
-    Returns
-    -------
-    plt.Figure
-    """
-    _apply_style()
-    scenarios = [k for k in results["results"] if k in SCENARIO_LABELS]
-    if not scenarios:
-        scenarios = list(results["results"].keys())
-
-    n_scenarios = len(scenarios)
-    fig, axes = plt.subplots(
-        1,
-        n_scenarios,
-        figsize=(4.5 * n_scenarios, 5.5),
-        sharey=False,
-    )
-    fig.subplots_adjust(top=0.88, bottom=0.18, wspace=0.3)
-    if n_scenarios == 1:
-        axes = [axes]
-
-    for ax, scen in zip(axes, scenarios):
-        scen_label = SCENARIO_LABELS.get(scen, scen)
-        all_methods = list(ALL_DETECTOR_NAMES)
-        positions = list(range(1, len(all_methods) + 1))
-        method_colors = [METHOD_COLORS.get(m, "#999999") for m in all_methods]
-
-        # Collect delay data per method
-        method_delays = {}
-        for method in all_methods:
-            delays = results["results"][scen].get(method, {}).get("delays", [])
-            method_delays[method] = delays
-
-        # Classify each method
-        violin_data, violin_pos, violin_colors = [], [], []
-        strip_data, strip_pos, strip_colors = [], [], []
-        no_detection_pos, no_detection_labels, no_detection_colors = [], [], []
-
-        for method, pos, color in zip(all_methods, positions, method_colors):
-            delays = method_delays[method]
-            if len(delays) == 0:
-                no_detection_pos.append(pos)
-                no_detection_labels.append(method)
-                no_detection_colors.append(color)
-            elif len(delays) <= 2 or np.std(delays) < 1.0:
-                # Near-zero variance or too few points for a violin
-                strip_data.append(np.array(delays))
-                strip_pos.append(pos)
-                strip_colors.append(color)
-            else:
-                violin_data.append(delays)
-                violin_pos.append(pos)
-                violin_colors.append(color)
-
-        # Draw violins for methods with enough variance
-        if violin_data:
-            parts = ax.violinplot(
-                violin_data,
-                positions=violin_pos,
-                showmedians=False,
-                showextrema=False,
-            )
-            for body, color in zip(parts["bodies"], violin_colors):
-                body.set_facecolor(color)
-                body.set_alpha(0.3)
-                body.set_edgecolor(color)
-                body.set_linewidth(0.8)
-
-            # Overlay box plot (thin)
-            bp = ax.boxplot(
-                violin_data,
-                positions=violin_pos,
-                patch_artist=True,
-                widths=0.20,
-                showfliers=False,
-                medianprops={"color": "white", "linewidth": 1.6},
-                whiskerprops={"linewidth": 1.0, "color": "0.4"},
-                capprops={"linewidth": 1.0, "color": "0.4"},
-                boxprops={"linewidth": 0.8},
-            )
-            for patch, color in zip(bp["boxes"], violin_colors):
-                patch.set_facecolor(color)
-                patch.set_alpha(0.85)
-
-        # Draw jittered strip + median for low-variance methods
-        for delays, pos, color in zip(strip_data, strip_pos, strip_colors):
-            jitter = np.random.default_rng(42).normal(0, 0.06, size=len(delays))
-            ax.scatter(
-                pos + jitter,
-                delays,
-                s=8,
-                alpha=0.4,
-                color=color,
-                zorder=3,
-                rasterized=True,
-            )
-            med = np.median(delays)
-            ax.plot(
-                [pos - 0.15, pos + 0.15],
-                [med, med],
-                color=color,
-                lw=2.5,
-                solid_capstyle="round",
-                zorder=4,
-            )
-
-        # Tight y-limits based on all available data; must be set before
-        # placing no-detection annotations so we know the axis range.
-        all_delays = [d for m in all_methods for d in method_delays[m]]
-        if all_delays:
-            all_vals = np.array(all_delays)
-            lo = max(0, float(np.percentile(all_vals, 1)))
-            hi = float(np.percentile(all_vals, 90))
-            pad = max((hi - lo) * 0.08, 5)
-            ax.set_ylim(lo - pad, hi + pad)
-
-        # Ensure all method positions are visible regardless of data presence.
-        ax.set_xlim(0.5, len(all_methods) + 0.5)
-
-        # Annotate methods with zero true-positive detections with a marker
-        # at the bottom of the axis so they are still visible at their position.
-        if no_detection_pos:
-            y_lo, y_hi = ax.get_ylim()
-            marker_y = y_lo + (y_hi - y_lo) * 0.04
-            for pos, color in zip(no_detection_pos, no_detection_colors):
-                ax.plot(
-                    pos,
-                    marker_y,
-                    marker="x",
-                    markersize=7,
-                    color=color,
-                    markeredgewidth=1.5,
-                    zorder=5,
-                    clip_on=False,
-                )
-
-        ax.set_xticks(positions)
-        ax.set_xticklabels(all_methods, rotation=40, ha="right", fontsize=7.5)
-        ax.set_title(scen_label)
-
-    axes[0].set_ylabel("Detection delay (samples)")
-    fig.suptitle(
-        "Detection Delay Distributions (True Positives Only)",
-        fontsize=11,
-        fontweight="bold",
-    )
-
-    out = save_dir / "fig_delay_distributions.png"
-    fig.savefig(out, bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Saved {out}")
-    return fig
-
-
-# ─── LaTeX summary table ────────────────────────────────────────────
-
-
-def generate_latex_table(results: dict, save_dir: Path) -> str:
-    r"""Generate a LaTeX booktabs table with all summary statistics.
-
-    Columns per scenario: TPR, FPR, Mean Delay.  Changepoint error is
-    reported separately (see ``plot_cp_error_distribution``).
-
-    Parameters
-    ----------
-    results : dict
-    save_dir : Path
-
-    Returns
-    -------
-    str
-        Complete LaTeX table source (ready to \\input{} in a paper).
-    """
-    scenarios = [k for k in results["results"] if k in SCENARIO_LABELS]
-    if not scenarios:
-        scenarios = list(results["results"].keys())
-
-    n_scen = len(scenarios)
-    alpha = results["config"]["alpha"]
-    n_trials = results["config"]["n_trials"]
-
-    # Build column spec: Method | (TPR FPR Delay) × n_scenarios
-    col_spec = "l" + " ccc" * n_scen
-
-    lines = []
-    lines.append(r"\begin{table}[t]")
-    lines.append(r"\centering")
-    lines.append(r"\small")
-    lines.append(
-        r"\caption{Drift detection results on FriedmanDrift "
-        rf"(\expNtrials{{}} trials, $\alpha=\expAlpha$). "
-        r"Mean delay is in samples. "
-        r"Best TPR per scenario is \textbf{bolded}; "
-        r"FPR exceeding $\alpha$ is \underline{underlined}.}"
-    )
-    lines.append(r"\label{tab:results}")
-    lines.append(rf"\begin{{tabular}}{{{col_spec}}}")
-    lines.append(r"\toprule")
-
-    # Header row 1: scenario names spanning 3 columns each
-    header1_parts = [r"\multicolumn{1}{l}{}"]
-    for scen in scenarios:
-        label = SCENARIO_SHORT.get(scen, scen)
-        header1_parts.append(rf"\multicolumn{{3}}{{c}}{{{label}}}")
-    lines.append(" & ".join(header1_parts) + r" \\")
-
-    # Cmidrules under each scenario group
-    cmidrules = []
-    for i, _scen in enumerate(scenarios):
-        start = 2 + i * 3
-        end = start + 2
-        cmidrules.append(rf"\cmidrule(lr){{{start}-{end}}}")
-    lines.append(" ".join(cmidrules))
-
-    # Header row 2: metric names
-    header2_parts = ["Method"]
-    for _scen in scenarios:
-        header2_parts.extend(["TPR", "FPR", "Delay"])
-    lines.append(" & ".join(header2_parts) + r" \\")
-    lines.append(r"\midrule")
-
-    # Find best TPR per scenario for bolding
-    best_tpr = {}
-    for scen in scenarios:
-        tprs = []
-        for method in ALL_DETECTOR_NAMES:
-            s = results["results"][scen].get(method, {})
-            tprs.append(s.get("tpr", 0.0))
-        best_tpr[scen] = max(tprs)
-
-    # Data rows
-    for method in ALL_DETECTOR_NAMES:
-        row_parts = [method.replace("_", r"\_")]
-
-        for scen in scenarios:
-            s = results["results"][scen].get(method, {})
-            tpr = s.get("tpr", float("nan"))
-            fpr = s.get("fpr", float("nan"))
-            delay = s.get("mean_delay", float("nan"))
-
-            # Format TPR (bold if best)
-            tpr_str = _fmt_pct(tpr)
-            if not np.isnan(tpr) and abs(tpr - best_tpr[scen]) < 1e-6:
-                tpr_str = rf"\textbf{{{tpr_str}}}"
-
-            # Format FPR (underline if > alpha)
-            fpr_str = _fmt_pct(fpr)
-            if not np.isnan(fpr) and fpr > alpha:
-                fpr_str = rf"\underline{{{fpr_str}}}"
-
-            delay_str = _fmt_delay(delay)
-
-            row_parts.extend([tpr_str, fpr_str, delay_str])
-
-        lines.append(" & ".join(row_parts) + r" \\")
-
-    lines.append(r"\bottomrule")
-    lines.append(r"\end{tabular}")
-    lines.append(r"\end{table}")
-
-    latex_src = "\n".join(lines)
-
-    out = save_dir / "table_results.tex"
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(latex_src)
-    print(f"  Saved {out}")
-    return latex_src
-
-
-# ─── Figure: Changepoint estimation error distribution ────────────
-
-
-def plot_cp_error_distribution(results: dict, save_dir: Path) -> Optional[plt.Figure]:
-    """Histogram of PITMonitor changepoint estimation error across scenarios.
-
-    Shows the distribution of |τ̂ − τ| for all true-positive trials where
-    PITMonitor provides a changepoint estimate.  Scenarios with zero
-    true positives (e.g. LEA) are omitted.
-
-    Parameters
-    ----------
-    results : dict
-    save_dir : Path
-
-    Returns
-    -------
-    plt.Figure or None
-        None if no changepoint data is available.
-    """
-    _apply_style()
-    scenarios = [k for k in results["results"] if k in SCENARIO_LABELS]
-    if not scenarios:
-        scenarios = list(results["results"].keys())
-
-    # Collect cp_errors per scenario
-    plot_data = []
-    for scen in scenarios:
-        pm = results["results"][scen].get("PITMonitor", {})
-        cp_errors = pm.get("cp_errors", [])
-        if cp_errors:
-            label = SCENARIO_LABELS.get(scen, scen)
-            mean_err = pm.get("mean_cp_error", np.mean(cp_errors))
-            median_err = pm.get("median_cp_error", np.median(cp_errors))
-            plot_data.append(
-                {
-                    "label": label,
-                    "short": SCENARIO_SHORT.get(scen, scen),
-                    "errors": np.array(cp_errors),
-                    "mean": mean_err,
-                    "median": median_err,
-                }
-            )
-
-    if not plot_data:
-        print("  Skipped fig_cp_error_distribution.png (no CP data)")
-        return None
-
-    n_panels = len(plot_data)
-    fig, axes = plt.subplots(
-        1,
-        n_panels,
-        figsize=(4.5 * n_panels, 4.2),
-        squeeze=False,
-    )
-    fig.subplots_adjust(top=0.82, wspace=0.35)
-    axes = axes[0]
-
-    color = METHOD_COLORS["PITMonitor"]
-
-    for ax, data in zip(axes, plot_data):
-        errors = data["errors"]
-
-        # Choose bin edges: integer-width bins since errors are in samples
-        max_err = int(np.ceil(np.percentile(errors, 99.5))) + 1
-        bins = np.arange(-0.5, max_err + 1.5, 1)
-
-        ax.hist(
-            errors,
-            bins=bins,
-            color=color,
-            alpha=0.7,
-            edgecolor="white",
-            linewidth=0.4,
-            density=False,
-        )
-
-        # Mark mean and median
-        ax.axvline(
-            data["mean"],
-            color="crimson",
-            ls="--",
-            lw=1.3,
-            label=f"Mean = {data['mean']:.1f}",
-        )
-        ax.axvline(
-            data["median"],
-            color="0.3",
-            ls=":",
-            lw=1.3,
-            label=f"Median = {data['median']:.1f}",
-        )
-
-        ax.set_title(data["label"])
-        ax.set_xlabel("Changepoint error $|\\hat{\\tau} - \\tau|$ (samples)")
-        ax.set_ylabel("Count")
-        ax.legend(fontsize=7.5)
-        ax.set_xlim(-0.5, max_err + 0.5)
-
-    fig.suptitle(
-        "PITMonitor Changepoint Estimation Error",
-        fontsize=11,
-        fontweight="bold",
-    )
-
-    out = save_dir / "fig_cp_error_distribution.png"
-    fig.savefig(out, bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Saved {out}")
-    return fig
-
-
-# ─── Figure 4: Single-run panels ─────────────────────────────────────
-
-
-def plot_single_run_panels(
-    artifacts: dict,
-    save_path: Optional[Path] = None,
-) -> plt.Figure:
-    """Four-panel diagnostic for a single monitoring run.
-
-    Panels:
-        Top-left  – Raw predictions vs actual values with alarm markers.
-        Top-right – PIT stream with rolling mean and shift indicator.
-        Bottom-left – E-process on a log scale with threshold and changepoint.
-        Bottom-right – Pre-shift vs post-shift PIT histograms.
-
-    Parameters
-    ----------
-    artifacts : dict
-        Dictionary returned by ``collect_single_run``.
-    save_path : Path or None
-
-    Returns
-    -------
-    plt.Figure
-    """
-    _apply_style()
-
-    true_shift_point = int(artifacts["true_shift_point"])
-    y_all = np.asarray(artifacts["true_labels"], dtype=float)
-    preds = np.asarray(artifacts["predictions"], dtype=float)
-    pits = np.asarray(artifacts["pits"], dtype=float)
-    evidence = np.asarray(artifacts["evidence_trace"], dtype=float)
-    times = np.arange(1, len(y_all) + 1)
-
-    # Determine scenario label for title
-    scen_key = artifacts.get("scenario_key", "")
-    scen_label = SCENARIO_LABELS.get(scen_key, scen_key)
-
-    fig, axes = plt.subplots(
-        2,
-        2,
-        figsize=(8.5, 6.4),
-    )
-    fig.subplots_adjust(top=0.90, hspace=0.45, wspace=0.35)
-    fig.suptitle(
-        f"PITMonitor Single Run — {scen_label}",
-        fontsize=11,
-        fontweight="bold",
-    )
-
-    # Colour definitions for consistency
-    c_pre = "#4a90d9"
-    c_post = "#d94a4a"
-    c_alarm = "#e8920d"
-    c_shift = "#c41e3a"
-    c_cp = "#2e8b57"
-
-    # ── Top-left: Predictions vs Reality ────────────────────────────
-    ax = axes[0, 0]
-    mask_pre = times < true_shift_point
-    mask_post = ~mask_pre
-
-    ax.scatter(
-        times[mask_pre],
-        y_all[mask_pre],
-        s=3,
-        alpha=0.25,
-        c=c_pre,
-        rasterized=True,
-    )
-    ax.scatter(
-        times[mask_post],
-        y_all[mask_post],
-        s=3,
-        alpha=0.25,
-        c=c_post,
-        rasterized=True,
-    )
-    ax.scatter(
-        times,
-        preds,
-        s=2,
-        alpha=0.20,
-        c="0.3",
-        rasterized=True,
-    )
-    ax.axvline(
-        true_shift_point,
-        color=c_shift,
-        ls=":",
-        lw=1.2,
-        alpha=0.8,
-    )
-    if artifacts["alarm_fired"] and artifacts["alarm_time"] is not None:
-        ax.axvline(
-            int(artifacts["alarm_time"]),
-            color=c_alarm,
-            ls="--",
-            lw=1.2,
-        )
-    legend_handles = [
-        Line2D([0], [0], marker="o", ls="", color=c_pre, ms=3, label="Actual (pre)"),
-        Line2D([0], [0], marker="o", ls="", color=c_post, ms=3, label="Actual (post)"),
-        Line2D([0], [0], marker="o", ls="", color="0.3", ms=3, label="Predicted"),
-        Line2D([0], [0], color=c_shift, ls=":", lw=1.2, label="True shift"),
-    ]
-    if artifacts["alarm_fired"] and artifacts["alarm_time"] is not None:
-        legend_handles.append(
-            Line2D(
-                [0],
-                [0],
-                color=c_alarm,
-                ls="--",
-                lw=1.2,
-                label=f"Alarm (t={artifacts['alarm_time']})",
-            )
-        )
-    ax.legend(handles=legend_handles, fontsize=6.5, loc="upper right", ncol=2)
-    ax.set(xlabel="Sample", ylabel="Target value", title="(a) Predictions vs reality")
-
-    # ── Top-right: PIT stream ────────────────────────────────────────
-    ax = axes[0, 1]
-    point_colors = np.where(times < true_shift_point, c_pre, c_post)
-    ax.scatter(times, pits, s=2, alpha=0.30, c=point_colors, rasterized=True)
-
-    if len(pits) >= 50:
-        w = 50
-        rolling = np.convolve(pits, np.ones(w) / w, mode="valid")
-        ax.plot(
-            np.arange(w, len(pits) + 1),
-            rolling,
-            color="0.15",
-            lw=1.0,
-            alpha=0.8,
-        )
-    ax.axhline(0.5, color="0.5", ls="--", lw=0.8, alpha=0.6)
-    ax.axvline(true_shift_point, color=c_shift, ls=":", lw=1.2, alpha=0.8)
-    if artifacts["alarm_fired"] and artifacts["alarm_time"] is not None:
-        ax.axvline(int(artifacts["alarm_time"]), color=c_alarm, ls="--", lw=1.2)
-
-    leg = [
-        Line2D([0], [0], marker="o", ls="", color=c_pre, ms=3, label="Pre-shift"),
-        Line2D([0], [0], marker="o", ls="", color=c_post, ms=3, label="Post-shift"),
-        Line2D([0], [0], color="0.15", lw=1.0, label="Rolling mean"),
-        Line2D([0], [0], color="0.5", ls="--", lw=0.8, label="Ref (0.5)"),
-        Line2D([0], [0], color=c_shift, ls=":", lw=1.2, label="True shift"),
-    ]
-    ax.legend(handles=leg, fontsize=6.5, loc="upper right", ncol=2)
-    ax.set(xlabel="Sample", ylabel="PIT", title="(b) PIT stream", ylim=(-0.05, 1.05))
-
-    # ── Bottom-left: E-process ───────────────────────────────────────
-    ax = axes[1, 0]
-    ax.semilogy(
-        times,
-        np.maximum(evidence, 1e-10),
-        color=c_pre,
-        lw=1.3,
-    )
-    threshold = 1.0 / float(artifacts["monitor_alpha"])
-    ax.axhline(
-        threshold,
-        color=c_shift,
-        ls="--",
-        lw=1.2,
-        label=f"Threshold (1/α = {threshold:.0f})",
-    )
-    ax.axvline(
-        true_shift_point,
-        color=c_shift,
-        ls=":",
-        lw=1.2,
-        alpha=0.8,
-        label="True shift",
-    )
-    if artifacts.get("changepoint") is not None:
-        ax.axvline(
-            int(artifacts["changepoint"]),
-            color=c_cp,
-            ls="--",
-            lw=1.2,
-            alpha=0.8,
-            label=f"CP est. (t~{artifacts['changepoint']})",
-        )
-    if artifacts["alarm_fired"] and artifacts["alarm_time"] is not None:
-        ax.axvline(
-            int(artifacts["alarm_time"]),
-            color=c_alarm,
-            ls="--",
-            lw=1.2,
-            label=f"Alarm (t={artifacts['alarm_time']})",
-        )
-    ax.legend(fontsize=6.5, loc="upper left")
-    ax.set_ylim(bottom=1e-2)
-    ax.set(xlabel="Sample", ylabel="Evidence (log scale)", title="(c) E-process")
-
-    # ── Bottom-right: PIT histograms ─────────────────────────────────
-    ax = axes[1, 1]
-    bins = np.linspace(0, 1, 21)
-    pre_pits = pits[: true_shift_point - 1]
-    post_pits = pits[true_shift_point - 1 :]
-    if len(pre_pits) > 0:
-        ax.hist(
-            pre_pits,
-            bins=bins,
-            density=True,
-            alpha=0.50,
-            color=c_pre,
-            edgecolor="white",
-            linewidth=0.4,
-            label=f"Pre-shift (n={len(pre_pits)})",
-        )
-    if len(post_pits) > 0:
-        ax.hist(
-            post_pits,
-            bins=bins,
-            density=True,
-            alpha=0.50,
-            color=c_post,
-            edgecolor="white",
-            linewidth=0.4,
-            label=f"Post-shift (n={len(post_pits)})",
-        )
-    ax.axhline(1.0, color="0.3", ls="--", lw=1.0, label="U[0,1] reference")
-    ax.legend(fontsize=6.5)
-    ax.set(
-        xlabel="PIT",
-        ylabel="Density",
-        title="(d) PIT distributions",
-        xlim=(0, 1),
-    )
-
-    if save_path is not None:
-        save_path = Path(save_path)
-        save_path.parent.mkdir(parents=True, exist_ok=True)
-        plt.savefig(save_path, bbox_inches="tight")
-        print(f"  Saved {save_path}")
-    plt.close(fig)
-    return fig
-
-
-# ─── Master plot function ────────────────────────────────────────────
-
+# ── Master ────────────────────────────────────────────────────────────────────
 
 def make_all_plots(results: dict, save_dir: Path) -> None:
-    """Generate all publication figures and the LaTeX table from saved results.
-
-    Parameters
-    ----------
-    results : dict
-        Full output of ``run_experiment`` / ``load_results``.
-    save_dir : Path
-        Output directory; created if absent.
-    """
+    """Generate all publication figures and the LaTeX table from saved results."""
     save_dir = Path(save_dir)
     save_dir.mkdir(parents=True, exist_ok=True)
     print("\nGenerating plots:")
     plot_detection_rates(results, save_dir)
     plot_delay_distributions(results, save_dir)
     plot_cp_error_distribution(results, save_dir)
-
-    # LaTeX table (replaces the old PNG summary table)
     generate_latex_table(results, save_dir)
-
-    # LaTeX macros for experiment parameters and key results
     generate_experiment_macros(results, save_dir)
-
-    # Single-run panels
-    for scenario_key, artifacts in results.get("single_runs", {}).items():
-        out_path = save_dir / f"fig_single_run_{scenario_key}.png"
+    for scen_key, artifacts in results.get("single_runs", {}).items():
+        out_path = save_dir / f"fig_single_run_{scen_key}.png"
         plot_single_run_panels(artifacts, save_path=out_path)
-
     print("Done.")

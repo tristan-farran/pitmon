@@ -1,0 +1,22 @@
+\begin{table}[t]
+\centering
+\small
+\caption{Drift detection results on FriedmanDrift (\expNtrials{} trials, $\alpha=\expAlpha$).}
+\label{tab:results}
+\begin{tabular}{l ccc ccc ccc}
+\toprule
+\multicolumn{1}{l}{} & \multicolumn{3}{c}{GRA} & \multicolumn{3}{c}{GSG} & \multicolumn{3}{c}{LEA} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10}
+Method & TPR & FPR & Delay & TPR & FPR & Delay & TPR & FPR & Delay \\
+\midrule
+PITMonitor & 96.2\% & 3.8\% & 77 & 96.2\% & 3.8\% & 189 & 96.2\% & 3.8\% & 1919 \\
+ADWIN & 99.1\% & 0.9\% & 27 & 99.1\% & 0.9\% & 27 & 99.1\% & 0.9\% & 115 \\
+KSWIN & 2.9\% & 97.1\% & 16 & 2.8\% & 97.2\% & 172 & 2.8\% & 97.2\% & 656 \\
+PageHinkley & 0.4\% & 99.6\% & 1 & 0.4\% & 99.6\% & 6 & 0.4\% & 99.6\% & 70 \\
+DDM & 90.8\% & 9.2\% & 405 & 90.0\% & 9.2\% & 666 & 22.0\% & 9.2\% & 2050 \\
+EDDM & 8.7\% & 91.3\% & 344 & 8.7\% & 91.3\% & 562 & 1.6\% & 91.3\% & 1759 \\
+HDDM\_A & 94.0\% & 6.0\% & 60 & 94.0\% & 6.0\% & 168 & 52.5\% & 6.0\% & 2032 \\
+HDDM\_W & 9.4\% & 90.5\% & 15 & 9.4\% & 90.5\% & 46 & 9.4\% & 90.5\% & 586 \\
+\bottomrule
+\end{tabular}
+\end{table}

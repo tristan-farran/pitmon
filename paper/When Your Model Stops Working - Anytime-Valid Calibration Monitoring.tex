@@ -1,0 +1,540 @@
+\documentclass[11pt]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{hyperref}
+\usepackage[margin=1in]{geometry}
+\usepackage{natbib}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage[section]{placeins}
+
+% Keep figures near text and reduce float-only pages
+\setcounter{bottomnumber}{1}
+\setcounter{topnumber}{2}
+\setcounter{totalnumber}{3}
+\renewcommand{\textfraction}{0.08}
+\renewcommand{\floatpagefraction}{0.85}
+
+% Remove paragraph indentation
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+
+% Theorem environments
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{definition}{Definition}
+\newtheorem{remark}{Remark}
+
+% Custom commands
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\ind}{\mathbf{1}}
+\newcommand{\Unif}{\mathrm{Uniform}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+% Auto-generated experiment macros (config params and key results)
+\input{../experiment/out/experiment_macros}
+
+\title{\textbf{When Your Model Stops Working:\\ Anytime-Valid Calibration Monitoring}}
+
+\author{
+  Tristan Farran\\
+  \textit{MSc Computational Science, University of Amsterdam}\\
+  \texttt{tristan.farran@student.uva.nl}
+}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\noindent Practitioners monitoring deployed probabilistic models face a fundamental trap: any fixed-sample test applied repeatedly over an unbounded stream will eventually raise a false alarm, even when the model is perfectly stable. We present PITMonitor, an \emph{anytime-valid} calibration monitor built on the e-detector framework. By testing the exchangeability of Probability Integral Transform (PIT) values, PITMonitor guarantees $\Prob(\text{ever alarm} \mid H_0) \leq \alpha$ for all time with no pre-specified monitoring horizon. We prove Type I error control via Ville's inequality and evaluate PITMonitor on three drift scenarios from \texttt{river}'s FriedmanDrift dataset, comparing against the seven included detectors. PITMonitor achieves detection rates competitive with the best-performing baseline on global drift scenarios, with substantially longer detection delays on local expanding drift, while being the only calibration-specific monitor in the comparison to provide both an anytime-valid false alarm guarantee and Bayesian changepoint localization. Code is available at \url{https://github.com/tristan-farran/pitmon}.
+\end{abstract}
+
+%------------------------------------------------------------------------------
+\section{Introduction}
+%------------------------------------------------------------------------------
+
+Probabilistic models deployed in production face a fundamental challenge: the world changes. Across many domains, from medicine to finance, models encounter non-stationary processes, regime shifts, and concept drift, which can cause calibration to degrade drastically with consequential effects downstream. Practitioners must therefore monitor their models continuously, seeking to answer two questions: \emph{has} the world changed, and if so, \emph{when}? In practice, this monitoring often relies on ad-hoc procedures such as periodic recalibration schedules, rolling-window hypothesis tests, threshold-based alerts on summary metrics, or manual inspection of residuals.
+
+These approaches suffer from a fundamental statistical problem: \emph{they do not control the false alarm rate over continuous monitoring}. A practitioner who checks calibration daily with a $p < 0.05$ threshold will, over a year of monitoring, almost certainly observe spurious alarms even if the model remains stable. Classical hypothesis tests assume a fixed sample size determined before seeing data; continuous monitoring violates this assumption.
+
+More principled alternatives are provided by online drift detectors, such as those implemented in the \texttt{river} library \citep{montiel2021river}. Classical detectors including DDM, EDDM, and KSWIN are lightweight, easy to deploy, and effective at detecting abrupt changes, but are typically based on heuristic thresholds or fixed-sample statistical arguments and do not provide explicit long-run false alarm guarantees under continuous monitoring, nor changepoint localization.
+
+ADWIN \citep{bifet2007learning} improves on fixed-window methods by adapting its window size to detected changes, bounding the false alarm probability \emph{within a single window} via a Hoeffding inequality. However, this per-window guarantee does not translate to stream-level control: because ADWIN evaluates its bound at every incoming observation, the number of tests grows unboundedly with the monitoring horizon, and therefore so does the probability of ever raising a false alarm. ADWIN also operates on generic accuracy signals such as squared residuals, conflating calibration drift with accuracy degradation; a model that becomes systematically overconfident would alter the PIT distribution while leaving residuals largely unchanged. Finally, ADWIN does not provide changepoint estimates, limiting its utility for reliable, informative long-term calibration monitoring.
+
+We propose PITMonitor, an anytime-valid calibration monitoring method with five key properties:
+
+\begin{enumerate}
+    \item \textbf{Anytime-valid false alarm control:} we prove that $\Prob(\text{ever alarm} \mid H_0) \leq \alpha$ for all time, without requiring a pre-specified monitoring horizon or stopping rule.
+
+    \item \textbf{Change detection and localization without static-error alarms:} PITMonitor detects and locates \emph{changes} in the PIT process. A model that is consistently miscalibrated but stable will not trigger alarms, while drift that breaks exchangeability of the PIT sequence will.\footnote{In many domains some amount of miscalibration is inevitable, but model degradation remains a pressing concern.}
+
+    \item \textbf{No baseline period required:} unlike methods requiring a ``clean'' reference distribution, PITMonitor works from the first observation by testing the PIT sequence's exchangeability.
+
+    \item \textbf{Practical efficiency:} the algorithm runs in $O(t \log t)$ time and $O(t)$ space for $t$ observations.
+
+    \item \textbf{Distribution-free:} PITMonitor specifies neither the pre- nor post-change distributions. The histogram estimator adapts to whatever form drift takes without requiring a fixed alternative.
+\end{enumerate}
+
+%------------------------------------------------------------------------------
+\section{Related Work}
+%------------------------------------------------------------------------------
+
+\subsubsection*{Calibration Assessment}
+Classical calibration metrics include Expected Calibration Error \citep{guo2017calibration}, reliability diagrams \citep{degroot1983comparison}, and proper scoring rules \citep{gneiting2007strictly}. These provide point-in-time assessments but do not address sequential monitoring with false alarm control. PITs have been used for static forecast evaluation in econometrics \citep{diebold1998evaluating} and weather prediction \citep{gneiting2014probabilistic}, though these applications are batch-oriented and do not address sequential monitoring with false alarm control - the gap which PITMonitor aims to fill.
+
+\subsubsection*{Distribution Shift Detection}
+Methods for detecting covariate shift include two-sample tests \citep{rabanser2019failing}, domain classifiers \citep{lipton2018detecting}, and conformal methods for prediction under label shift \citep{podkopaev2021distribution}. These address changes in the input or label distribution, while our work focuses on the \emph{output} side: identifying when predicted probabilities no longer match outcome frequencies.
+
+\subsubsection*{Sequential Calibration Testing}
+\citet{arnold2023sequentially} proposed e-values for testing forecast calibration, focusing on whether PITs are Uniform(0,1). PITMonitor differs in three ways. First, we test exchangeability rather than uniformity and thus PITMonitor alarms only on \emph{changes} in calibration - the more natural null for monitoring where some miscalibration is often irreducible. Second, we formulate the problem as changepoint detection rather than goodness-of-fit testing, enabling localization of \emph{when} calibration changed, not just \emph{whether} it deviates from uniformity. Third, PITMonitor uses a nonparametric plug-in betting strategy (in the spirit of \citet{fedorova2012plugin}) rather than a parametric alternative.
+
+\subsubsection*{E-values}
+The e-value framework has seen rapid development \citep{vovk2021values, ramdas2023game, grunwald2024safe}. The e-detector framework for changepoint detection was introduced by \citet{shin2022detectors}. PITMonitor is an instantiation of their e-SR procedure; our contribution is the conformal e-value construction that bridges exchangeability testing with their framework, enabling the anytime-valid false alarm guarantee (Theorem~\ref{thm:type1}) as well as Bayesian changepoint localization.
+
+\subsubsection*{Changepoint Detection}
+Classical methods include CUSUM \citep{page1954continuous} and Shiryaev-Roberts procedures \citep{shiryaev1963, pollak1985optimal}. These assume known pre-change and post-change distributions, while the e-detector approach provides nonparametric changepoint detection with anytime-valid false alarm guarantees.
+
+%------------------------------------------------------------------------------
+\section{Background}
+%------------------------------------------------------------------------------
+
+\subsection{Probability Integral Transforms}
+
+A probabilistic model outputting a predicted cumulative distribution function $\hat{F}$ over outcomes is \emph{calibrated} if these predictions match reality: among all predictions where $\hat{F}(y) = p$, the outcome $Y \leq y$ should occur approximately $(100 \times p)$\% of the time. The \emph{probability integral transform} $U=\hat{F}(y)$, provides a universal tool for assessing calibration, as it satisfies $U\sim\Unif(0,1)$ whenever $\hat{F}$ is the true distribution of $Y$ \citep{dawid1984statistical}. Therefore, non-uniformity of the PIT distribution indicates miscalibration, and changes in the PIT distribution indicate changes in calibration.
+
+\subsection{Exchangeability}
+
+A sequence $(X_1, X_2, \ldots)$ is \emph{exchangeable} if its joint distribution is
+invariant to finite permutations. Exchangeability is weaker than independence: i.i.d.\ sequences are exchangeable, but exchangeable sequences need not be independent \citep{definetti1937}.
+
+\newpage
+
+\begin{remark}[Stable Miscalibration Preserves Exchangeability]
+If a model is consistently miscalibrated, the resulting PITs are i.i.d.\ from some fixed, non-uniform distribution. Since i.i.d.\ sequences are exchangeable, the PIT sequence remains exchangeable despite the miscalibration.
+\end{remark}
+
+This observation is central to PITMonitor's design:
+\begin{itemize}
+    \item \textbf{Perfect calibration:} PITs are i.i.d.\ $\Unif(0,1)$ $\Rightarrow$ exchangeable
+    \item \textbf{Stable miscalibration:} PITs are i.i.d.\ from a non-uniform distribution $\Rightarrow$ still exchangeable
+    \item \textbf{PIT-process change:} the PIT distribution changes at some time $\tau$ $\Rightarrow$ not exchangeable
+\end{itemize}
+
+By testing exchangeability rather than uniformity, we avoid triggering on stable calibration error.
+
+\subsection{Conformal P-values}
+\label{sec:pvals}
+
+To sequentially test exchangeability we employ \emph{conformal p-values from ranks}
+\citep{vovk2005algorithmic}, a fully non-parametric construction that is valid under exchangeability without further assumptions.
+
+Given observations $U_1, \ldots, U_t$, define the rank of $U_t$:
+\begin{equation}
+    R_t = \#\{s \leq t : U_s \leq U_t\}
+\end{equation}
+
+\begin{proposition}[Rank Uniformity under Exchangeability]
+\label{prop:rank}
+If $(U_1, \ldots, U_t)$ is exchangeable, then the rank $R_t$ is uniformly distributed
+on $\{1, \ldots, t\}$.
+\end{proposition}
+\begin{proof}
+Since PITs arise from a continuous predictive CDF, ties occur with probability zero, so the rank $R_t$ is almost surely well-defined. By exchangeability, $(U_1, \ldots, U_t)$ is equally likely to be in any of the $t!$ orderings. For any fixed rank $r \in \{1, \ldots, t\}$, exactly $(t-1)!$ of these orderings place $U_t$ in position $r$. Therefore $\Prob(R_t = r) = (t-1)!/t! = 1/t$, giving uniform distribution on $\{1, \ldots, t\}$.
+\end{proof}
+
+While Proposition~\ref{prop:rank} establishes that $R_t$ is discrete uniform on $\{1, \ldots, t\}$, the density-based e-value construction requires $p_t \sim \Unif(0,1)$ exactly: without this, $\E[e_t \mid \mathcal{F}_{t-1}] = 1$ holds only approximately due to discretisation. Adding a uniform jitter converts the discrete rank to an exactly continuous uniform p-value:\footnote{It should be noted that the jitter $V_t$ introduces an additional source of randomness beyond the data, and thus PITMonitor's output is stochastic given a fixed stream, though the additional variability is negligible as it is $O(1/t)$.}
+\begin{equation}
+    p_t = \frac{R_t - 1 + V_t}{t}, \quad V_t \sim \Unif(0,1)
+\end{equation}
+
+Under $H_0$ (exchangeability), these p-values are exactly $\Unif(0,1)$. After a changepoint, exchangeability breaks: new PITs come from a shifted mechanism and systematically rank higher or lower than pre-change PITs. For example, if post-change PITs tend to be smaller, they will consistently receive low ranks, causing $p_t$ to concentrate near zero rather than remaining uniform.
+
+\subsection{E-values}
+
+An \emph{e-value} is a non-negative random variable $e$ satisfying $\E[e] \leq 1$ under the null hypothesis \citep{vovk2021values}. By Markov's inequality, $\Prob(e \geq 1/\alpha) \leq \alpha$, so thresholding at $1/\alpha$ yields a valid level-$\alpha$ test. Under alternatives, an e-value has power if $\E[e] > 1$. The density-based construction in Section~\ref{sec:density} achieves this adaptively: when conformal p-values concentrate in certain bins due to non-exchangeability, the histogram places more mass there, typically yielding $\E[e] > 1$ without requiring a parametric specification of the alternative.
+
+A key property for sequential monitoring is that e-values can be composed multiplicatively while maintaining validity under the null \citep{shafer2011testing, ramdas2023game}. If $e_1, e_2$ are e-values with $\E[e_1 \mid \mathcal{F}_0] \leq 1$ and $\E[e_2 \mid \mathcal{F}_1] \leq 1$ (where $\mathcal{F}_t$ is the filtration through time $t$), their product remains a valid e-value. A simple cumulative e-process accumulates evidence from time $\tau$ onwards:
+\begin{equation}
+    M_t^{(\tau)} = \prod_{s=\tau}^{t} e_s, \quad M_t^{(\tau)} = M_{t-1}^{(\tau)} \cdot e_t
+\end{equation}
+Taking conditional expectations given past observations:
+\begin{equation}
+    \E[M_t^{(\tau)} \mid \mathcal{F}_{t-1}] = M_{t-1}^{(\tau)} \cdot \E[e_t \mid \mathcal{F}_{t-1}]
+    \leq M_{t-1}^{(\tau)}
+\end{equation}
+Thus each $(M_t^{(\tau)})_{t \geq \tau}$ is a non-negative supermartingale under $H_0$.  Since the changepoint $\tau$ is unknown, PITMonitor maintains a \emph{weighted mixture} over all candidate starting times (Section~\ref{sec:method_mixture}).
+
+
+%------------------------------------------------------------------------------
+\section{Method}
+%------------------------------------------------------------------------------
+
+\subsection{E-values via Density Betting}
+\label{sec:density}
+
+We construct e-values from conformal p-values using the betting framework of \citet{shafer2011testing}, treating each p-value as a wager against the null. Before observing $p_t$, we specify a density function $\hat{f}(p)$ satisfying $\int_0^1 \hat{f}(p)\,dp = 1$, thereby encoding our prior belief about where $p_t$ will concentrate.
+
+\begin{proposition}[Density Betting Yields Valid E-values]
+\label{prop:density}
+Let $\hat{f}: [0,1] \to [0,\infty)$ be any density function satisfying $\int_0^1 \hat{f}(p)\,dp = 1$. If $p \sim \Unif(0,1)$, then $e = \hat{f}(p)$ satisfies $\E[e] = 1$.
+\end{proposition}
+
+PITMonitor uses a histogram plug-in density estimator for betting on conformal p-values (for the broader plug-in martingale lineage, see \citet{fedorova2012plugin}), which places mass proportional to where past p-values concentrated and requires no specification of a fixed parametric alternative:
+\begin{equation}
+    \hat{f}(p) = B \cdot \frac{c_b}{\sum_j c_j} \quad \text{for } p \in \text{bin } b
+\end{equation}
+where $c_b$ counts past p-values in bin $b$ and $B$ is the number of bins. The histogram is initialized with Laplace pseudocounts $c_b = 1$ for all $b$, which ensures $\hat{f}$ is a valid density from the first observation and prevents zero-count bins from generating infinite or zero e-values during early monitoring.
+
+By adapting our density to observed concentration patterns, we bet in the right direction. Under exchangeability, p-values scatter uniformly, and $\E[e_t] = 1$. If exchangeability breaks, p-values cluster, the histogram learns these concentration patterns, and we achieve $\E[e] > 1$ whenever deviations are sufficiently persistent, generating detection power. We update the histogram \emph{after} computing $e_t$, ensuring $\hat{f}$ is predictable, as required for the supermartingale property of the e-process.
+
+\subsection{The Mixture E-process}
+\label{sec:method_mixture}
+
+The key challenge is that the changepoint time $\tau$ is unknown. An e-process starting at $\tau$ would be sensitive to drift beginning at $\tau$ but would miss earlier changes, while one starting too early would accumulate excess noise that dilutes its power. Following \citet{shin2022detectors}'s e-SR construction, we address this by maintaining a weighted mixture over all possible changepoint times:
+\begin{equation}
+    M_t = \sum_{\tau=1}^{t} w_\tau \cdot M_t^{(\tau)}
+\end{equation}
+where $M_t^{(\tau)} = \prod_{s=\tau}^{t} e_s$ denotes the evidence accumulated from time $\tau$ onward (defined for $\tau \leq t$). Since each component $M_t^{(\tau)}$ forms a valid e-process sensitive to drift beginning at $\tau$, the mixture is sensitive to changepoints at all times while remaining a valid e-process by linearity of expectation.
+
+We use $w_\tau = 1/(\tau(\tau+1))$ as this sequence satisfies $\sum_{\tau=1}^{\infty} w_\tau = 1$ exactly, as required for the e-SR, and enables an efficient recursion that avoids maintaining separate products
+for each $\tau$:
+\begin{proposition}[Efficient Recursion]
+The mixture e-process satisfies:
+\begin{equation}
+    M_t = e_t \cdot (M_{t-1} + w_t)
+\end{equation}
+\end{proposition}
+\begin{proof}
+Expand the definition:
+\begin{align}
+M_t &= \sum_{\tau=1}^{t} w_\tau \cdot M_t^{(\tau)} \\
+&= \sum_{\tau=1}^{t-1} w_\tau \cdot e_t \cdot M_{t-1}^{(\tau)} + w_t \cdot e_t \\
+&= e_t \left( \sum_{\tau=1}^{t-1} w_\tau \cdot M_{t-1}^{(\tau)} + w_t \right) \\
+&= e_t (M_{t-1} + w_t)
+\end{align}
+\end{proof}
+
+This recursion enables an $O(1)$ update of the mixture per observation (plus $O(\log t)$ for rank computation via a sorted structure), avoiding the cost of maintaining or updating all e-processes separately.
+
+\subsection{Type I Error Control}
+
+The following instantiates the e-SR result of \citet{shin2022detectors} for PITMonitor's specific construction, with Ville's inequality \citep{ville1939} supplying the anytime-valid guarantee.
+
+\begin{theorem}[Anytime-Valid False Alarm Control]
+\label{thm:type1}
+Under $H_0$, PITMonitor satisfies:
+\begin{equation}
+    \Prob\left(\sup_{t \geq 1} M_t \geq \frac{1}{\alpha}\right) \leq \alpha
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+The mixture $M_t = \sum_{\tau=1}^{t} w_\tau M_t^{(\tau)}$ is defined with $M_t^{(\tau)} = \prod_{s=\tau}^{t} e_s$ only for $\tau \leq t$. To apply Ville's inequality we work with an extended process defined for all $t \geq 0$. For each $\tau \geq 1$ define:
+\begin{equation}
+\widetilde{M}_t^{(\tau)} =
+\begin{cases}
+1, & t < \tau,\\[2mm]
+\prod_{s=\tau}^{t} e_s, & t \ge \tau.
+\end{cases}
+\end{equation}
+Define the full mixture over all $\tau \ge 1$:
+\begin{equation}
+\widetilde{M}_t = \sum_{\tau=1}^{\infty} w_\tau\,\widetilde{M}_t^{(\tau)}.
+\end{equation}
+Since $\widetilde{M}_t^{(\tau)}=1$ for $\tau>t$, we can expand:
+\begin{align}
+\widetilde{M}_t
+&= \sum_{\tau=1}^{t} w_\tau \prod_{s=\tau}^{t} e_s
+ + \sum_{\tau=t+1}^{\infty} w_\tau \\
+&= M_t + \sum_{\tau=t+1}^{\infty}\frac{1}{\tau(\tau+1)}.
+\end{align}
+With $w_\tau=\frac{1}{\tau(\tau+1)}$, the tail telescopes:
+\[
+\sum_{\tau=t+1}^{\infty}\frac{1}{\tau(\tau+1)}
+= \sum_{\tau=t+1}^{\infty}\left(\frac{1}{\tau}-\frac{1}{\tau+1}\right)
+= \frac{1}{t+1}.
+\]
+Hence
+\begin{equation}
+M_t \le M_t + \frac{1}{t+1} = \widetilde{M}_t,
+\end{equation}
+\begin{equation}
+\therefore
+\left\{\sup_{t\ge1} M_t \ge \frac{1}{\alpha}\right\}
+\subseteq
+\left\{\sup_{t\ge1} \widetilde{M}_t \ge \frac{1}{\alpha}\right\}.
+\end{equation}
+
+Since each $(\widetilde{M}_t^{(\tau)})_{t\ge0}$ is a non-negative supermartingale with $\widetilde{M}_0^{(\tau)}=1$. By Tonelli's theorem,
+\begin{align}
+\E[\widetilde{M}_t \mid \mathcal{F}_{t-1}]
+&= \sum_{\tau=1}^{\infty} w_\tau\, \E[\widetilde{M}_t^{(\tau)} \mid \mathcal{F}_{t-1}] \\
+&\le \sum_{\tau=1}^{\infty} w_\tau\, \widetilde{M}_{t-1}^{(\tau)}
+= \widetilde{M}_{t-1},
+\end{align}
+so $(\widetilde{M}_t)$ is a non-negative supermartingale with $\widetilde{M}_0=\sum_{\tau=1}^{\infty} w_\tau=1$. Applying Ville's inequality,
+\begin{equation}
+\Prob\!\left(\sup_{t\ge1} M_t \ge \frac{1}{\alpha}\right)
+\le
+\Prob\!\left(\sup_{t\ge1} \widetilde{M}_t \ge \frac{1}{\alpha}\right)
+\le \alpha.
+\end{equation}
+\end{proof}
+
+
+\subsection{Changepoint Estimation}
+\label{sec:changepoint}
+
+After an alarm at time $T$, we estimate the changepoint location by selecting the split that best explains the post-split p-values as non-uniform. For each candidate $k \in \{1, \ldots, T-1\}$, we evaluate the segment $(p_{k+1}, \ldots, p_T)$ under two hypotheses:
+\begin{itemize}
+    \item $\mathbf{H_0^{(k)}}$: p-values are $\Unif(0,1)$, so each of $B$ bins receives probability $1/B$.
+    \item $\mathbf{H_1^{(k)}}$: bin probabilities are unknown, with a symmetric Dirichlet prior $\mathrm{Dir}(\kappa, \ldots, \kappa)$.\footnote{It should be noted that this is a heuristic approximation since the $p_t$ sequence carries dependence across time.}
+\end{itemize}
+
+We use a Bayes factor rather than a likelihood ratio because $H_1$ would otherwise trivially outperform $H_0$ by overfitting, since it contains $H_0$ as a special case. Averaging over the Dirichlet prior penalizes $H_1$ for the probability mass it wastes on configurations the data does not support. We set $\kappa = 1/2$, since it is invariant to the reparametrization of bin boundaries \citep{jeffreys1961}.
+
+Let $\mathbf{n} = (n_1, \ldots, n_B)$ denote the histogram of p-values in the post-split segment, where each $n_b$ counts how many p-values fell into the $b$-th equal-width bin, and $N = \sum_b n_b$ is the segment length.
+
+Under $H_0$ every bin has probability $1/B$, so the multinomial log-likelihood reduces to:
+\begin{equation}
+    \log p(\mathbf{n} \mid H_0) = \log\frac{N!}{\prod_b n_b!} - N\log B
+\end{equation}
+
+Under $H_1$, the bin probabilities $\theta$ are unknown so we integrate them out over the Dirichlet prior:
+\begin{equation}
+\begin{aligned}
+\log p(\mathbf{n} \mid H_1)
+&= \log\frac{N!}{\prod_b n_b!}
+   + \log\Gamma(B\kappa)
+   - \log\Gamma(N + B\kappa) \\
+&\quad + \sum_{b=1}^{B}
+   \bigl[
+      \log\Gamma(n_b + \kappa)
+      - \log\Gamma(\kappa)
+   \bigr]
+\end{aligned}
+\end{equation}
+Since the combinatorial factor appears in both likelihoods, it cancels in the log Bayes factor:
+\begin{equation}
+\begin{aligned}
+\log\mathrm{BF}_k
+&= \log p(\mathbf{n} \mid H_1)
+   - \log p(\mathbf{n} \mid H_0) \\
+&= \log\Gamma(B\kappa)
+   - \log\Gamma(N + B\kappa) \\
+&\quad + \sum_{b=1}^{B}
+   \bigl[
+      \log\Gamma(n_b + \kappa)
+      - \log\Gamma(\kappa)
+   \bigr] \\
+&\quad + N \log B
+\end{aligned}
+\end{equation}
+We then identify the changepoint simply as $\hat{\tau} = \argmax_k \log\mathrm{BF}_k$.\footnote{Note that this is a batch computation run after an alarm, not an online update.}
+
+This localization capability is absent from all \texttt{river} baselines, which expose only a binary alarm flag. PITMonitor thus enables practitioners not just to detect that drift has occurred, but to identify approximately how far back model outputs may have been affected by the shift - directly actionable for deciding how much historical inference to distrust or recompute.
+
+\subsection{Complete Algorithm}
+
+\begin{algorithm}[H]
+\caption{PITMonitor}
+\label{alg:pitmonitor}
+\begin{algorithmic}[1]
+\Require Significance level $\alpha$, number of bins $B$
+\State Initialize: $M_0 \gets 0$, histogram counts $c_1, \ldots, c_B \gets 1$ \Comment{Laplace prior}
+\For{$t = 1, 2, \ldots$}
+    \State Observe PIT $U_t \in [0,1]$
+    \State Insert $U_t$ into sorted list; compute rank $R_t$
+    \State Sample $V_t \sim \Unif(0,1)$
+    \State $p_t \gets (R_t - 1 + V_t) / t$ \Comment{Conformal p-value}
+    \State $b \gets \min(\lfloor p_t \cdot B \rfloor + 1,\, B)$ \Comment{Bin count adjustment}
+    \State $e_t \gets B \cdot c_b / \sum_{j=1}^B c_j$ \Comment{E-value from density}
+    \State $c_b \gets c_b + 1$ \Comment{Histogram update}
+    \State $w_t \gets 1 / (t \cdot (t+1))$ \Comment{Deterministic weight}
+    \State $M_t \gets e_t \cdot (M_{t-1} + w_t)$ \Comment{Mixture e-process}
+    \If{$M_t \geq 1/\alpha$}
+        \State \textbf{return} ALARM at time $t$
+    \EndIf
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+%------------------------------------------------------------------------------
+\section{Experiments}
+\label{sec:experiments}
+%------------------------------------------------------------------------------
+
+We evaluate PITMonitor on the \texttt{river} FriedmanDrift benchmark, a standard regression task for evaluating concept drift detectors under controlled conditions, comparing against the seven included stream-drift detectors from the \texttt{river} library.
+
+\subsection{Setup}
+
+\paragraph{Dataset and drift scenarios.}
+FriedmanDrift \citep{montiel2021river} is a synthetic regression stream with 10 input features ($x_0$--$x_9$). Only features $x_0$--$x_4$ appear in the true function; $x_5$--$x_9$ are noise. We evaluate three drift types that represent qualitatively different distribution changes:
+\begin{itemize}
+    \item \textbf{GRA} (Global Recurring Abrupt): All features change simultaneously at an abrupt onset, representing a rapid regime shift.
+    \item \textbf{GSG} (Global Slow Gradual): The change spreads linearly across all features over a 500-sample transition window, representing
+    gradual covariate shift.
+    \item \textbf{LEA} (Local Expanding Abrupt): Drift starts on a subset of features and expands to include more over time, representing localized distribution change.
+\end{itemize}
+
+\paragraph{Stream layout.}
+A training stream consisting of $n_\text{train} = \expNtrain$ pre-drift samples is generated, along with \expNtrials{} independent test streams containing $n_\text{stable} = \expNstable$ pre-drift monitoring samples that define the null-hypothesis window for FPR estimation, and $n_\text{post} = \expNpost$ post-drift samples for TPR estimation. The drift onset occurs at the boundary between the pre- and post-drift segments.
+
+\paragraph{Predictive model.}
+We train a feedforward neural network outputting a Gaussian predictive distribution $\mathcal{N}(\mu_t, \sigma_t^2)$ for each input. The network has 3 hidden layers of 128 units with SiLU activations. Inputs and targets are standardized using per-feature means and standard deviations fitted on the training set. Training uses mini-batches of size 256, the Adam optimizer with initial learning rate $3 \times 10^{-4}$, a cosine annealing learning rate schedule, and \expEpochs{} epochs. The model achieves $R^2 = 0.96$ on a held-out pre-drift test set, with an expected calibration error (ECE) of 0.01, confirming it is well-specified and calibrated before monitoring begins. The model is trained once on the training stream and subsequently held fixed across all \expNtrials{} Monte Carlo test trials.
+
+\paragraph{PIT construction.}
+For each monitoring sample $(x_t, y_t)$ the PIT is:
+\begin{equation}
+    U_t = \Phi\!\left(\frac{y_t - \mu_t}{\sigma_t}\right)
+\end{equation}
+where $\mu_t$, $\sigma_t$ are the predicted mean and standard deviation and $\Phi$ is the standard normal CDF.
+
+\paragraph{Detector settings.}
+All \texttt{river} baselines are run with their library-default parameters.  This is the most defensible comparison: it reflects the out-of-the-box experience a practitioner receives, avoids any implicit tuning in favour of a particular detector, and sidesteps the need for held-out null data or advance knowledge of the monitoring window length, as would be required to align a baseline's parameters with a target stream-level FPR.
+\begin{itemize}
+    \item \textbf{PITMonitor}: Significance level $\alpha = \expAlpha$, number of bins $B = \expNbins$.  A key practical advantage is that PITMonitor has only two interpretable parameters: $\alpha$ directly and provably controls the stream-level false alarm probability (Theorem~\ref{thm:type1}), and $B$ controls the histogram resolution. 
+    \item \textbf{Continuous-input baselines (ADWIN, KSWIN, PageHinkley)}: library-default parameters.  Their internal sensitivity parameters (ADWIN's $\delta$, KSWIN's significance level, PageHinkley's threshold) have opaque, horizon-dependent relationships to stream-level FPR.
+    \item \textbf{Binary-input baselines (DDM, EDDM, HDDM\_A, HDDM\_W)}: library-default parameters. These detectors require a binary error signal; we binarize via $b_t = \mathbf{1}[|r_t| > \theta]$ where $\theta$ is the \emph{median} of $|r_t|$ on the training data. Since these methods were designed for classification, no guidance exists for thresholding, and the median is the most assumption-free choice.
+\end{itemize}
+
+\paragraph{Evaluation protocol.}
+We run $N = \expNtrials$ Monte Carlo trials per scenario, each using a distinct random seed for the data stream. For each trial we record whether an alarm fires, its index, and whether it occurred before or after the true drift onset, as well as distance from the true changepoint for PITMonitor only. We report:
+\begin{itemize}
+    \item \textbf{TPR}: fraction of trials with a true-positive alarm (alarm fired after drift onset).
+    \item \textbf{FPR}: fraction of trials with a false alarm (alarm fired before drift onset).
+    \item \textbf{Mean detection delay}: mean number of samples between the true drift onset and the alarm, over true-positive trials only.
+\end{itemize}
+
+\subsection{Results}
+
+Table~\ref{tab:results} presents the full results. Figure~\ref{fig:detection_rates} visualizes TPR and FPR per method and scenario, Figure~\ref{fig:single_run} shows a representative single-run monitoring trace for the GSG scenario, and Figure~\ref{fig:delay_dists} shows the distribution of detection delays. The null window is drawn from the same pre-drift distribution for all three scenarios, so each detector's FPR is near-identical across scenarios by construction.
+
+\input{../experiment/out/table_results}
+
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{../experiment/out/fig_detection_rates.png}
+\caption{TPR and FPR across all detectors and drift scenarios. The dashed line marks $\alpha = \expAlpha$.}
+\label{fig:detection_rates}
+\end{figure}
+
+\paragraph{Type I error control.}
+PITMonitor achieves FPR of \resPMGRAFPR{} across all scenarios, consistent with the nominal $\alpha = \expAlpha$ guarantee in Theorem~\ref{thm:type1}. In this benchmark. ADWIN yields \resADGRAFPR{} empirical FPR on the \expNstable-sample null window, but this number is specific to the chosen horizon and dataset. Among the other baselines, DDM and HDDM\_A achieve \resDDMGRAFPR{} and \resHDDMAGRAFPR{} FPR, while KSWIN, PageHinkley, EDDM, and HDDM\_W exceed $89\%$ FPR with default settings.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{../experiment/out/fig_single_run_gsg_tw500.png}
+\caption{Single-run PITMonitor trace. (a) Predicted vs.\ actual values. (b) PIT stream. (c) Mixture e-process on a log scale; dashed line at the threshold $1/\alpha$. (d) Pre- and post-shift PIT histograms.}
+\label{fig:single_run}
+\end{figure}
+
+\paragraph{Global drift (GRA, GSG).}
+PITMonitor achieves \resPMGRATPR{} TPR with \resPMGRAFPR{} FPR on both global scenarios, with mean delays of \resPMGRADelay{} (GRA) and \resPMGSGDelay{} (GSG) samples. ADWIN attains higher TPR (\resADGRATPR{}) and faster delay (\resADGRADelay{}), but its false-alarm behavior here remains an empirical estimate tied to this finite monitoring window. DDM and HDDM\_A reach \resDDMGRATPR{} and \resHDDMAGRATPR{} TPR respectively.
+
+\paragraph{Local expanding drift (LEA).}
+On LEA, PITMonitor maintains \resPMLEATPR{} TPR with \resPMLEAFPR{} FPR, but mean delay rises to \resPMLEADelay{} samples. This pattern is consistent with the expanding-drift structure: early phases induce weaker PIT distortion, so evidence accumulates slowly until later expansion stages. ADWIN detects earlier in this scenario (\resADLEADelay{} mean delay, \resADLEATPR{} TPR), indicating a speed-guarantee tradeoff in this benchmark.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{../experiment/out/fig_delay_distributions.png}
+\caption{Detection delay distributions (true-positive trials only) across all detectors and drift scenarios. Violins show the full delay distribution, while the white bar marks the median.}
+\label{fig:delay_dists}
+\end{figure}
+
+\paragraph{Detection delays.}
+Figure~\ref{fig:delay_dists} reports delay distributions over true-positive trials only. Accordingly, it should be interpreted jointly with TPR: short delay at low TPR reflects performance on few runs.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\textwidth]{../experiment/out/fig_cp_error_distribution.png}
+\caption{Distribution of PITMonitor changepoint estimation error $|\hat\tau - \tau|$ across true-positive trials.}
+\label{fig:cp_error}
+\end{figure}
+
+\paragraph{Changepoint localization.}
+On GRA and GSG, mean absolute error is \resPMGRACPErr{} and \resPMGSGCPErr{} samples, indicating accurate localization under global drift. On LEA, mean error increases to \resPMLEACPErr{} because the estimator selects the split with strongest post-split non-uniformity, which typically occurs in later expansion phases (near offset \expLEAOffB{}) rather than at initial onset.
+
+
+%------------------------------------------------------------------------------
+\section{Discussion}
+%------------------------------------------------------------------------------
+
+\paragraph{Scope.}
+PITMonitor is intended for continuous monitoring of deployed probabilistic models when false alarms are costly, monitoring duration is open-ended, and calibration drift (not only accuracy drift) is operationally important. For one-time calibration checks or accuracy-only monitoring without need of false-alarm control or changepoint localization, standard diagnostics remain appropriate.
+
+\paragraph{Limitations.}
+\hspace{1cm}
+
+\textit{Expanding drift.}
+PITMonitor detects LEA drift with \resPMLEATPR{} TPR but with \resPMLEADelay{} mean delay, reflecting slower evidence accumulation when only a subset of features has shifted.
+
+\textit{Changepoint localization on expanding drift.}
+localization is less reliable under sequential expansion: the  estimator targets the phase of strongest distributional change, which can lag the true onset.
+
+\textit{Detection delay vs.\ FPR control.}
+Anytime-valid control can increase delay relative to methods without stream-level guarantees. In practice, $\alpha$ should be set against long-run false-alarm tolerance rather than treated as a fixed convention.
+
+\textit{Exchangeability assumption.}
+PITMonitor tests exchangeability of PITs. Non-exchangeability can also arise from temporal dependence: autocorrelated PITs can trigger alarms even when the calibration distribution is unchanged. This occurs in time series models, models with lagged features, or whenever predictions are not independent across time. Practitioners should check for autocorrelation in the PIT sequence before interpreting alarms in such settings, for example using the Ljung-Box test or inspecting the sample autocorrelation function. A practical mitigation is to monitor a thinned PIT sequence (using a lag larger than the estimated dependence horizon), which reduces serial dependence at the cost of slower detection.
+
+\textit{Persistence requirement.}
+PITMonitor reacts to accumulated evidence, not single-step anomalies. Under non-exchangeability, the adaptive histogram attempts to track the current concentration pattern of p-values; when tracking is accurate, expected log-growth is positive (i.e., $\E[\log e_t] > 0$) and cumulative evidence increases until crossing the alarm threshold. If deviations are brief, rapidly reversing, or drift faster than the estimator can track, growth is reduced or intermittent, so alarms may be delayed or absent.
+
+\paragraph{Practical recommendations.}
+\textit{Histogram resolution.}
+The number of bins $B$ controls the bias-variance tradeoff in the density estimator. Smaller $B$ is more stable but slower to adapt; larger $B$ adapts faster at the cost of more variance in the estimated density and should be scaled with the expected number of monitoring samples. Additionally, during the early monitoring phase (roughly the first $B$ observations), the histogram is dominated by the Laplace prior and e-values are nearly 1 regardless of the data, yielding low sensitivity. Practitioners expecting drift immediately after deployment may wish to use a smaller $B$ or include a warm-start period before monitoring begins.
+
+\paragraph{Structural comparison to \texttt{river} baselines.}
+\hspace{1cm}
+
+\textit{Parameter simplicity and FPR guarantees.}  In contrast to PITMonitor's two parameters ($\alpha$ bounding stream-level FPR, $B$ setting histogram resolution), the \texttt{river} baselines expose many internal sensitivity parameters whose relationship to stream-level FPR is indirect, horizon-dependent, and formally unguaranteed.  Achieving a target stream-level FPR with these methods requires advance knowledge of the monitoring window or empirical calibration - exactly what PITMonitor obviates.
+
+
+\textit{Calibration specificity.}  PITMonitor operates on the full PIT distribution, which encodes every aspect of calibration: systematic over- or under-confidence, shifts in predictive mean, and changes in predictive variance all manifest as non-stationarity in the PIT stream.  The \texttt{river} baselines operate on squared residuals - an accuracy proxy that conflates calibration drift with prediction error.  A model that becomes systematically overconfident, predicting intervals that are too narrow while retaining the same conditional mean, would produce unchanged squared residuals but strongly non-uniform PITs; PITMonitor is the only method in the comparison designed to detect this class of calibration failure.
+
+\textit{Benchmark context.}  FriedmanDrift is \texttt{river}'s own canonical synthetic
+benchmark; the strong performance of library-default parameters on this benchmark should be interpreted in that context.
+
+
+%------------------------------------------------------------------------------
+\section{Conclusion}
+%------------------------------------------------------------------------------
+
+We presented PITMonitor, an anytime-valid method for monitoring calibration of deployed probabilistic models. By testing exchangeability of probability integral transforms using a mixture e-process, PITMonitor enables continuous monitoring without inflating Type I error, regardless of when or why monitoring stops.
+
+Experiments on three FriedmanDrift scenarios, with baselines at library defaults, show that PITMonitor attains competitive TPR on global drift (\resPMGRATPR{} vs. ADWIN's \resADGRATPR{}) while keeping empirical FPR under the target level (\resPMGRAFPR{} at $\alpha=\expAlpha$). On local expanding drift, PITMonitor retains comparable TPR but with substantially larger delay, reflecting the slower evidence accumulation when only a subset of features has shifted.
+
+Three structural advantages persist beyond the numerical comparison. First, PITMonitor's FPR guarantee is horizon-independent: PITMonitor provably satisfies $\Prob(\text{ever alarm} \mid H_0) \leq \alpha$ regardless of deployment duration.  Second, PITMonitor targets calibration specifically: by operating on probability integral transforms rather than squared residuals, it is sensitive to changes in predictive uncertainty that leave accuracy metrics unchanged and would be missed by residual-based detectors. Third, it provides actionable changepoint estimates that identify how far back model outputs were corrupted, directly informing decisions about how much historical inference to distrust or recompute.
+
+In practice, PITMonitor is most suitable when formal long-run error control, changepoint localization, and calibration-specific monitoring are priorities. When gradually expanding drift is anticipated, combining PITMonitor with a faster residual-based detector can improve early warning at the cost of weaker long-run false-alarm guarantees.
+
+Future work has three directions. First, for temporally dependent predictions, we aim to develop a dependence-robust construction (beyond pragmatic thinning, which reduces power). Second, for multivariate outputs, a practical baseline is to reduce each prediction-outcome pair to a scalar PIT and reuse the same monitoring pipeline; developing fully multivariate transforms (e.g., Rosenblatt transforms) that better preserve joint dependence remains open. Third, we aim to improve detection power and changepoint localization under partial distributional shifts.
+
+\paragraph{Code Availability.}
+PITMonitor is available at \url{https://github.com/tristan-farran/pitmon}.
+
+%------------------------------------------------------------------------------
+% References
+%------------------------------------------------------------------------------
+
+\bibliographystyle{plainnat}
+\bibliography{pitmon_references}
+
+\end{document}

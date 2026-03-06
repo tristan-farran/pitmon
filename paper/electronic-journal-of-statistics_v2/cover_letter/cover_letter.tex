@@ -1,0 +1,46 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{microtype}
+\usepackage{parskip}
+
+\pagestyle{empty}
+
+\begin{document}
+
+\begin{flushright}
+Tristan Farran\\
+University of Amsterdam\\
+\texttt{tristan.farran@student.uva.nl}\\[6pt]
+\today
+\end{flushright}
+
+\bigskip
+
+Dear Editors of the \textit{Electronic Journal of Statistics},
+
+\bigskip
+
+I am pleased to submit the manuscript \textbf{``When Your Model Stops Working: Anytime-Valid Calibration Monitoring''} for consideration for publication in the \textit{Electronic Journal of Statistics}.
+
+\medskip
+\textbf{Contributions.} The paper introduces PITMonitor, a sequential framework for detecting when a probabilistic forecaster loses calibration at deployment time. The core contribution is a family of e-processes built from Probability Integral Transform (PIT) residuals via plug-in martingales. These processes have three properties that, to my knowledge, are not simultaneously achieved
+by existing approaches: (i)~they control the Type~I error at any stopping time without pre-specifying a sample size (anytime-validity); (ii)~they are distribution-free, requiring no parametric assumption on either the forecaster or the data stream; and (iii)~they admit an efficient $O(1)$ per-step update through a closed-form recursion, making them suitable for high-throughput deployment pipelines. The paper situates these contributions formally within the game-theoretic statistics literature (safe testing, e-values, e-detectors) and validates them empirically against seven baseline detectors across three structured drift scenarios.
+
+\medskip
+\textbf{Fit for EJS.} The \textit{Electronic Journal of Statistics} is the natural venue for this work. The paper's technical core is a theoretical result in sequential nonparametric testing - an area the journal has published extensively - and the motivating application (monitoring the calibration of deployed predictive models) is of broad statistical interest. The manuscript is self-contained, concise, and aimed squarely at a statistical methods audience.
+
+\medskip
+\textbf{Originality.} This manuscript is not under review at any other journal or conference, and the results have not been previously published.
+
+\bigskip
+
+Thank you for your time and consideration.
+
+\bigskip
+
+Sincerely,\\
+Tristan Farran
+
+\end{document}

@@ -609,6 +609,9 @@ PITMonitor is intended for continuous monitoring of deployed probabilistic model
 \textit{Expanding drift.}
 PITMonitor detects LEA drift with \resPMLEATPR{} TPR but with \resPMLEADelay{} mean delay, reflecting slower evidence accumulation when only a subset of features has shifted.
 
+\textit{Calibration improvements.}
+PITMonitor detects any departure from exchangeability in the PIT sequence and does not distinguish between deterioration and improvement in calibration. A model that becomes better calibrated mid-stream may also trigger an alarm. In practice, the direction of drift can be assessed by inspecting the PIT histogram following an alarm.
+
 \textit{Changepoint localization on expanding drift.}
 Localization is less reliable under sequential expansion: the estimator targets the phase of strongest distributional change, which can lag the true onset.
 This interpretation is supported by additional multi-step localization checks reported in Appendix~\ref{app:additional_checks}.

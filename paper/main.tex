@@ -116,7 +116,7 @@ We propose PITMonitor, an anytime-valid calibration monitoring method with five 
 
     \item \textbf{No baseline period required:} unlike methods requiring a ``clean'' reference distribution, PITMonitor works from the first observation.
 
-    \item \textbf{Practical efficiency:} the method is computationally lightweight.
+    \item \textbf{Practical efficiency:} the method requires $O(1)$ computation per update of the mixture e-process, plus $O(\log n)$ for rank maintenance via a sorted data structure, with $O(n)$ total memory.
 
     \item \textbf{Distribution-free:} PITMonitor does not require pre- or post-change distributions.
 \end{enumerate}
@@ -185,6 +185,8 @@ on $\{1, \ldots, t\}$.
 \begin{proof}
 Since PITs arise from a continuous predictive CDF, ties occur with probability zero, so the rank $R_t$ is almost surely well-defined. By exchangeability, $(U_1, \ldots, U_t)$ is equally likely to be in any of the $t!$ orderings. For any fixed rank $r \in \{1, \ldots, t\}$, exactly $(t-1)!$ of these orderings place $U_t$ in position $r$. Therefore, $\Prob(R_t = r) = (t-1)!/t! = 1/t$.
 \end{proof}
+
+In practice, deployed models may output discrete, rounded, or quantized probabilities, producing ties. In this case, randomized tie-breaking (assigning tied observations a uniformly random order among themselves) preserves the uniform rank property.
 
 While Proposition~\ref{prop:rank} establishes that $R_t$ is discrete uniform on $\{1, \ldots, t\}$, our density-based e-value construction requires $p_t \sim \Unif(0,1)$ exactly. Adding a uniform jitter converts the discrete rank to an exactly continuous uniform p-value:\footnote{It should be noted that the jitter $V_t$ introduces an additional source of randomness beyond the data, and thus PITMonitor's output is stochastic given a fixed stream, though the additional variability is negligible as it is $O(1/t)$.}
 \begin{equation}
@@ -265,7 +267,9 @@ $$
 Finally, $\sum_{b=1}^{B} \theta_b^2\ge 1/B$, with equality iff $\theta_b=1/B$ for all $b$. Since the post-shift distribution is non-uniform by assumption, the inequality is strict, so $B\sum_{b=1}^{B} \theta_b^2>1$.
 \end{proof}
 
-Proposition~\ref{prop:tracking} establishes that $\E[e_t\mid\mathcal{F}_{t-1}] > 1$ asymptotically after a shift. We now quantify how this mean gain builds up in finite samples.
+Proposition~\ref{prop:tracking} establishes that $\E[e_t\mid\mathcal{F}_{t-1}] > 1$ asymptotically after a shift, under the assumption that post-change p-values are i.i.d.\ non-uniform. In Algorithm~\ref{alg:pitmonitor}, however, the conformal p-value $p_t$ is computed from the rank of $U_t$ against the \emph{entire} past sequence, which increasingly includes post-change observations. As post-change data accumulate in the reference, the rank distribution of new post-change points will migrate back toward uniformity, so the non-uniformity that drives $\E[e_t\mid\mathcal{F}_{t-1}]>1$ is transient. Proposition~\ref{prop:tracking} should therefore be read as characterizing the density estimator's behaviour under an exogenously supplied non-uniform p-value stream, providing a finite-horizon approximation for the regime shortly after a changepoint rather than a permanent-regime guarantee for the self-normalizing conformal construction.
+
+We now quantify how this mean gain builds up in finite samples.
 
 \begin{proposition}[Finite-Sample Mean Gain]
 \label{prop:finite_time}
@@ -493,7 +497,7 @@ This localization capability is absent from all \texttt{river} baselines, which 
 \label{sec:experiments}
 %------------------------------------------------------------------------------
 
-We evaluate PITMonitor on the FriedmanDrift benchmark, a standard regression task for evaluating concept drift detectors under controlled conditions, comparing against the seven stream-drift detectors included in \texttt{river}.
+We evaluate PITMonitor on the FriedmanDrift benchmark, a standard regression task for evaluating concept drift detectors under controlled conditions, comparing against the seven stream-drift detectors included in \texttt{river}. Although FriedmanDrift induces covariate drift, feeding shifted inputs to a held-fixed model changes the PIT distribution, so covariate drift directly becomes calibration drift from the monitor's perspective.
 
 \subsection{Setup}
 
@@ -549,7 +553,7 @@ Table~\ref{tab:results} presents the full results. Figure~\ref{fig:detection_rat
 \end{figure}
 
 \paragraph{Type I error control.}
-PITMonitor achieves FPR of \resPMGRAFPR{} across all scenarios, consistent with the nominal $\alpha = \expAlpha$ guarantee in Theorem~\ref{thm:type1}. In this benchmark, ADWIN yields \resADGRAFPR{} empirical FPR on the \expNstable-sample null window, but this number is specific to the chosen horizon and dataset. Among the other baselines, DDM and HDDM\_A achieve \resDDMGRAFPR{} and \resHDDMAGRAFPR{} FPR, while KSWIN, PageHinkley, EDDM, and HDDM\_W exceed $89\%$ FPR with default settings. This empirical FPR comparison should be read with care: FriedmanDrift is stationary before the changepoint by construction, so it does not stress cases with persistent low-level null violations (e.g., weak temporal dependence).
+PITMonitor achieves FPR of \resPMGRAFPR{} across all scenarios, consistent with the nominal $\alpha = \expAlpha$ guarantee in Theorem~\ref{thm:type1}. In this benchmark, ADWIN yields \resADGRAFPR{} empirical FPR on the \expNstable-sample null window, but this number is specific to the chosen horizon and dataset. Among the other baselines, DDM and HDDM\_A achieve \resDDMGRAFPR{} and \resHDDMAGRAFPR{} FPR, while KSWIN, PageHinkley, EDDM, and HDDM\_W exceed $89\%$ FPR with default settings; at these levels, high TPR is a trivial consequence of near-constant alarming rather than detection power, so their TPR and delay figures are not meaningfully comparable. This empirical FPR comparison should be read with care: FriedmanDrift is stationary before the changepoint by construction, so it does not stress cases with persistent low-level null violations (e.g., weak temporal dependence).
 
 \begin{figure}[t!]
 \centering

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.9.19)  7 MAR 2026 14:58
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.9.19)  7 MAR 2026 15:31
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -999,9 +999,9 @@ LaTeX Font Info:    Font shape `U/ntxsym/m/n' will be
 
 [4]
 LaTeX Font Info:    Font shape `T1/NimbusSerif/m/it' will be
-(Font)              scaled to size 8.0pt on input line 246.
+(Font)              scaled to size 8.0pt on input line 248.
 LaTeX Font Info:    Font shape `T1/NimbusSerif/m/it' will be
-(Font)              scaled to size 6.1pt on input line 246.
+(Font)              scaled to size 6.1pt on input line 248.
 
 
 [5]
@@ -1012,26 +1012,28 @@ LaTeX Font Info:    Font shape `T1/NimbusSerif/m/it' will be
 
 [8]
 LaTeX Font Info:    Font shape `OT1/NimbusSerif/b/n' will be
-(Font)              scaled to size 10.95pt on input line 419.
+(Font)              scaled to size 10.95pt on input line 423.
 LaTeX Font Info:    Font shape `OT1/NimbusSerif/b/n' will be
-(Font)              scaled to size 8.0pt on input line 419.
+(Font)              scaled to size 8.0pt on input line 423.
 LaTeX Font Info:    Font shape `OT1/NimbusSerif/b/n' will be
-(Font)              scaled to size 6.1pt on input line 419.
+(Font)              scaled to size 6.1pt on input line 423.
 LaTeX Font Info:    Font shape `OT1/NimbusSerif/b/n' will be
-(Font)              scaled to size 9.0pt on input line 422.
+(Font)              scaled to size 9.0pt on input line 426.
 LaTeX Font Info:    Font shape `OT1/NimbusSerif/b/n' will be
-(Font)              scaled to size 7.6pt on input line 422.
+(Font)              scaled to size 7.6pt on input line 426.
 LaTeX Font Info:    Font shape `OT1/NimbusSerif/b/n' will be
-(Font)              scaled to size 6.0pt on input line 422.
+(Font)              scaled to size 6.0pt on input line 426.
 
 
 [9]
 LaTeX Font Info:    Font shape `T1/NimbusSerif/m/n' will be
-(Font)              scaled to size 12.0pt on input line 468.
-Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on input line 469.
+(Font)              scaled to size 12.0pt on input line 472.
+Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on input line 473.
 
 
-[10] (../experiment/core/out/table_results.tex
+[10]
+
+[11] (../experiment/core/out/table_results.tex
 
 LaTeX Font Warning: Font shape `T1/NimbusSerif/m/scit' undefined
 (Font)              using `T1/NimbusSerif/m/sc' instead on input line 4.
@@ -1055,35 +1057,28 @@ LaTeX Font Info:    Font shape `U/ntxsyc/m/n' will be
 LaTeX Font Info:    Font shape `U/ntxexa/m/n' will be
 (Font)              scaled to size 10.0pt on input line 6.
 )
-<../experiment/core/out/fig_detection_rates.png, id=306, 547.5657pt x 363.759pt>
+<../experiment/core/out/fig_detection_rates.png, id=316, 547.5657pt x 363.759pt>
 File: ../experiment/core/out/fig_detection_rates.png Graphic file (type png)
 <use ../experiment/core/out/fig_detection_rates.png>
-Package pdftex.def Info: ../experiment/core/out/fig_detection_rates.png  used on input line 546.
+Package pdftex.def Info: ../experiment/core/out/fig_detection_rates.png  used on input line 550.
 (pdftex.def)             Requested size: 395.776pt x 262.92203pt.
 
 
 LaTeX Font Warning: Font shape `T1/NimbusSerif/m/scit' undefined
-(Font)              using `T1/NimbusSerif/m/sc' instead on input line 547.
+(Font)              using `T1/NimbusSerif/m/sc' instead on input line 551.
 
-
-
-[11]
-<../experiment/core/out/fig_single_run_gsg_tw500.png, id=322, 516.7305pt x 381.1038pt>
+<../experiment/core/out/fig_single_run_gsg_tw500.png, id=319, 516.7305pt x 381.1038pt>
 File: ../experiment/core/out/fig_single_run_gsg_tw500.png Graphic file (type png)
 <use ../experiment/core/out/fig_single_run_gsg_tw500.png>
-Package pdftex.def Info: ../experiment/core/out/fig_single_run_gsg_tw500.png  used on input line 556.
+Package pdftex.def Info: ../experiment/core/out/fig_single_run_gsg_tw500.png  used on input line 560.
 (pdftex.def)             Requested size: 381.9567pt x 281.70418pt.
 
+LaTeX Font Warning: Font shape `T1/NimbusSerif/m/scit' undefined
+(Font)              using `T1/NimbusSerif/m/sc' instead on input line 561.
+
 
 LaTeX Font Warning: Font shape `T1/NimbusSerif/m/scit' undefined
-(Font)              using `T1/NimbusSerif/m/sc' instead on input line 557.
-
-
-LaTeX Font Warning: Font shape `T1/NimbusSerif/m/scit' undefined
-(Font)              using `T1/NimbusSerif/m/sc' instead on input line 557.
-
-
-Underfull \vbox (badness 1264) has occurred while \output is active []
+(Font)              using `T1/NimbusSerif/m/sc' instead on input line 561.
 
 
 
@@ -1091,79 +1086,83 @@ Underfull \vbox (badness 1264) has occurred while \output is active []
 pdfTeX warning (ext4): destination with the same identifier (name{table.1}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.563 
-      
+l.567 
+      ]
+
+[13
 pdfTeX warning (ext4): destination with the same identifier (name{figure.1}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.563 
-       <../experiment/core/out/fig_detection_rates.png>]
-
-[13
-pdfTeX warning (ext4): destination with the same identifier (name{figure.2}) has been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
-                                                  \__shipout_drop_firstpage_...
-l.573 \newpage
-               <../experiment/core/out/fig_single_run_gsg_tw500.png>]
-<../experiment/core/out/fig_delay_distributions.png, id=340, 755.4624pt x 420.3705pt>
+l.577 \newpage
+               <../experiment/core/out/fig_detection_rates.png>]
+<../experiment/core/out/fig_delay_distributions.png, id=341, 755.4624pt x 420.3705pt>
 File: ../experiment/core/out/fig_delay_distributions.png Graphic file (type png)
 <use ../experiment/core/out/fig_delay_distributions.png>
-Package pdftex.def Info: ../experiment/core/out/fig_delay_distributions.png  used on input line 577.
+Package pdftex.def Info: ../experiment/core/out/fig_delay_distributions.png  used on input line 581.
 (pdftex.def)             Requested size: 405.00414pt x 225.36104pt.
 
 
 LaTeX Font Warning: Font shape `T1/NimbusSerif/m/scit' undefined
-(Font)              using `T1/NimbusSerif/m/sc' instead on input line 578.
+(Font)              using `T1/NimbusSerif/m/sc' instead on input line 582.
 
 
 LaTeX Font Warning: Font shape `T1/NimbusSerif/m/scit' undefined
-(Font)              using `T1/NimbusSerif/m/sc' instead on input line 578.
+(Font)              using `T1/NimbusSerif/m/sc' instead on input line 582.
 
-<../experiment/core/out/fig_cp_error_distribution.png, id=341, 675.0018pt x 251.2587pt>
+<../experiment/core/out/fig_cp_error_distribution.png, id=342, 675.0018pt x 251.2587pt>
 File: ../experiment/core/out/fig_cp_error_distribution.png Graphic file (type png)
 <use ../experiment/core/out/fig_cp_error_distribution.png>
-Package pdftex.def Info: ../experiment/core/out/fig_cp_error_distribution.png  used on input line 587.
+Package pdftex.def Info: ../experiment/core/out/fig_cp_error_distribution.png  used on input line 591.
 (pdftex.def)             Requested size: 405.99298pt x 151.12442pt.
 
 LaTeX Font Warning: Font shape `T1/NimbusSerif/m/scit' undefined
-(Font)              using `T1/NimbusSerif/m/sc' instead on input line 588.
+(Font)              using `T1/NimbusSerif/m/sc' instead on input line 592.
 
 
 
 [14
+pdfTeX warning (ext4): destination with the same identifier (name{figure.2}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.598 \FloatBarrier
+                    <../experiment/core/out/fig_single_run_gsg_tw500.png>]
+
+[15
 pdfTeX warning (ext4): destination with the same identifier (name{figure.3}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.594 \FloatBarrier
+l.598 \FloatBarrier
                    
 pdfTeX warning (ext4): destination with the same identifier (name{figure.4}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.594 \FloatBarrier
+l.598 \FloatBarrier
                     <../experiment/core/out/fig_delay_distributions.png> <../experiment/core/out/fig_cp_error_distribution.png>]
-Underfull \hbox (badness 4954) in paragraph at lines 615--617
+Underfull \hbox (badness 4954) in paragraph at lines 619--621
 []\T1/NimbusSerif/m/it/11 Exchangeability as-sump-tion. \T1/NimbusSerif/m/n/11 PIT-Mon-i-tor tests ex-change-abil-ity of PITs. Non-
  []
 
 
-Underfull \hbox (badness 1270) in paragraph at lines 615--617
+Underfull \hbox (badness 1270) in paragraph at lines 619--621
 \T1/NimbusSerif/m/n/11 exchangeability can also arise from tem-po-ral de-pen-dence: au-to-cor-re-lated PITs can
  []
 
 
 
-[15]
+[16
+
+]
 LaTeX Font Info:    Font shape `T1/NimbusMono/b/n' will be
-(Font)              scaled to size 11.0pt on input line 627.
+(Font)              scaled to size 11.0pt on input line 631.
 
 
-[16] (./main.bbl
+[17] (./main.bbl
 
-[17{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/base/8r.enc}]
+[18{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/base/8r.enc}]
 
-[18])
+[19])
 
-[19] (./main.aux)
+[20] (./main.aux)
  ***********
 LaTeX2e <2025-06-01> patch level 1
 L3 programming layer <2025-09-02>
@@ -1176,18 +1175,18 @@ Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: 24E1B68A95E50335D70484A366626431;2586.
  ) 
 Here is how much of TeX's memory you used:
- 15538 strings out of 467797
- 229087 string characters out of 5431803
+ 15539 strings out of 467797
+ 229094 string characters out of 5431803
  631976 words of memory out of 5000000
  43742 multiletter control sequences out of 15000+600000
  773648 words of font info for 175 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  103i,11n,107p,1240b,625s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/NewTXMI.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/NewTXMI5.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/NewTXMI7.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/txexas.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/txexs.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/txmiaX.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/txsym.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/txsys.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/nimbus15/zco-Bold.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/nimbus15/zco-Regular.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/nimbus15/ztm-Med.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/nimbus15/ztm-MedIta.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/nimbus15/ztm-Reg.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/nimbus15/ztm-RegIta.pfb>
-Output written on main.pdf (19 pages, 1794436 bytes).
+Output written on main.pdf (20 pages, 1797089 bytes).
 PDF statistics:
- 500 PDF objects out of 1000 (max. 8388607)
- 430 compressed objects within 5 object streams
- 144 named destinations out of 1000 (max. 500000)
+ 508 PDF objects out of 1000 (max. 8388607)
+ 437 compressed objects within 5 object streams
+ 145 named destinations out of 1000 (max. 500000)
  181 words of extra memory for PDF output out of 10000 (max. 10000000)
 

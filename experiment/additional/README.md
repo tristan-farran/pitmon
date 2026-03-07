@@ -21,11 +21,16 @@ From `Pitmon/experiment/additional`:
 python run_additional.py
 ```
 
-Quick smoke run:
+Profiles:
 
 ```bash
-python run_additional.py --quick
+python run_additional.py --profile quick
+python run_additional.py --profile standard
+python run_additional.py --profile publication
 ```
+
+Default profile is `standard` (research-grade precision with moderate runtime).
+The runner auto-generates LaTeX macros at `out/additional_macros.tex` for appendix tables.
 
 Outputs JSON results to:
 

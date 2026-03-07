@@ -1,20 +1,21 @@
 # Fdb version 4
-["bibtex main"] 1772884837.58789 "main.aux" "main.bbl" "main" 1772884840.79623 0
+["bibtex main"] 1772891882.00162 "main.aux" "main.bbl" "main" 1772891885.20053 0
   "./imsart-nameyear.bst" 1772796353.5106 39203 a106d018926600f6d654f6a3e616411e ""
-  "./references.bib" 1772848525.36655 10222 83929ad00d8113986eb5e8ddef4bb43f ""
-  "main.aux" 1772884840.3682 10587 c4a41953ca4a5d9ee46b87bd4cb79326 "pdflatex"
+  "./references.bib" 1772887524.39832 10153 d2e27c09cb01913f99fc059bfac3a2ae ""
+  "main.aux" 1772891884.76044 10790 444bb4a5181c0323f28788454ff028f1 "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1772884837.74794 "/Users/tristanfarran/Documents/Code/Pitmon/paper/main.tex" "main.pdf" "main" 1772884840.79641 0
+["pdflatex"] 1772891882.15684 "/Users/tristanfarran/Documents/Code/Pitmon/paper/main.tex" "main.pdf" "main" 1772891885.20076 0
+  "../experiment/additional/out/additional_macros.tex" 1772888178.69897 1192 f3fa61d4e0cf957854d57363df2191f0 ""
   "../experiment/core/out/experiment_macros.tex" 1772556830.95324 1970 23d885188b02d0bcb780d574720e34a0 ""
   "../experiment/core/out/fig_cp_error_distribution.png" 1772556830.95202 165949 2103483d4df3d9a196df0aee4c7171ef ""
   "../experiment/core/out/fig_delay_distributions.png" 1772556830.58689 333848 4348732964eef71017add6a0e75b220e ""
   "../experiment/core/out/fig_detection_rates.png" 1772556830.04404 179518 8af9ccda9d7e02b75ab246dadfbe3c32 ""
   "../experiment/core/out/fig_single_run_gsg_tw500.png" 1772556832.05483 961791 c62cfbb75e5a4f01656587a217e16d14 ""
   "../experiment/core/out/table_results.tex" 1772845210.98384 1094 861d909cf5aa4f03f5f50141c0dc27e7 ""
-  "/Users/tristanfarran/Documents/Code/Pitmon/paper/main.tex" 1772884830.92955 49910 ecb0fa0e784d1cdbccf204929233f64a ""
+  "/Users/tristanfarran/Documents/Code/Pitmon/paper/main.tex" 1772891878.66063 51292 5ccac465d0c75e905c82ba086de0b590 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/nimbus15/nimbus15-ec.enc" 1452378523 13514 46bb9e8658b01f201979f9b55112df2b ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/nimbus15/nimbus15-ot1.enc" 1452378523 2083 62f4e1db816c057273644db21f159da0 ""
@@ -147,7 +148,6 @@
   "/usr/local/texlive/2025/texmf-dist/tex/latex/multirow/multirow.sty" 1731446765 6696 886c9f3087d0b973ed2c19aa79cb3023 ""
   "/usr/local/texlive/2025/texmf-dist/tex/latex/mweights/mweights.sty" 1490909540 4953 67f29a12ea26221103fce6bae3433e60 ""
   "/usr/local/texlive/2025/texmf-dist/tex/latex/natbib/natbib.sty" 1291685959 45456 1c8843383c0bd05870c45fa0ebea6cc2 ""
-  "/usr/local/texlive/2025/texmf-dist/tex/latex/needspace/needspace.sty" 1742067607 1297 95e05b694b6d7375c39c5145fe24b731 ""
   "/usr/local/texlive/2025/texmf-dist/tex/latex/newtx/lmsntxsy.fd" 1634244313 1140 ee5963b0c88b5c4f92fed61a27034b79 ""
   "/usr/local/texlive/2025/texmf-dist/tex/latex/newtx/lmxntxexx.fd" 1471383769 549 70a2497c311fc8b19acb02f7607eb4e9 ""
   "/usr/local/texlive/2025/texmf-dist/tex/latex/newtx/newtxmath.sty" 1727126309 141084 0a94ecd3ff47caf25c908eb85183555f ""
@@ -178,10 +178,10 @@
   "imsart.cls" 1772796353.50457 5117 d92aa9c197491b362da7b310a48755b6 ""
   "imsart.cnf" 0 -1 0 ""
   "imsart.sty" 1772796353.50758 167632 7945acc34f4bb00f3a738dc02141aa0a ""
-  "main.aux" 1772884840.3682 10587 c4a41953ca4a5d9ee46b87bd4cb79326 "pdflatex"
-  "main.bbl" 1772884837.7445 10443 97c4e328bc88c889b359ee4a166a6ea7 "bibtex main"
-  "main.out" 1772884840.3695 2586 cf0575f13018b710f6c174c918b690da "pdflatex"
-  "main.tex" 1772884830.92955 49910 ecb0fa0e784d1cdbccf204929233f64a ""
+  "main.aux" 1772891884.76044 10790 444bb4a5181c0323f28788454ff028f1 "pdflatex"
+  "main.bbl" 1772891882.15315 10415 825c081b2ad6b66dd992616717350511 "bibtex main"
+  "main.out" 1772891884.76186 2586 24e1b68a95e50335d70484a366626431 "pdflatex"
+  "main.tex" 1772891878.66063 51292 5ccac465d0c75e905c82ba086de0b590 ""
   (generated)
   "main.aux"
   "main.log"

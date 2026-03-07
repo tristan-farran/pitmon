@@ -20,7 +20,6 @@
 \usepackage{multirow}
 \usepackage{xcolor}
 \usepackage{placeins}
-\usepackage{needspace}
 
 
 %% Widow and orphan control
@@ -59,6 +58,7 @@
 
 %% Auto-generated experiment macros (config params and key results)
 \input{../experiment/core/out/experiment_macros}
+\input{../experiment/additional/out/additional_macros.tex}
 \endlocaldefs
 
 \begin{document}
@@ -125,19 +125,15 @@ We propose PITMonitor, an anytime-valid calibration monitoring method with five 
 \section{Related Work}
 %------------------------------------------------------------------------------
 
-\Needspace{4\baselineskip}
 \subsubsection*{Calibration Assessment}
-Classical calibration metrics include expected calibration error \citep{guo2017calibration}, reliability diagrams \citep{degroot1983comparison}, and proper scoring rules \citep{gneiting2007strictly}. PITs have been used for static forecast evaluation in econometrics \citep{diebold1998evaluating} and weather prediction \citep{gneiting2014probabilistic}. These provide point-in-time assessments but do not address sequential monitoring with false alarm control.
+Classical calibration metrics include expected calibration error \citep{guo2017calibration}, reliability diagrams \citep{degroot1983comparison}, and proper scoring rules \citep{gneiting2007strictly}. Modern neural networks can improve classification accuracy while becoming less calibrated \citep{guo2017calibration}, which motivates monitoring calibration online rather than only after deployment. PITs have been used for static forecast evaluation in econometrics \citep{diebold1998evaluating} and weather prediction \citep{gneiting2014probabilistic}. However, both these metric-based diagnostics and PIT-based evaluations are typically point-in-time and do not address sequential monitoring with false alarm control.
 
-\Needspace{4\baselineskip}
 \subsubsection*{Distribution Shift Detection}
 Methods for detecting covariate shift include two-sample tests \citep{rabanser2019failing}, domain classifiers \citep{lipton2018detecting}, and conformal methods for prediction under label shift \citep{podkopaev2021distribution}. These primarily address changes in the input or label distributions, while our work focuses on the \emph{output} side: identifying when predicted probabilities no longer match outcome frequencies.
 
-\Needspace{4\baselineskip}
 \subsubsection*{Sequential Calibration Testing}
 \citet{arnold2023sequentially} proposed e-values for testing forecast calibration, focusing on whether PITs are $\Unif(0,1)$. PITMonitor differs in two ways. First, we test exchangeability rather than uniformity and thus alarm only on changes in calibration, the more natural null where some level of miscalibration is inevitable. Second, we attempt to locate \emph{when} calibration changed, rather than only establishing whether the model is miscalibrated at a point in time.
 
-\Needspace{4\baselineskip}
 \subsubsection*{E-values}
 The e-value framework has seen rapid development \citep{vovk2021values, ramdas2023game, grunwald2024safe, shin2022detectors}. PITMonitor builds on this framework by constructing a mixture e-process to test exchangeability of PIT values, inheriting the anytime-valid false alarm guarantees this literature provides (Theorem~\ref{thm:type1}).
 
@@ -198,7 +194,7 @@ Under $H_0$ (exchangeability), these p-values are $\Unif(0,1)$. After a changepo
 
 \subsection{E-values}
 
-An \emph{e-value} is a non-negative random variable $e$ satisfying $\E[e] \leq 1$ under the null hypothesis \citep{vovk2021values}. By Markov's inequality, $\Prob(e \geq 1/\alpha) \leq \alpha$, so rejecting when $e \geq 1/\alpha$ defines a valid level-$\alpha$ test, with power whenever $\E[e] > 1$ under the alternative.
+An \emph{e-value} is a non-negative random variable $e$ satisfying $\E[e] \leq 1$ under the null hypothesis. By Markov's inequality, $\Prob(e \geq 1/\alpha) \leq \alpha$, so rejecting when $e \geq 1/\alpha$ defines a valid level-$\alpha$ test, with power whenever $\E[e] > 1$ under the alternative.
 
 The density-based construction in Section~\ref{sec:density} achieves this adaptively: when p-values concentrate in certain bins due to non-exchangeability, the histogram places more mass there, typically yielding $\E[e] > 1$ without requiring a parametric specification of the alternative.
 
@@ -240,8 +236,9 @@ where $c_b$ counts past p-values in bin $b$ and $B$ is the number of bins. The h
 
 By adapting our density to observed concentration patterns, we automatically bet in the right direction. Under exchangeability, p-values scatter uniformly, and $\E[e_t] = 1$. If exchangeability breaks, p-values cluster, the histogram learns these concentration patterns, and we achieve $\E[e] > 1$ whenever deviations are sufficiently persistent. 
 
-\begin{proposition}[Null Validity and Post-Shift Convergence]
+\begin{proposition}[Consistency]
 \label{prop:tracking}
+\hspace{1cm}
 \begin{enumerate}
     \item If $p_t \sim \Unif(0,1)$, then $e_t$ is a valid one-step e-value s.t. $\E[e_t\mid\mathcal F_{t-1}]\le 1$.
     \item If p-values are i.i.d. non-uniform after a changepoint, then
@@ -468,7 +465,7 @@ This localization capability is absent from all \texttt{river} baselines, which 
 
 \subsection{Complete Algorithm}
 
-\begin{algorithm}[H]
+\begin{algorithm}[tb]
 \caption{PITMonitor}
 \label{alg:pitmonitor}
 \begin{algorithmic}[1]
@@ -540,9 +537,7 @@ We run $N = \expNtrials$ Monte Carlo trials per scenario, each using a distinct 
 
 \subsection{Results}
 
-Table~\ref{tab:results} presents the full results. Figure~\ref{fig:detection_rates} visualizes TPR and FPR per method and scenario, Figure~\ref{fig:single_run} shows a representative single-run monitoring trace for the GSG scenario, and Figure~\ref{fig:delay_dists} shows the distribution of detection delays over true-positive trials.
-
-The null window is drawn from the same pre-drift distribution for all three scenarios, so each detector's FPR is near-identical across scenarios by construction.
+Table~\ref{tab:results} presents the full results. Figure~\ref{fig:detection_rates} visualizes TPR and FPR per method and scenario, Figure~\ref{fig:single_run} shows a representative single-run monitoring trace for the GSG scenario, and Figure~\ref{fig:delay_dists} shows the distribution of detection delays over true-positive trials. The null window is drawn from the same pre-drift distribution for all three scenarios, so each detector's FPR is near-identical across scenarios by construction.
 
 \input{../experiment/core/out/table_results}
 
@@ -603,9 +598,7 @@ On GRA and GSG, mean absolute error is \resPMGRACPErr{} and \resPMGSGCPErr{} sam
 \paragraph{Scope.}
 PITMonitor is intended for continuous monitoring of deployed probabilistic models when false alarms are costly, monitoring duration is open-ended, and calibration drift (not only accuracy drift) is operationally important. For one-time calibration checks or accuracy-only monitoring without need of false-alarm control or changepoint localization, standard diagnostics remain appropriate.
 
-\Needspace{5\baselineskip}
 \paragraph{Limitations.}
-
 \textit{Expanding drift.}
 PITMonitor detects LEA drift with \resPMLEATPR{} TPR but with \resPMLEADelay{} mean delay, reflecting slower evidence accumulation when only a subset of features has shifted.
 
@@ -620,8 +613,7 @@ This interpretation is supported by additional multi-step localization checks re
 Anytime-valid control can increase delay relative to methods without stream-level guarantees. In practice, $\alpha$ should be set against long-run false-alarm tolerance rather than treated as a fixed convention.
 
 \textit{Exchangeability assumption.}
-PITMonitor tests exchangeability of PITs. Non-exchangeability can also arise from temporal dependence: autocorrelated PITs can trigger alarms even when the calibration distribution is unchanged. This has two implications. First, the i.i.d.-based power statements in Section~\ref{sec:density} (including Proposition~\ref{prop:finite_time}) are clean reference results, not finite-sample guarantees for dependent streams. Second, mild but persistent null violations can in principle inflate long-run alarms. In our FriedmanDrift experiments this did not produce extreme empirical FPR, but the benchmark is stationary pre-drift by design, so this robustness requires broader evaluation on dependent and non-stationary streams. Practitioners should check autocorrelation in PITs (e.g., Ljung-Box or ACF diagnostics); a practical mitigation is thinning the PIT sequence, trading reduced dependence for slower detection.
-Appendix~\ref{app:additional_checks} summarizes auxiliary dependent/non-stationary stress tests used to inform this discussion.
+PITMonitor tests exchangeability of PITs. Non-exchangeability can also arise from temporal dependence: autocorrelated PITs can trigger alarms even when the calibration distribution is unchanged. This has two implications. First, the i.i.d.-based power statements in Section~\ref{sec:density} (including Proposition~\ref{prop:finite_time}) are clean reference results, not finite-sample guarantees for dependent streams. Second, mild but persistent null violations can in principle inflate long-run alarms. In our FriedmanDrift experiments this did not produce extreme empirical FPR, but the benchmark is stationary pre-drift by design, so this robustness requires broader evaluation on dependent and non-stationary streams. Practitioners should check autocorrelation in PITs (e.g., Ljung-Box or ACF diagnostics); a practical mitigation is thinning the PIT sequence, trading reduced dependence for slower detection. Appendix~\ref{app:additional_checks} summarizes auxiliary dependent/non-stationary stress tests used to inform this discussion.
 
 \textit{Persistence requirement.}
 PITMonitor reacts to accumulated evidence, not single-step anomalies. Under non-exchangeability, the adaptive histogram attempts to track the current concentration pattern of p-values; when tracking is accurate, expected log-growth is positive (i.e., $\E[\log e_t] > 0$) and cumulative evidence increases until crossing the alarm threshold. If deviations are brief, rapidly reversing, or drift faster than the estimator can track, growth is reduced or intermittent, so alarms may be delayed or absent.
@@ -653,7 +645,9 @@ Three structural advantages persist beyond the numerical comparison. First, PITM
 
 In practice, PITMonitor is most suitable when formal long-run error control, changepoint localization, and calibration-specific monitoring are priorities. When gradually expanding drift is anticipated, combining PITMonitor with a faster residual-based detector can improve early warning at the cost of weaker long-run false-alarm guarantees.
 
-Future work has three directions. First, for temporally dependent predictions, we aim to develop a dependence-robust construction (beyond pragmatic thinning, which reduces power). Second, for multivariate outputs, a practical baseline is to reduce each prediction-outcome pair to a scalar PIT and reuse the same monitoring pipeline; developing fully multivariate transforms (e.g., Rosenblatt transforms) that better preserve joint dependence remains open. Third, we aim to improve detection power and changepoint localization under partial distributional shifts.
+Future work has four directions. First, for temporally dependent predictions, we aim to develop a dependence-robust construction (beyond pragmatic thinning, which reduces power). Second, for multivariate outputs, a practical baseline is to reduce each prediction-outcome pair to a scalar PIT and reuse the same monitoring pipeline; developing fully multivariate transforms (e.g., Rosenblatt transforms) that better preserve joint dependence remains open. Third, we aim to improve detection power and changepoint localization under partial distributional shifts. Fourth, we aim to couple detection with automatic post-alarm recalibration: after an alarm, estimate the post-alarm empirical PIT density $\hat q(z)$ and reweight the predictive density as $\hat f(y) = p(y)\,\hat q(z)^{\lambda(e)}$, where $\lambda(e)$ is a shrinkage weight that decreases with uncertainty and is learned from e-process evidence. This would tie correction strength directly to detected miscalibration severity, yielding conservative updates under weak evidence and stronger recalibration when evidence accumulates.
+
+\paragraph{Code Availability.} \url{https://github.com/tristan-farran/pitmon}.
 
 %------------------------------------------------------------------------------
 \appendix
@@ -663,21 +657,15 @@ Future work has three directions. First, for temporally dependent predictions, w
 
 To keep the main text focused on the core benchmark and theorem-driven claims, we report supplementary checks here. These diagnostics are not used for model or detector tuning and are not part of the primary comparative evaluation; they are included to document robustness and interpretation boundaries.
 
-\begin{table}[h]
-\centering
-\small
-\caption{Compact summary of supplementary validation checks.}
-\label{tab:additional_checks}
-\begin{tabular}{p{0.36\textwidth}p{0.23\textwidth}p{0.33\textwidth}}
-\toprule
-Check & Result & Interpretation \\
-\midrule
-Finite-time proposition sanity check & Max abs. formula error $<0.008$ (aligned and misaligned priors) & Confirms numerical consistency with Proposition~\ref{prop:finite_time}; does not constitute additional discovery beyond the proved result. \\
-Stationary dependent PIT stress test (AR(1)-copula margin-uniform) & Alarm rate $\approx 11.1\%$ vs $\approx 3.0\%$ for i.i.d. uniform baseline & Illustrates sensitivity to temporal dependence under a controlled synthetic stress test; supports the caveat in the Limitations paragraph. \\
-Multi-step drift localization (onset vs strongest phase reference) & MAE to onset: $1820.8$; MAE to max-intensity phase: $294.6$; closer to max phase in $955/1000$ runs & Under staged drift growth, changepoint estimates align more with the strongest phase than initial onset; this is an interpretive check rather than a core benchmark metric. \\
-\bottomrule
-\end{tabular}
-\end{table}
+\paragraph{Finite-time proposition sanity check.}
+The finite-sample mean formula from Proposition~\ref{prop:finite_time} is numerically consistent with Monte Carlo estimates for representative aligned and misaligned priors, with maximum absolute discrepancies of \addFiniteErrAligned{} (aligned prior) and \addFiniteErrMisaligned{} (misaligned prior). This check is a numerical consistency test of the proved expression rather than independent additional evidence.
+
+\paragraph{Dependent and non-stationary PIT stress tests.}
+Using $\alpha=\addAlpha$, $B=\addBins$, and $n=\addNTrialsStream$ trials per regime, the i.i.d.\
+uniform baseline yields an alarm rate of \addIidAlarmRate{} (95\% CI [\addIidAlarmCILo, \addIidAlarmCIHi], median alarm time \addIidMedianAlarmT{}). Under a stationary dependent AR(1)-copula stream with uniform margins, the alarm rate increases to \addDepAlarmRate{} (95\% CI [\addDepAlarmCILo, \addDepAlarmCIHi], median alarm time \addDepMedianAlarmT{}), supporting the temporal-dependence caveat in the Limitations paragraph. For comparison, mild non-stationarity gives \addMildAlarmRate{} (95\% CI [\addMildAlarmCILo, \addMildAlarmCIHi], median alarm time \addMildMedianAlarmT{}), and seasonality gives \addSeasAlarmRate{} (95\% CI [\addSeasAlarmCILo, \addSeasAlarmCIHi], median alarm time \addSeasMedianAlarmT{}).
+
+\paragraph{Multi-step localization interpretation check.}
+In a staged step-drift stream, changepoint localization is substantially closer to the maximal-intensity phase than to initial onset: MAE to onset is \addLocMAEOnset{} versus \addLocMAEMax{} to the strongest phase, and \addLocCloserMax{} of \addLocN{} runs are closer to the strongest phase reference. This result is used to interpret localization behavior under expanding/staged drift, not as a primary benchmark metric.
 
 %------------------------------------------------------------------------------
 % References

@@ -10,7 +10,8 @@ This module adds lightweight, reproducible checks for:
 Usage
 -----
 python run_additional.py
-python run_additional.py --quick
+python run_additional.py --profile quick
+python run_additional.py --profile publication
 python run_additional.py --output out/results.json
 """
 
@@ -32,6 +33,7 @@ _REPO_ROOT = _EXPERIMENT_DIR.parent
 sys.path.insert(0, str(_REPO_ROOT))
 
 from pitmon import PITMonitor
+from export_additional_macros import build_macros
 
 
 @dataclass(frozen=True)
@@ -46,14 +48,14 @@ class VerificationConfig:
     m_pre: int = 2_500
     n_grid_max: int = 5_000
     n_grid_points: int = 18
-    n_mc_formula: int = 8_000
+    n_mc_formula: int = 12_000
 
     # Stream robustness parameters
-    n_trials_stream: int = 1_000
+    n_trials_stream: int = 2_000
     n_steps_stream: int = 5_000
 
     # Multi-step drift localization parameters
-    n_trials_localization: int = 1_000
+    n_trials_localization: int = 2_000
     n_steps_localization: int = 5_000
     onset_step: int = 2_001
     mid_step: int = 2_901
@@ -613,19 +615,39 @@ def run_all(cfg: VerificationConfig) -> dict:
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Run PITMonitor additional experiments")
     p.add_argument("--output", type=str, default="out/results.json")
-    p.add_argument("--quick", action="store_true", help="Run a lighter smoke version")
+    p.add_argument(
+        "--profile",
+        type=str,
+        choices=["quick", "standard", "publication"],
+        default="standard",
+        help=(
+            "Experiment preset: quick (smoke), standard (default research), "
+            "publication (higher precision)."
+        ),
+    )
     p.add_argument("--seed", type=int, default=123)
     p.add_argument("--alpha", type=float, default=0.05)
     p.add_argument("--bins", type=int, default=100)
+    p.add_argument(
+        "--macros-output",
+        type=str,
+        default="out/additional_macros.tex",
+        help="Where to write auto-generated LaTeX macros for appendix tables.",
+    )
+    p.add_argument(
+        "--no-export-macros",
+        action="store_true",
+        help="Skip LaTeX macro export after writing JSON results.",
+    )
     return p.parse_args()
 
 
-def main() -> None:
-    args = parse_args()
+def config_for_profile(args: argparse.Namespace) -> VerificationConfig:
+    """Construct a config from the selected profile plus CLI overrides."""
+    base = VerificationConfig(seed=args.seed, alpha=args.alpha, n_bins=args.bins)
 
-    cfg = VerificationConfig(seed=args.seed, alpha=args.alpha, n_bins=args.bins)
-    if args.quick:
-        cfg = VerificationConfig(
+    if args.profile == "quick":
+        return VerificationConfig(
             seed=args.seed,
             alpha=args.alpha,
             n_bins=args.bins,
@@ -633,16 +655,42 @@ def main() -> None:
             n_grid_max=2_500,
             n_grid_points=12,
             n_mc_formula=2_500,
-            n_trials_stream=250,
+            n_trials_stream=300,
             n_steps_stream=2_000,
-            n_trials_localization=250,
+            n_trials_localization=300,
             n_steps_localization=3_500,
             onset_step=1_201,
             mid_step=2_001,
             max_step=2_801,
         )
 
+    if args.profile == "publication":
+        return VerificationConfig(
+            seed=args.seed,
+            alpha=args.alpha,
+            n_bins=args.bins,
+            m_pre=3_000,
+            n_grid_max=7_500,
+            n_grid_points=22,
+            n_mc_formula=20_000,
+            n_trials_stream=5_000,
+            n_steps_stream=5_000,
+            n_trials_localization=5_000,
+            n_steps_localization=5_000,
+            onset_step=2_001,
+            mid_step=2_901,
+            max_step=3_701,
+        )
+
+    return base
+
+
+def main() -> None:
+    args = parse_args()
+    cfg = config_for_profile(args)
+
     results = run_all(cfg)
+    results["config"]["profile"] = args.profile
 
     out_path = (
         (_THIS_DIR / args.output).resolve()
@@ -652,6 +700,16 @@ def main() -> None:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with out_path.open("w", encoding="utf-8") as f:
         json.dump(results, f, indent=2)
+
+    if not args.no_export_macros:
+        macros_path = (
+            (_THIS_DIR / args.macros_output).resolve()
+            if not Path(args.macros_output).is_absolute()
+            else Path(args.macros_output)
+        )
+        macros_path.parent.mkdir(parents=True, exist_ok=True)
+        macros_path.write_text(build_macros(results), encoding="utf-8")
+        print(f"Wrote LaTeX macros to {macros_path}")
 
     print(f"Saved additional experiment results to {out_path}")
     print("Summary:")

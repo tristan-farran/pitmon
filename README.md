@@ -38,28 +38,28 @@ alarm = monitor.update_with_cdf(norm(loc=mu, scale=sigma).cdf, y_observed)
 
 ### `PITMonitor(alpha=0.05, n_bins=100, weight_schedule=None, rng=None)`
 
-| Parameter | Description |
-|---|---|
-| `alpha` | Anytime-valid false alarm rate: P(ever alarm \| H₀) ≤ α |
-| `n_bins` | Histogram bins for density estimation (5–500) |
+| Parameter         | Description                                                                                                                      |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `alpha`           | Anytime-valid false alarm rate: P(ever alarm \| H₀) ≤ α                                                                          |
+| `n_bins`          | Histogram bins for density estimation (5–500)                                                                                    |
 | `weight_schedule` | Custom mixture weight schedule over changepoint indices; must be deterministic, nonneg, and sum to 1. Default: w(k) = 1/(k(k+1)) |
-| `rng` | Seed or `numpy.random.Generator` for tie-breaking randomization |
+| `rng`             | Seed or `numpy.random.Generator` for tie-breaking randomization                                                                  |
 
 ### Core methods
 
-| Method | Description |
-|---|---|
-| `update(pit)` | Process one PIT value; returns `Alarm` (usable as bool) |
-| `update_with_cdf(cdf, y)` | Compute PIT from CDF and observe `y`, then update |
-| `update_many(pits, stop_on_alarm=True)` | Process a sequence of PITs |
-| `changepoint()` | Bayes-factor estimate of changepoint index; `None` if no alarm yet |
-| `summary()` | Dict with `t`, `alarm_triggered`, `alarm_time`, `evidence`, `threshold`, `changepoint`, `calibration_score` |
-| `trial_summary(n_stable)` | Convenience diagnostics for a stable-then-shift stream |
-| `calibration_score()` | 1 − KS statistic measuring deviation from uniformity (1 = perfect) |
-| `reset()` | Reset to initial state (preserves `alpha`, `n_bins`) |
-| `plot(figsize=(12,4))` | Diagnostic plot of e-process and p-value histogram; returns `PlotResult` |
-| `save(filepath)` | Save state to `.pkl` (full fidelity) or `.json` (human-readable) |
-| `PITMonitor.load(filepath)` | Class method; restore a saved monitor |
+| Method                                  | Description                                                                                                 |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `update(pit)`                           | Process one PIT value; returns `Alarm` (usable as bool)                                                     |
+| `update_with_cdf(cdf, y)`               | Compute PIT from CDF and observe `y`, then update                                                           |
+| `update_many(pits, stop_on_alarm=True)` | Process a sequence of PITs                                                                                  |
+| `changepoint()`                         | Bayes-factor estimate of changepoint index; `None` if no alarm yet                                          |
+| `summary()`                             | Dict with `t`, `alarm_triggered`, `alarm_time`, `evidence`, `threshold`, `changepoint`, `calibration_score` |
+| `trial_summary(n_stable)`               | Convenience diagnostics for a stable-then-shift stream                                                      |
+| `calibration_score()`                   | 1 − KS statistic measuring deviation from uniformity (1 = perfect)                                          |
+| `reset()`                               | Reset to initial state (preserves `alpha`, `n_bins`)                                                        |
+| `plot(figsize=(12,4))`                  | Diagnostic plot of e-process and p-value histogram; returns `PlotResult`                                    |
+| `save(filepath)`                        | Save state to `.pkl` (full fidelity) or `.json` (human-readable)                                            |
+| `PITMonitor.load(filepath)`             | Class method; restore a saved monitor                                                                       |
 
 ### `Alarm` object
 
@@ -117,27 +117,16 @@ Per-trial flow:
 
 ### Drift scenarios
 
-| Key | Type | Description |
-|---|---|---|
-| `gra_tw0` | Global Recurring Abrupt | All relevant features change simultaneously |
-| `gsg_tw500` | Global Slow Gradual | Smooth transition over 500 samples |
-| `lea_tw0` | Local Expanding Abrupt | Drift starts on a feature subset and expands across 3 evenly spaced phases |
-
-### Results (10,000 trials, α=0.05)
-
-| Detector | GRA TPR | GRA delay | GSG TPR | GSG delay | LEA TPR | LEA delay |
-|---|---|---|---|---|---|---|
-| PITMonitor | 96.2% | 77 | 96.2% | 189 | 96.2% | 1919 |
-| ADWIN | 99.1% | 27 | 99.1% | 27 | 99.1% | 115 |
-| DDM | 90.8% | 405 | 90.0% | 666 | 22.0% | 2050 |
-| HDDM_A | 94.0% | 60 | 94.0% | 168 | 52.5% | 2032 |
-
-PITMonitor FPR ≈ 3.8% across all scenarios — within the α = 5% guarantee. KSWIN, PageHinkley, EDDM, and HDDM_W exhibit pathological FPRs (~97–100%) due to structural mismatch with this monitoring task.
+| Key         | Type                    | Description                                                                |
+| ----------- | ----------------------- | -------------------------------------------------------------------------- |
+| `gra_tw0`   | Global Recurring Abrupt | All relevant features change simultaneously                                |
+| `gsg_tw500` | Global Slow Gradual     | Smooth transition over 500 samples                                         |
+| `lea_tw0`   | Local Expanding Abrupt  | Drift starts on a feature subset and expands across 3 evenly spaced phases |
 
 ### Reproducing results
 
 ```bash
-cd experiment/
+cd experiment/core
 
 # 1. Train the model once
 python run_experiment.py --train

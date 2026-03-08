@@ -90,8 +90,6 @@ monitor.save("state.pkl")           # pickle (full precision)
 monitor2 = PITMonitor.load("state.json")
 ```
 
-> **Security note:** Never load `.pkl` files from untrusted sources. Prefer `.json` for externally provided states.
-
 ## Running tests
 
 ```bash
@@ -104,7 +102,7 @@ pytest tests/
 
 Compares PITMonitor against the seven drift detectors available in [River](https://riverml.xyz) on the standard **FriedmanDrift** regression benchmark.
 
-The `ProbabilisticMLP` model outputs a Gaussian predictive distribution (mean + log-variance) trained with Gaussian NLL loss. Inputs and targets are standardized before training. The model is trained **once** on one realisation of the pre-drift distribution and shared across all Monte-Carlo trials — correctly simulating a fixed deployed model whose calibration is being monitored.
+The `ProbabilisticMLP` model outputs a Gaussian predictive distribution (mean & log-variance) trained with Gaussian NLL loss. Inputs and targets are standardized before training. The model is trained **once** on one realisation of the pre-drift distribution and shared across all Monte-Carlo trials — correctly simulating a fixed deployed model whose calibration is being monitored.
 
 Per-trial flow:
 1. **Data** — Generate a fresh monitoring stream (new seed; model is fixed)
@@ -141,4 +139,29 @@ python run_experiment.py --compute --scenario lea --plot
 python run_experiment.py --train --compute --plot --trials 50 --workers 4
 ```
 
-All artefacts (model bundle, results, figures) are written to `experiment/out/` by default. Override with `--output DIR`.
+All artefacts (model bundle, results, figures) are written to `experiment/core/out/` by default. Override with `--output DIR`.
+
+### Additional experiments
+
+Focused, lightweight checks that complement the main benchmark by verifying theoretical properties and robustness under assumption violations:
+
+- **Proposition verification** — asymptotic convergence of E[e_t | A], finite-time mean formula, and warmup bound under adverse prior alignment
+- **Multi-step drift localization** — changepoint error reported to both onset and maximal-intensity phase
+
+```bash
+cd experiment/additional
+
+# Run everything (compute + plot)
+python run_additional.py
+
+# Compute only, with a fast smoke-test profile
+python run_additional.py --compute --profile quick
+
+# Regenerate plots from existing results
+python run_additional.py --plot
+
+# Publication-grade precision
+python run_additional.py --compute --plot --profile publication
+```
+
+All artefacts (results, figures, LaTeX macros) are written to `experiment/additional/out/` by default. Override with `--output DIR`.

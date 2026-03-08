@@ -165,7 +165,7 @@ This observation is central to PITMonitor's design:
     \item \textbf{Changing calibration:} the PIT distribution changes at some time $\tau$ $\Rightarrow$ not exchangeable
 \end{itemize}
 
-Thus, by testing exchangeability directly, we aim to alarm only on \emph{changes} in calibration.\footnote{Temporal dependence and non-stationarity in the PIT stream can also violate exchangeability, so the theoretical guarantees which hold for the idealized case may not extend to more complex scenarios. See the Limitations section.}
+Thus, by testing exchangeability directly, we aim to alarm only on \emph{changes} in calibration.\footnote{Temporal dependence and non-stationarity in the PIT stream can also violate exchangeability, so the theoretical guarantees which hold for the idealized case may not extend to more complex scenarios. However, PIT dependence is itself evidence of misspecification rather than a benign artifact. A separate caveat arises when PITs are computed from marginal or incompletely conditioned predictives, which can induce serial dependence despite marginal uniformity. See the Limitations section.}
 
 \subsection{Conformal P-values}
 \label{sec:pvals}
@@ -607,7 +607,7 @@ PITMonitor is intended for continuous monitoring of deployed probabilistic model
 PITMonitor detects LEA drift with \resPMLEATPR{} TPR but with \resPMLEADelay{} mean delay, reflecting slower evidence accumulation when only a subset of features has shifted.
 
 \textit{Calibration improvements.}
-PITMonitor detects any departure from exchangeability in the PIT sequence and does not distinguish between deterioration and improvement in calibration. A model that becomes better calibrated mid-stream may also trigger an alarm. In practice, the direction of drift can be assessed by inspecting the PIT histogram following an alarm.
+PITMonitor detects any departure from exchangeability in the PIT sequence and does not distinguish between deterioration and improvement in calibration. A model that becomes better calibrated mid-stream may also trigger an alarm. In practice, the direction of drift can be assessed by inspecting the PIT histogram following an alarm. This is true of several \texttt{river} baselines as well, but the histogram-based changepoint localization in PITMonitor provides a more direct and interpretable link between the alarm and the underlying distributional change.*******************
 
 \textit{Changepoint localization on expanding drift.}
 Localization is less reliable under sequential expansion: the estimator targets the phase of strongest distributional change, which can lag the true onset.
@@ -617,7 +617,17 @@ This interpretation is supported by additional multi-step localization checks re
 Anytime-valid control can increase delay relative to methods without stream-level guarantees. In practice, $\alpha$ should be set against long-run false-alarm tolerance rather than treated as a fixed convention.
 
 \textit{Exchangeability assumption.}
-PITMonitor tests exchangeability of PITs. Non-exchangeability can also arise from temporal dependence: autocorrelated PITs can trigger alarms even when the calibration distribution is unchanged. This has two implications. First, the i.i.d.-based power statements in Section~\ref{sec:density} (including Proposition~\ref{prop:finite_time}) are clean reference results, not finite-sample guarantees for dependent streams. Second, mild but persistent null violations can in principle inflate long-run alarms. In our FriedmanDrift experiments this did not produce extreme empirical FPR, but the benchmark is stationary pre-drift by design, so this robustness requires broader evaluation on dependent and non-stationary streams. Practitioners should check autocorrelation in PITs (e.g., Ljung-Box or ACF diagnostics); a practical mitigation is thinning the PIT sequence, trading reduced dependence for slower detection. Appendix~\ref{app:additional_checks} summarizes auxiliary dependent/non-stationary stress tests used to inform this discussion.
+PITMonitor tests exchangeability of PITs.
+
+Mild but persistent null violations due to non-stationarity can in principle inflate long-run alarms. In our FriedmanDrift experiments this did not produce extreme empirical FPR, but the benchmark is stationary pre-drift by design, so this robustness requires broader evaluation on dependent and non-stationary streams.
+
+For univariate sequential probabilistic forecasts, correct conditional calibration - that is, correctly specifying $F_t(\cdot\mid\mathcal{F}_{t-1})$ - implies PITs are i.i.d.\ by construction. In this regime, PIT autocorrelation is diagnostic of misspecification (e.g., omitted lag structure or ignored volatility dynamics), so alarms are informative rather than spurious.
+
+A separate caveat concerns PIT construction rather than detector validity: if PITs are computed from a marginal predictive that does not represent the full conditional $F_t(\cdot\mid\mathcal{F}_{t-1})$, they may be marginally uniform yet serially dependent. In that mismatched setting, exchangeability alarms can be inflated without a genuine change in the marginal PIT distribution.
+
+The power statements in Section~\ref{sec:density} should therefore be read by assumption class: Proposition~\ref{prop:tracking} characterizes asymptotic gain under i.i.d.\ non-uniform post-change p-values, and Proposition~\ref{prop:finite_time} quantifies finite-sample mean gain under the same i.i.d.\ post-shift model. These assumptions are appropriate for correctly specified conditional forecasts; they do not provide finite-sample power guarantees for dependent PIT streams generated outside that regime.
+
+Practitioners should check autocorrelation in PITs (e.g., Ljung-Box or ACF diagnostics); a practical mitigation is thinning the PIT sequence, trading reduced dependence for slower detection. 
 
 \textit{Persistence requirement.}
 PITMonitor reacts to accumulated evidence, not single-step anomalies. Under non-exchangeability, the adaptive histogram attempts to track the current concentration pattern of p-values; when tracking is accurate, expected log-growth is positive (i.e., $\E[\log e_t] > 0$) and cumulative evidence increases until crossing the alarm threshold. If deviations are brief, rapidly reversing, or drift faster than the estimator can track, growth is reduced or intermittent, so alarms may be delayed or absent.
@@ -649,7 +659,7 @@ Three structural advantages persist beyond the numerical comparison. First, PITM
 
 In practice, PITMonitor is most suitable when formal long-run error control, changepoint localization, and calibration-specific monitoring are priorities. When gradually expanding drift is anticipated, combining PITMonitor with a faster residual-based detector can improve early warning at the cost of weaker long-run false-alarm guarantees.
 
-Future work has four directions. First, for temporally dependent predictions, we aim to develop a dependence-robust construction (beyond pragmatic thinning, which reduces power). Second, for multivariate outputs, a practical baseline is to reduce each prediction-outcome pair to a scalar PIT and reuse the same monitoring pipeline; developing fully multivariate transforms (e.g., Rosenblatt transforms) that better preserve joint dependence remains open. Third, we aim to improve detection power and changepoint localization under partial distributional shifts. Fourth, we aim to couple detection with automatic post-alarm recalibration: after an alarm, estimate the post-alarm empirical PIT density $\hat q(z)$ and reweight the predictive density as $\hat f(y) = p(y)\,\hat q(z)^{\lambda(e)}$, where $\lambda(e)$ is a shrinkage weight that decreases with uncertainty and is learned from e-process evidence. This would tie correction strength directly to detected miscalibration severity, yielding conservative updates under weak evidence and stronger recalibration when evidence accumulates.
+Future work has three directions. First, for multivariate outputs, a practical baseline is to reduce each prediction-outcome pair to a scalar PIT and reuse the same monitoring pipeline. A fuller extension is to use a Rosenblatt chain, i.e., transform each component through sequential conditional CDFs $F(y_t^{(j)}\mid y_t^{(1:j-1)},\mathcal{F}_{t-1})$ so that, under correct joint specification, the transformed sequence is i.i.d.\ uniform. The challenge is that this requires access to the full conditional factorization (or an accurate approximation), which is often unavailable for implicit or high-dimensional models. Second, we aim to improve detection power and changepoint localization under partial distributional shifts. Third, we aim to couple detection with automatic post-alarm recalibration: after an alarm, estimate the post-alarm empirical PIT density $\hat q(z)$ and reweight the predictive density as $\hat f(y) = p(y)\,\hat q(z)^{\lambda(e)}$, where $\lambda(e)$ is a shrinkage weight that decreases with uncertainty and is learned from e-process evidence. This would tie correction strength directly to detected miscalibration severity, yielding conservative updates under weak evidence and stronger recalibration when evidence accumulates.
 
 \paragraph{Code Availability.} \url{https://github.com/tristan-farran/pitmon}.
 
@@ -663,10 +673,6 @@ To keep the main text focused on the core benchmark and theorem-driven claims, w
 
 \paragraph{Finite-time proposition sanity check.}
 The finite-sample mean formula from Proposition~\ref{prop:finite_time} is numerically consistent with Monte Carlo estimates for representative aligned and misaligned priors, with maximum absolute discrepancies of \addFiniteErrAligned{} (aligned prior) and \addFiniteErrMisaligned{} (misaligned prior). This check is a numerical consistency test of the proved expression rather than independent additional evidence.
-
-\paragraph{Dependent and non-stationary PIT stress tests.}
-Using $\alpha=\addAlpha$, $B=\addBins$, and $n=\addNTrialsStream$ trials per regime, the i.i.d.\
-uniform baseline yields an alarm rate of \addIidAlarmRate{} (95\% CI [\addIidAlarmCILo, \addIidAlarmCIHi], median alarm time \addIidMedianAlarmT{}). Under a stationary dependent AR(1)-copula stream with uniform margins, the alarm rate increases to \addDepAlarmRate{} (95\% CI [\addDepAlarmCILo, \addDepAlarmCIHi], median alarm time \addDepMedianAlarmT{}), supporting the temporal-dependence caveat in the Limitations paragraph. For comparison, mild non-stationarity gives \addMildAlarmRate{} (95\% CI [\addMildAlarmCILo, \addMildAlarmCIHi], median alarm time \addMildMedianAlarmT{}), and seasonality gives \addSeasAlarmRate{} (95\% CI [\addSeasAlarmCILo, \addSeasAlarmCIHi], median alarm time \addSeasMedianAlarmT{}).
 
 \paragraph{Multi-step localization interpretation check.}
 In a staged step-drift stream, changepoint localization is substantially closer to the maximal-intensity phase than to initial onset: MAE to onset is \addLocMAEOnset{} versus \addLocMAEMax{} to the strongest phase, and \addLocCloserMax{} of \addLocN{} runs are closer to the strongest phase reference. This result is used to interpret localization behavior under expanding/staged drift, not as a primary benchmark metric.

@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex main"] 1773180537.763 "main.aux" "main.bbl" "main" 1773180540.97491 0
+["bibtex main"] 1773267315.28976 "main.aux" "main.bbl" "main" 1773267747.30546 0
   "./imsart-nameyear.bst" 1772796353.5106 39203 a106d018926600f6d654f6a3e616411e ""
   "./references.bib" 1773178638.57637 11364 a2eda3fac1097148c8fc269b9907573c ""
-  "main.aux" 1773180540.52064 10817 5068639b6a1a9723886d4085d301f43b "pdflatex"
+  "main.aux" 1773267746.91838 10513 f5615babe39f99ad4702de0f6621c3f8 "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1773180537.91932 "/Users/tristanfarran/Documents/Code/Pitmon/paper/main.tex" "main.pdf" "main" 1773180540.97515 0
+["pdflatex"] 1773267744.2658 "/Users/tristanfarran/Documents/Code/Pitmon/paper/main.tex" "main.pdf" "main" 1773267747.30565 0
   "../experiment/additional/out/additional_macros.tex" 1772984574.7514 493 3feda5141f624fc5b2962d74f9c12e2d ""
   "../experiment/core/out/experiment_macros.tex" 1772556830.95324 1970 23d885188b02d0bcb780d574720e34a0 ""
   "../experiment/core/out/fig_cp_error_distribution.png" 1772556830.95202 165949 2103483d4df3d9a196df0aee4c7171ef ""
@@ -15,7 +15,7 @@
   "../experiment/core/out/fig_detection_rates.png" 1772556830.04404 179518 8af9ccda9d7e02b75ab246dadfbe3c32 ""
   "../experiment/core/out/fig_single_run_gsg_tw500.png" 1772556832.05483 961791 c62cfbb75e5a4f01656587a217e16d14 ""
   "../experiment/core/out/table_results.tex" 1772845210.98384 1094 861d909cf5aa4f03f5f50141c0dc27e7 ""
-  "/Users/tristanfarran/Documents/Code/Pitmon/paper/main.tex" 1773180534.41504 53709 b959fdcedf69190e6ee111a909c9c177 ""
+  "/Users/tristanfarran/Documents/Code/Pitmon/paper/main.tex" 1773267744.03936 49671 11a64270d9ab7935fb0bfad7cf1e692c ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/nimbus15/nimbus15-ec.enc" 1452378523 13514 46bb9e8658b01f201979f9b55112df2b ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/nimbus15/nimbus15-ot1.enc" 1452378523 2083 62f4e1db816c057273644db21f159da0 ""
@@ -59,7 +59,6 @@
   "/usr/local/texlive/2025/texmf-dist/fonts/tfm/urw35vf/times/utmr8r.tfm" 1136768653 10672 578237847a331d07c22b648223026b7f ""
   "/usr/local/texlive/2025/texmf-dist/fonts/tfm/urw35vf/times/utmrc8t.tfm" 1136768653 38864 dad3db9a98209981de8634614f2824b0 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb" 1248133631 32569 5e5ddc8df908dea60932f3c484a54c0d ""
-  "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb" 1248133631 31764 459c573c03a4949a528c2cc7f557e217 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb" 1248133631 34694 ad62b13721ee8eda1dcc8993c8bd7041 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/NewTXMI.pfb" 1724614892 32409 aee30089ce2d804d7327a2f8ccff0462 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/NewTXMI5.pfb" 1572128992 35776 3cf3205badc1a3a38b65b34f4cef78d9 ""
@@ -179,10 +178,10 @@
   "imsart.cls" 1772796353.50457 5117 d92aa9c197491b362da7b310a48755b6 ""
   "imsart.cnf" 0 -1 0 ""
   "imsart.sty" 1772796353.50758 167632 7945acc34f4bb00f3a738dc02141aa0a ""
-  "main.aux" 1773180540.52064 10817 5068639b6a1a9723886d4085d301f43b "pdflatex"
-  "main.bbl" 1773180537.91596 9665 553a7c898e57e458a68305af624eaef8 "bibtex main"
-  "main.out" 1773180540.52204 2696 cc646a4868b8e4748a37025055a6849f "pdflatex"
-  "main.tex" 1773180534.41504 53709 b959fdcedf69190e6ee111a909c9c177 ""
+  "main.aux" 1773267746.91838 10513 f5615babe39f99ad4702de0f6621c3f8 "pdflatex"
+  "main.bbl" 1773267315.43231 9665 553a7c898e57e458a68305af624eaef8 "bibtex main"
+  "main.out" 1773267746.91993 2696 cc646a4868b8e4748a37025055a6849f "pdflatex"
+  "main.tex" 1773267744.03936 49671 11a64270d9ab7935fb0bfad7cf1e692c ""
   (generated)
   "main.aux"
   "main.log"

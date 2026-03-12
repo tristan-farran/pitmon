@@ -73,7 +73,7 @@
 \end{aug}
 
 \begin{abstract}
-Practitioners monitoring deployed probabilistic models face a fundamental trap: any fixed-sample test applied repeatedly over an unbounded stream will eventually raise a false alarm, even when the model remains perfectly stable. Existing methods typically lack formal error guarantees, conflate alarm time with changepoint location, and monitor indirect signals that do not fully characterise calibration. We present PITMonitor, an \emph{anytime-valid} calibration-specific monitor that detects distributional shifts in probability integral transforms via a mixture e-process, providing Type~I error control over an unbounded monitoring horizon and principled changepoint estimation. On \texttt{river}'s FriedmanDrift benchmark, PITMonitor achieves detection rates competitive with the strongest baselines across all three scenarios, although detection delay is substantially longer under local drift. Code is available at \url{https://github.com/tristan-farran/pitmon}.
+Practitioners monitoring deployed probabilistic models face a fundamental trap: any fixed-sample test applied repeatedly over an unbounded stream will eventually raise a false alarm, even when the model remains perfectly stable. Existing methods typically lack formal error guarantees, conflate alarm time with changepoint location, and monitor indirect signals that do not fully characterise calibration. We present PITMonitor, an \emph{anytime-valid} calibration-specific monitor that detects distributional shifts in probability integral transforms via a mixture e-process, providing Type~I error control over an unbounded monitoring horizon as well as Bayesian changepoint estimation. On \texttt{river}'s FriedmanDrift benchmark, PITMonitor achieves detection rates competitive with the strongest baselines across all three scenarios, although detection delay is substantially longer under local drift. Code is available at \url{https://github.com/tristan-farran/pitmon}.
 \end{abstract}
 
 \begin{keyword}[class=MSC]
@@ -98,11 +98,11 @@ Practitioners monitoring deployed probabilistic models face a fundamental trap: 
 \section{Introduction}
 %------------------------------------------------------------------------------
 
-Probabilistic models deployed in production face a fundamental challenge: the world changes. Across domains, from medicine to finance, models encounter regime shifts and concept drift which can cause calibration to degrade drastically with consequential effects downstream. Modern neural networks, for instance, can improve classification accuracy while simultaneously becoming less calibrated \citep{guo2017calibration}. Practitioners must therefore monitor their models continuously, seeking to answer two questions: \emph{has} the world changed, and if so, \emph{when}? In practice, this monitoring often relies on ad-hoc procedures such as periodic recalibration schedules, rolling-window hypothesis tests, or threshold-based alerts on summary metrics.
+Probabilistic models deployed in production face a fundamental challenge: the world changes. Across domains, from medicine to finance, models encounter regime shifts and concept drift which can cause calibration to degrade drastically, with consequential effects downstream. Modern neural networks, for instance, can improve classification accuracy while simultaneously becoming less calibrated \citep{guo2017calibration}. Practitioners must therefore monitor their models continuously, seeking to answer two questions: \emph{has} the world changed, and if so, \emph{when}? In practice, this monitoring often relies on ad-hoc procedures such as periodic recalibration schedules, rolling-window hypothesis tests, or threshold-based alerts on summary metrics.
 
 These approaches suffer from a fundamental statistical problem: \emph{they do not control the false alarm rate over continuous monitoring}. A practitioner who checks calibration daily with a $p < 0.05$ threshold will, over a year of monitoring, almost certainly observe spurious alarms even if calibration remains stable. Classical hypothesis tests assume a fixed sample size determined before seeing data; continuous monitoring violates this assumption.
 
-More principled alternatives are provided by online drift detectors, such as those implemented in the \texttt{river} library \citep{montiel2021river}. Classical detectors such as DDM and HDDM are lightweight and often effective at detecting abrupt changes, but rely on heuristic thresholds or fixed-sample statistical arguments that do not provide false alarm guarantees under continuous monitoring. ADWIN \citep{bifet2007learning} improves on fixed-window methods by adapting its window size to bound the false alarm probability \emph{within a single window}, but this per-window guarantee does not extend to the stream level: as the stream grows, the number of implicit tests accumulates without bound, inflating the false alarm rate. More fundamentally, these methods typically monitor generic signals such as error rates or mean changes in residuals rather than calibration-specific quantities, with finer notions of miscalibration such as overconfidence with unchanged accuracy potentially going undetected.
+More principled alternatives are provided by online drift detectors, such as those implemented in the \texttt{river} library \citep{montiel2021river}. Classical detectors such as DDM and HDDM are lightweight and often effective at detecting abrupt changes, but rely on heuristic thresholds or fixed-sample statistical arguments that do not provide false alarm guarantees under continuous monitoring. ADWIN \citep{bifet2007learning} improves on fixed-window methods by adapting its window size to bound the false alarm probability \emph{within a single window}, but this per-window guarantee does not extend to the stream level: as the stream grows, the number of implicit tests accumulates without bound, inflating the false alarm rate. More fundamentally, these methods typically monitor generic signals such as error rates or mean changes in residuals rather than calibration-specific quantities, with broader notions of miscalibration such as overconfidence with unchanged accuracy potentially going undetected.
 
 We propose PITMonitor, an anytime-valid calibration monitor with five key properties:
 \begin{enumerate}
@@ -141,7 +141,7 @@ E-values support anytime-valid hypothesis testing under optional stopping \citep
 \label{pits}
 A probabilistic model with predictive CDF $\hat{F}$ for $Y \sim P$ is \emph{perfectly calibrated} if $\hat{F} = P$. \emph{Miscalibration}, meaning divergence of predicted probabilities from outcome frequencies, can manifest as systematic bias, over- or under-confidence, misassigned tail risks, and more. The \emph{probability integral transform} (PIT) $U = \hat{F}(Y)$ unifies all of these into a single object computable from predictions and observations alone.
 
-Since $U$ has distribution $P \circ \hat{F}^{-1}$, it encodes the full calibration relationship between model and data-generating process: every discrepancy between $\hat{F}$ and $P$ leaves a signature in the distribution of $U$, and conversely every feature of the PIT distribution corresponds to a specific calibration property. Perfect calibration corresponds to $U \sim \Unif(0,1)$ \citep{dawid1984statistical}, but the shape of the PIT distribution is informative more broadly: a U-shaped density indicates underdispersion, a hump near the center overdispersion, and a triangular density systematic location bias \citep{gneiting2007probabilistic}. Calibration changes if and only if the PIT distribution changes, making the latter a natural monitoring target. We therefore test:
+Since $U$ has distribution $P \circ \hat{F}^{-1}$, it encodes the calibration relationship between the model and data-generating process: every discrepancy between $\hat{F}$ and $P$ leaves a signature in the distribution of $U$. Perfect calibration corresponds to $U \sim \Unif(0,1)$ \citep{dawid1984statistical}, but the shape of the PIT distribution is informative more broadly: a U-shaped density indicates underdispersion, a hump near the center overdispersion, and a triangular density systematic location bias \citep{gneiting2007probabilistic}. Thus, shifts in the PIT distribution indicate changes in calibration, making it a natural monitoring target. We therefore test:
 \begin{itemize}
  \item $\mathbf{H_0}$: $U_1, U_2, \ldots \overset{\mathrm{i.i.d.}}{\sim} F$ for some distribution $F$
  \item $\mathbf{H_1}$: There exists a $\tau > 1$ such that $(U_t)_{t < \tau} \overset{\mathrm{i.i.d.}}{\sim} F$ and $(U_t)_{t \ge \tau}$ is not i.i.d.\ from $F$
@@ -205,7 +205,7 @@ Since $p \sim \Unif(0,1)$, $\E[e] = \E[\hat{f}(p)] = \int_0^1 \hat{f}(p)\,dp = 1
 \begin{equation}
  \hat{f}(p) = B \cdot \frac{c_b}{\sum_j c_j} \quad \text{for } p \in \text{bin } b
 \end{equation}
-The histogram is initialized with pseudocounts $c_b = 1$ for all $b$ and updated \emph{after} computing $e_t$, ensuring $\hat{f}$ is a valid $\mathcal{F}_{t-1}$-measurable density from the first observation. Since p-values are $\Unif(0,1)$ under $H_0$ by Proposition~\ref{prop:rank}, this produces a valid e-value by Proposition~\ref{prop:density}.
+The histogram is initialized with pseudocounts $c_b = 1$ for all $b$, ensuring $\hat{f}_t$ is a valid density from the first observation, and updated \emph{after} computing $e_t$, so that $\hat{f}_t$ depends only on $p_1, \ldots, p_{t-1}$ and is therefore $\mathcal{F}_{t-1}$-measurable. Since p-values are $\Unif(0,1)$ under $H_0$ by Proposition~\ref{prop:rank}, this produces a valid e-value by Proposition~\ref{prop:density}.
 
 Under $H_1$, the distribution shifts and p-values become non-uniform (Section \ref{sec:pvals}). As these post-change p-values fall more frequently in certain bins, the histogram learns their concentration pattern and bets accordingly, yielding $\E[e_t \mid \mathcal{F}_{t-1}] > 1$, with larger shifts producing faster e-process growth (as formalised under idealised conditions in Proposition~\ref{prop:finite_time}).
 
@@ -257,7 +257,7 @@ When $\gamma \ge 0$, the prior is aligned and $\E[e_t\mid A]>1$ immediately; if 
 \begin{equation}
  n > n^* := \frac{(B+m)|\gamma|}{B\delta}
 \end{equation}
-This warmup length grows with the prior misalignment $|\gamma|$ and decreases with shift intensity $\delta$ (a larger shift overwhelms a bad prior faster). Since $|\gamma|\le m/(B+m)$, the worst-case warmup is bounded by $m/(B\delta)$, which itself shrinks as $\delta$ grows.
+This warmup length grows with the prior misalignment $|\gamma|$ and decreases with shift intensity $\delta$ (a larger shift overwhelms a bad prior faster). Since $|\gamma|\le m/(B+m)$, the worst-case warmup is bounded by $m/(B\delta)$, meaning longer null histories require more post-change observations before the e-process begins to grow, but this bound shrinks as the shift intensity $\delta$ increases.
 
 \noindent One important caveat is that Proposition~\ref{prop:finite_time} assumes post-change p-values are i.i.d.\ with fixed bin probabilities, but as discussed in Section~\ref{sec:pvals}, p-values drift back toward uniformity over time, and since the histogram is updated with these same p-values, it learns a progressively weaker signal. Detection must therefore occur within a finite window before the signal erodes. Nonetheless, the qualitative conclusions are useful: under $H_1$, the e-process grows after a warmup period whose length decreases with shift intensity and increases with null history length, with prior alignment yielding immediate growth before the histogram has adapted.
 
@@ -351,7 +351,7 @@ A segment beginning at a true changepoint should be composed of p-values that ar
 \begin{equation}
  \log\mathrm{BF}(s) = \log p(\mathbf{c}^{(s)} \mid H_1^{(s)}) - \log p(\mathbf{c}^{(s)} \mid H_0^{(s)})
 \end{equation}
-where $\mathbf{c}^{(s)} = (c_1^{(s)}, \ldots, c_B^{(s)})$ are the histogram counts for the segment under consideration. We set $\kappa = 1/2$, rendering $\log\mathrm{BF}(s)$ invariant to the choice of bin boundaries \citep{jeffreys1961}. The estimated changepoint is then identified simply as the split with the strongest evidence:
+where $\mathbf{c}^{(s)} = (c_1^{(s)}, \ldots, c_B^{(s)})$ are the histogram counts for the segment under consideration. We set $\kappa = 1/2$, giving the canonical uninformative prior for the multinomial \citep{jeffreys1961}. The estimated changepoint is then identified simply as the split with the strongest evidence:
 \begin{equation}
  \hat{\tau} = \argmax_s \log\mathrm{BF}(s)
 \end{equation}
@@ -370,7 +370,7 @@ Each scenario shares a common pre-drift distribution but differs post-onset:
 \begin{itemize}
  \item \textbf{GRA} (Global Recurring Abrupt): An abrupt shift affects all features at the onset, representing a sudden global regime change. By default, GRA includes a second changepoint after which the pre-drift distribution recurs, but since all detectors halt after their first alarm it is never reached in practice; we therefore place it beyond the simulation window.
  \item \textbf{GSG} (Global Slow Gradual): A gradual shift affects all features with a 500-sample transition window during which samples are drawn from both the pre- and post-drift distributions with equal probability. As with GRA, the second changepoint is removed.
- \item \textbf{LEA} (Local Expanding Abrupt): Three abrupt changepoints are spaced evenly across the post-drift window, each expanding the affected regions of the input space. Since PITMonitor is designed around a single-changepoint assumption, LEA serves as a stress test: we examine whether the method remains useful when that assumption is violated.
+ \item \textbf{LEA} (Local Expanding Abrupt): Three abrupt changepoints are spaced evenly across the post-drift window, each expanding the affected regions of the input space. Since PITMonitor is designed around a single-changepoint assumption, LEA serves as a stress test to determine whether the method remains useful when that assumption is violated.
 \end{itemize}
 
 \paragraph{Stream layout.}
@@ -404,7 +404,7 @@ Table~\ref{tab:results} presents the full results; Figure~\ref{fig:detection_rat
 \begin{figure}[t!]
 \centering
 \includegraphics[width=\linewidth]{fig_single_run_gsg_tw500.png}
-\caption{Single-run PITMonitor trace. (a) Predicted vs.\ actual values. (b) PIT stream with rolling mean. (c) Mixture e-process on a log scale, with a dashed line marking the threshold $1/\alpha$. (d) Pre-shift and post-shift PIT histograms.}
+\caption{Single-run PITMonitor trace. (a) Predicted vs.\ actual values. (b) PIT stream with a rolling mean. (c) Mixture e-process on a log scale, with a dashed line marking the threshold $1/\alpha$. (d) Pre-shift and post-shift PIT histograms.}
 \label{fig:single_run}
 \end{figure}
 
@@ -443,56 +443,50 @@ On GRA and GSG, mean absolute error is \resPMGRACPErr{} and \resPMGSGCPErr{} sam
 
 
 %------------------------------------------------------------------------------
-\FloatBarrier
 \section{Discussion}
 %------------------------------------------------------------------------------
 
 \paragraph{Scope.}
-PITMonitor targets continuous monitoring of deployed probabilistic models where false alarms are costly, monitoring is open-ended, and calibration drift specifically is operationally important. For one-time calibration checks or accuracy-only monitoring without false-alarm control or changepoint localization, standard diagnostics remain appropriate.
+PITMonitor targets continuous monitoring of deployed probabilistic models where false alarms are costly, monitoring is open-ended, and calibration drift specifically is operationally important. For one-time calibration checks or accuracy-only monitoring without false-alarm guarantees or changepoint localization, standard diagnostics remain appropriate.
 
 \paragraph{Limitations.}\label{par:limitations}
 
-\begin{enumerate}
- \item \textit{Expanding drift.} PITMonitor detects LEA drift with \resPMLEATPR{} TPR but \resPMLEADelay{} mean delay, reflecting slower evidence accumulation under weaker partial shifts. Changepoint localization is also less precise under sequential expansion since the estimator targets the phase of strongest distributional change, which may lag the true onset (see Appendix~\ref{app:additional_checks}). Although LEA violates our single-changepoint assumption, PITMonitor identifies the dominant shift when multiple are present, which may be sufficient for operational monitoring. Reliable detection and localization of multiple changepoints remains an important direction for future work (Section~\ref{sec:conclusion}).
+\begin{enumerate}\setlength{\itemsep}{5.5pt}
+ \item \textit{Expanding drift.} PITMonitor detects LEA drift with \resPMLEATPR{} TPR but \resPMLEADelay{} mean delay, reflecting slower evidence accumulation under weaker partial shifts. Changepoint localization is also less precise under multi-phase expansion since the estimator targets the strongest distributional change, which may lag the true onset (see Appendix~\ref{app:additional_checks}). Although LEA violates our single-changepoint assumption, PITMonitor identifies the dominant shift when multiple exist, which may be useful for operational monitoring. Multiple changepoint localization is an important direction for future work (Section~\ref{sec:conclusion}).
 
- \item \textit{Calibration improvements.} Because PITMonitor detects any shift in the PIT distribution, it does not distinguish between deterioration and improvement in calibration; a model that becomes better calibrated mid-stream may also trigger an alarm. The direction of drift can be assessed by inspecting the PIT histogram following an alarm. Unlike the \texttt{river} baselines, which expose only a binary flag, PITMonitor's post-alarm histogram provides a direct and interpretable link between the alarm and the underlying distributional change. Distinguishing improvements from deteriorations is an important direction for future work (Section~\ref{sec:conclusion}).
+ \item \textit{Calibration improvements.} Because PITMonitor detects any shift in the PIT distribution, it does not distinguish between deterioration and improvement in calibration; a model that becomes better calibrated mid-stream may also trigger an alarm. The direction of drift can however be assessed by inspecting the PIT histogram following an alarm. Unlike the \texttt{river} baselines, which expose only a binary flag, PITMonitor's post-alarm histogram also provides a direct and interpretable link between the alarm and the underlying distributional change. Automatically distinguishing between improvements and deteriorations is left open and is an important direction for future work (Section~\ref{sec:conclusion}).
 
- \item \textit{Stationarity assumption.} PITMonitor's validity relies on PITs being i.i.d.\ under the null, so non-stationarity in the data stream or model predictions may inflate long-run false alarm rate. Our FriedmanDrift experiments did not reveal elevated empirical FPR, but this benchmark is stationary pre-drift by design; further evaluation on non-stationary streams is needed.
+ \item \textit{Stationarity assumption.} PITMonitor's validity relies on PITs being i.i.d.\ under the null, so non-stationarity in the data stream may inflate the long-run false alarm rate. Our FriedmanDrift experiments did not reveal elevated empirical FPR, but this benchmark is stationary pre-drift by design; further evaluation on non-stationary streams is needed.
+ 
+ \item \textit{Late changepoints after long null periods.} Proposition~\ref{prop:finite_time} shows that the warmup length scales with the pre-shift history length. A changepoint occurring after a long stable period therefore faces a deeply entrenched histogram and a decaying p-value signal (Section~\ref{sec:pvals}), potentially causing the e-process to grow too slowly to alarm before the signal erodes. In such settings, a smaller $B$ or periodic histogram reset may be effective.
 
  \item \textit{Persistence requirement.} PITMonitor reacts to accumulated evidence rather than single-step anomalies, so brief, rapidly reversing, or fast-moving deviations may yield delayed or absent alarms. PITMonitor is therefore best suited for persistent drift inducing a sustained shift in the PIT distribution. Pairing it with a faster residual-based detector can provide early warning of transient shifts, at the cost of weaker false-alarm guarantees.
 \end{enumerate}
 
+
 \paragraph{Parameter settings.}
-The number of bins $B$ controls the bias-variance tradeoff in the density estimator: smaller $B$ yields more stable but slower-adapting estimates, while larger $B$ adapts faster at the cost of higher variance and should be scaled with the expected number of monitoring samples. During the early monitoring phase (roughly the first $B$ observations) the histogram is dominated by pseudocounts, so e-values remain near 1 regardless of the data and sensitivity is low; practitioners expecting drift immediately after deployment may prefer a smaller $B$ or a warm-start period before monitoring begins. The significance level $\alpha$ should similarly be set against long-run false-alarm tolerance rather than treated as a fixed convention.
+The number of bins $B$ controls the bias-variance tradeoff in the density estimator: smaller $B$ yields more stable but slower-adapting estimates, while larger $B$ adapts faster at the cost of higher variance, and should be scaled with the expected number of monitoring samples. During the early monitoring phase (roughly the first $B$ observations) the histogram is dominated by pseudocounts, so e-values remain near 1 regardless of the data and sensitivity is low; practitioners expecting drift immediately after deployment may prefer a smaller $B$ or a warm-start period before monitoring begins. The significance level $\alpha$ should similarly be set against long-run false-alarm tolerance rather than treated as a fixed convention.
 
 %------------------------------------------------------------------------------
 \section{Conclusion}
 \label{sec:conclusion}
 %------------------------------------------------------------------------------
-We presented PITMonitor, an anytime-valid method for monitoring calibration of probabilistic models. By detecting distributional shifts in probability integral transforms via a mixture e-process, it provides formal Type~I error control over an unbounded monitoring horizon and principled changepoint estimation, properties that distinguish it from existing drift detectors.
+We presented PITMonitor, an anytime-valid method for monitoring the calibration of deployed probabilistic models. By detecting distributional shifts in probability integral transforms via a mixture e-process, it provides formal Type~I error control over unbounded monitoring as well as Bayesian changepoint estimation, properties that distinguish it from existing drift detectors.
 
 On the three FriedmanDrift scenarios, PITMonitor attains competitive TPR on global drift while holding empirical FPR under the target level. On local expanding drift, detection delay is substantially longer and changepoint localisation less accurate: the former reflects slower evidence accumulation under weaker partial shifts; the latter reflects the estimator targeting the dominant shift rather than the true onset when the single-changepoint assumption is violated.
 
-Beyond numerical performance, two properties bear emphasis. First, the FPR guarantee is horizon-independent: PITMonitor satisfies $\Prob(\text{ever alarm} \mid H_0) \leq \alpha$ regardless of deployment duration. Second, operating on PITs rather than residuals or error rates makes PITMonitor sensitive to miscalibration that leaves accuracy metrics unchanged, and the post-alarm histogram provides a direct, interpretable link between an alarm and the underlying distributional shift, along with an actionable estimate of how much historical inference should be distrusted.
+Beyond numerical performance, PITMonitor's most distinctive property is its calibration-specificity; by operating on PITs rather than residuals or error rates, it is sensitive to miscalibration that leaves accuracy  unchanged, and the post-alarm histogram provides a direct and interpretable link between an alarm and the nature of the underlying distributional shift.
 
-Several directions remain open. Improving power under partial shifts and extending detection and localisation to multiple changepoints would address the two main limitations identified in the experiments. A natural next step is coupling detection with automatic post-alarm recalibration; reweighting the predictive density by the empirical post-alarm PIT density as $\hat{f}(y) = p(y)\,\hat{q}(z)^{\lambda(e)}$, where $\lambda(e)$ is a shrinkage weight learned from e-process evidence, would tie correction strength directly to miscalibration severity and close the loop between monitoring and remediation. Distinguishing calibration deterioration from improvement would allow practitioners to act selectively on alarms, though the direction of drift is already partially recoverable from the post-alarm PIT histogram. Finally, a precise characterisation of the p-value distribution under $H_1$ remains an open theoretical question.
+Several directions remain open. Improving power under partial shifts and extending reliable localisation to multiple changepoints would address the two main limitations identified in the experiments. Multivariate outputs can initially be handled by reducing each prediction-outcome pair to a scalar PIT; a fuller treatment via Rosenblatt chains would handle joint miscalibration but requires access to the full conditional factorization. A natural next step is coupling detection with automatic post-alarm recalibration, for example by reweighting the predictive density by the empirical post-alarm PIT density as $\hat{f}(y) \propto p(y)\,\hat{q}(z)^{\lambda(e)}$, where $z = \hat{F}(y)$ and $\lambda(e)$ is a shrinkage weight learned from e-process evidence, tying correction strength directly to miscalibration severity. Distinguishing calibration deterioration from improvement would allow practitioners to act selectively on alarms, though the direction of drift is already partially recoverable from the post-alarm PIT histogram. Finally, a precise characterisation of the behaviour of p-values under $H_1$ remains an open theoretical question.
 
 \paragraph{Code Availability.} \url{https://github.com/tristan-farran/pitmon}.
 
 %------------------------------------------------------------------------------
 \appendix
-\section{Additional Validation Checks}
+\section{Multi-changepoint localization check.}
 \label{app:additional_checks}
 %------------------------------------------------------------------------------
-
-To keep the main text focused on the core claims, we report supplementary checks here.
-
-\paragraph{Finite-time proposition check.}
-Proposition~\ref{prop:finite_time} holds numerically: Monte Carlo estimates match closed-form values to within \addFiniteErrAligned{} for aligned priors and \addFiniteErrMisaligned{} for misaligned priors.
-
-\paragraph{Multi-changepoint localization check.}
-In a staged step-drift stream, PITMonitor localizes to the highest-intensity phase rather than initial onset: MAE to the highest-intensity phase is \addLocMAEMax{} versus \addLocMAEOnset{} to onset, with \addLocCloserMax{} of \addLocN{} runs  closer to the highest-intensity phase.
-
+In a staged stream in which drift intensity increases across three phases, PITMonitor localizes consistently to the highest-intensity phase rather than initial onset. MAE to the highest-intensity phase is \addLocMAEMax{} versus \addLocMAEOnset{} to onset, with \addLocCloserMax{} of \addLocN{} runs closer to the highest-intensity phase. This supports the interpretation that under multi-phase drift, the estimator tends to identify the dominant regime shift rather than the earliest detectable change.
 %------------------------------------------------------------------------------
 % References
 %------------------------------------------------------------------------------

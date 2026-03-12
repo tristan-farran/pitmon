@@ -74,9 +74,9 @@ alarm.threshold   # float — 1/α
 
 ## How it works
 
-Each PIT is ranked among all previous PITs. Under exchangeability the ranks are uniform. PITMonitor converts each rank into an e-value and tracks a mixture e-process that accumulates evidence against exchangeability:
+Each PIT is ranked among all previous PITs. Under stable calibration the ranks are uniform. PITMonitor converts each rank into an e-value and tracks a mixture e-process that accumulates evidence against stability:
 
-- **Under exchangeability:** p_t ~ Uniform(0,1), E[e_t] = 1, M_t is a supermartingale
+- **Under stable calibration:** p_t ~ Uniform(0,1), E[e_t] = 1, M_t is a supermartingale
 - **Under change:** p_t concentrates, e_t > 1 on average, M_t grows exponentially
 - **Ville's inequality** constrains the false alarm rate: P(sup M_t ≥ 1/α | H₀) ≤ α
 

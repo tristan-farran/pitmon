@@ -138,7 +138,7 @@ E-values support anytime-valid hypothesis testing under optional stopping \citep
 %------------------------------------------------------------------------------
 
 \subsection{Probability Integral Transforms}
-
+\label{pits}
 A probabilistic model with predictive CDF $\hat{F}$ for $Y \sim P$ is \emph{perfectly calibrated} if $\hat{F} = P$. \emph{Miscalibration}, meaning divergence of predicted probabilities from outcome frequencies, can manifest as systematic bias, over- or under-confidence, misassigned tail risks, and more. The \emph{probability integral transform} (PIT) $U = \hat{F}(Y)$ unifies all of these into a single object computable from predictions and observations alone.
 
 Since $U$ has distribution $P \circ \hat{F}^{-1}$, it encodes the full calibration relationship between model and data-generating process: every discrepancy between $\hat{F}$ and $P$ leaves a signature in the distribution of $U$, and conversely every feature of the PIT distribution corresponds to a specific calibration property. Perfect calibration corresponds to $U \sim \Unif(0,1)$ \citep{dawid1984statistical}, but the shape of the PIT distribution is informative more broadly: a U-shaped density indicates underdispersion, a hump near the center overdispersion, and a triangular density systematic location bias \citep{gneiting2007probabilistic}. Calibration changes if and only if the PIT distribution changes, making the latter a natural monitoring target. We therefore test:
@@ -286,7 +286,7 @@ M_t &= \sum_{\tau=1}^{t} w_\tau \cdot M_t^{(\tau)} \\
 \end{align}
 \end{proof}
 
-\noindent The weights also govern detection sensitivity; since $M_t \ge w_\tau M_t^{(\tau)}$ for any $\tau \le t$, the mixture fires whenever any component $M_t^{(\tau)}$ reaches the scaled threshold $\tau(\tau+1)/\alpha$, with later candidate changepoints requiring proportionally stronger evidence to trigger an alarm.
+\noindent The weights also govern detection sensitivity; since $M_t \ge w_\tau M_t^{(\tau)}$ for any $\tau \le t$, the mixture fires an alarm whenever any component $M_t^{(\tau)}$ reaches the scaled threshold $\tau(\tau+1)/\alpha$, with processes starting at later times requiring proportionally stronger evidence to trigger an alarm.
 
 \subsection{Type I Error Control}
 
@@ -297,41 +297,37 @@ Under $H_0$, PITMonitor satisfies:
  \Prob\left(\sup_{t \geq 1} M_t \geq \frac{1}{\alpha}\right) \leq \alpha
 \end{equation}
 \end{theorem}
-
 \begin{proof}
-The mixture $M_t = \sum_{\tau=1}^{t} w_\tau M_t^{(\tau)}$ is defined with $M_t^{(\tau)}$ only for $\tau \leq t$. To apply Ville's inequality, we extend each process to all $t \geq 0$ by defining, for each $\tau \geq 1$:
+The mixture $M_t = \sum_{\tau=1}^{t} w_\tau M_t^{(\tau)}$ is defined with $M_t^{(\tau)}$ only for $\tau \leq t$.
+
+\noindent To apply Ville's inequality, we extend each process to all $t \geq 0$ by defining, for each $\tau \geq 1$:
 \begin{equation}
 \widetilde{M}_t^{(\tau)} =
 \begin{cases}
 1, & t < \tau,\\[2mm]
-\prod_{s=\tau}^{t} e_s, & t \ge \tau.
+\prod_{s=\tau}^{t} e_s, & t \ge \tau
 \end{cases}
 \end{equation}
 Each $(\widetilde{M}_t^{(\tau)})_{t \ge 0}$ is a nonnegative supermartingale with $\widetilde{M}_0^{(\tau)} = 1$ (since $0 < \tau$ for all $\tau \ge 1$). Define the full mixture over all $\tau \ge 1$:
 \begin{equation}
-\widetilde{M}_t = \sum_{\tau=1}^{\infty} w_\tau\,\widetilde{M}_t^{(\tau)}.
+\widetilde{M}_t = \sum_{\tau=1}^{\infty} w_\tau\,\widetilde{M}_t^{(\tau)}
 \end{equation}
-At $t=0$, since $\sum_{\tau=1}^{\infty} w_\tau = 1$, we have $\widetilde{M}_0 = 1$. Since each $w_\tau \widetilde{M}_t^{(\tau)}$ is nonnegative, we obtain:
+At $t=0$, since $\sum_{\tau=1}^{\infty} w_\tau = 1$, we have $\widetilde{M}_0 = 1$. Since each $w_\tau \widetilde{M}_t^{(\tau)}$ is nonnegative, we get
 \begin{align}
 \E[\widetilde{M}_t \mid \mathcal{F}_{t-1}]
 &= \sum_{\tau=1}^{\infty} w_\tau\, \E[\widetilde{M}_t^{(\tau)} \mid \mathcal{F}_{t-1}]
 \le \sum_{\tau=1}^{\infty} w_\tau\, \widetilde{M}_{t-1}^{(\tau)}
-= \widetilde{M}_{t-1},
+= \widetilde{M}_{t-1}
 \end{align}
-so $(\widetilde{M}_t)_{t \ge 0}$ is a nonnegative supermartingale with $\widetilde{M}_0 = 1$. Since $\widetilde{M}_t^{(\tau)} = 1$ for $\tau > t$:
+so $(\widetilde{M}_t)_{t \ge 0}$ is a nonnegative supermartingale with $\widetilde{M}_0 = 1$. Since $\widetilde{M}_t^{(\tau)} = 1$ for $\tau > t$,
 \begin{align}
 \widetilde{M}_t
 &= \sum_{\tau=1}^{t} w_\tau \prod_{s=\tau}^{t} e_s
  + \sum_{\tau=t+1}^{\infty} w_\tau
-= M_t + \sum_{\tau=t+1}^{\infty}\frac{1}{\tau(\tau+1)}.
+= M_t + \sum_{\tau=t+1}^{\infty}\frac{1}{\tau(\tau+1)} = M_t + \frac{1}{t+1}
 \end{align}
-The tail telescopes:
-\[
-\sum_{\tau=t+1}^{\infty}\frac{1}{\tau(\tau+1)}
-= \sum_{\tau=t+1}^{\infty}\left(\frac{1}{\tau}-\frac{1}{\tau+1}\right)
-= \frac{1}{t+1} > 0,
-\]
-so $M_t \le \widetilde{M}_t$ for all $t \ge 1$. Therefore $\sup_{t \ge 1} M_t \le \sup_{t \ge 1} \widetilde{M}_t$. Applying Ville's inequality:
+
+Therefore $\sup_{t \ge 1} M_t \le \sup_{t \ge 1} \widetilde{M}_t$. Applying Ville's inequality,
 \begin{equation}
 \Prob\!\left(\sup_{t\ge1} M_t \ge \frac{1}{\alpha}\right)
 \le
@@ -343,11 +339,23 @@ so $M_t \le \widetilde{M}_t$ for all $t \ge 1$. Therefore $\sup_{t \ge 1} M_t \l
 \subsection{Changepoint Estimation}
 \label{sec:changepoint}
 
-After an alarm at time $T$, we estimate the changepoint location by selecting the split that best explains the post-split p-values as non-uniform. For each candidate $s \in \{1, \ldots, T-1\}$, we compute a split-specific histogram $\mathbf{n}^{(s)} = (n_1^{(s)}, \ldots, n_B^{(s)})$, where $n_b^{(s)}$ counts p-values in bin $b$ and $N^{(s)} = \sum_b n_b^{(s)} = T-s$, and evaluate the segment $(p_{s+1}, \ldots, p_T)$ under two hypotheses:
+After an alarm at time $T$, we estimate the changepoint location by selecting the split that best explains the post-split p-values as non-uniform. For each candidate $s \in \{1, \ldots, T-1\}$, we evaluate the segment $(p_{s+1}, \ldots, p_T)$ under two hypotheses, following those in Section~\ref{pits}:
 \begin{itemize}
- \item $\mathbf{H_0^{(s)}}$: p-values are $\Unif(0,1)$
- \item $\mathbf{H_1^{(s)}}$: bin probabilities are unknown, with a symmetric Dirichlet prior $\mathrm{Dir}(\kappa, \ldots, \kappa)$.\footnote{It should be noted that this is a heuristic approximation since the $p_t$ sequence carries dependence across time.}
+ \item $\mathbf{H_0^{(s)}}$: $p_t \sim \mathrm{Unif}(0,1)$, 
+ i.e.\ $\theta = (1/B, \ldots, 1/B)$
+ \item $\mathbf{H_1^{(s)}}$: bin probabilities follow a 
+ $\mathrm{Dir}(\kappa, \ldots, \kappa)$ prior
 \end{itemize}
+
+A segment beginning at a true changepoint should contain p-values that are systematically non-uniform, so $H_1$ should explain it better than $H_0$.
+
+The log Bayes factor $\mathrm{BF}(s) = p(\mathbf{n}^{(s)} \mid H_1^{(s)}) / p(\mathbf{n}^{(s)} \mid H_0^{(s)})$ quantifies the evidence for non-uniformity in the segment, with $\mathbf{n}^{(s)}$ counting the number of p-values in each bin. We then identify the changepoint as the split with the strongest evidence of non-uniformity, $\hat{\tau} = \argmax_s \log\mathrm{BF}(s)$. This procedure is consistent under mild conditions, since the Bayes factor grows exponentially in the number of post-change observations when the segment contains a true change, but grows only polynomially when it does not.
+
+encompassing all non-unfiorm (and uniform)
+
+compute a split-specific histogram $\mathbf{c}^{(s)} = (c_1^{(s)}, \ldots, c_B^{(s)})$, $N^{(s)} = \sum c_b^{(s)}$
+
+ 
 We use a Bayes factor rather than a likelihood ratio because $H_1$ would otherwise outperform $H_0$ by overfitting, since it contains $H_0$ as a special case. Averaging over the Dirichlet prior penalizes $H_1$ for the probability mass it wastes on configurations the data does not support. We set $\kappa = 1/2$, since it is invariant to the choice of bin boundaries \citep{jeffreys1961}.
 
 \noindent Under $H_0$ every bin has probability $1/B$, so the multinomial log-likelihood reduces to:
@@ -535,7 +543,7 @@ PITMonitor detects any shift in the PIT distribution and does not distinguish be
 
 \textit{Changepoint localization on expanding drift.}
 Localization is less reliable under sequential expansion: the estimator targets the phase of strongest distributional change, which can lag the true onset.
-This interpretation is supported by additional multi-step localization checks reported in Appendix~\ref{app:additional_checks}.
+This interpretation is supported by additional multi-step localization checks reported in Appendix~\ref{app:additional_checks}. Though LEA violates our assumption of one changepoint, with several changepoints it picks the strongest one.
 
 \textit{Detection delay vs.\ FPR control.}
 Anytime-valid control can increase delay relative to methods without stream-level guarantees. In practice, $\alpha$ should be set against long-run false-alarm tolerance rather than treated as a fixed convention.
@@ -554,7 +562,7 @@ The power statements in Section~\ref{sec:density} should therefore be read by as
 Practitioners should check autocorrelation in PITs (e.g., Ljung-Box or ACF diagnostics); a practical mitigation is thinning the PIT sequence, trading reduced dependence for slower detection. 
 
 \textit{Persistence requirement.}
-PITMonitor reacts to accumulated evidence, not single-step anomalies. Under non-exchangeability, the adaptive histogram attempts to track the current concentration pattern of p-values; when tracking is accurate, expected log-growth is positive (i.e., $\E[\log e_t] > 0$) and cumulative evidence increases until crossing the alarm threshold. If deviations are brief, rapidly reversing, or drift faster than the estimator can track, growth is reduced or intermittent, so alarms may be delayed or absent.
+PITMonitor reacts to accumulated evidence, not single-step anomalies. Under non-exchangeability, the adaptive histogram attempts to track the current concentration pattern of p-values; when tracking is accurate, expected log-growth is positive (i.e.\ $\E[\log e_t] > 0$) and cumulative evidence increases until crossing the alarm threshold. If deviations are brief, rapidly reversing, or drift faster than the estimator can track, growth is reduced or intermittent, so alarms may be delayed or absent.
 
 \paragraph{Practical recommendations.}
 \textit{Histogram resolution.}
@@ -589,7 +597,7 @@ Three structural advantages persist beyond the numerical comparison. First, PITM
 
 In practice, PITMonitor is most suitable when formal long-run error control, changepoint localization, and calibration-specific monitoring are priorities. When gradually expanding drift is anticipated, combining PITMonitor with a faster residual-based detector can improve early warning at the cost of weaker long-run false-alarm guarantees.
 
-Future work has four directions. First, for multivariate outputs, a practical baseline is to reduce each prediction-outcome pair to a scalar PIT and reuse the same monitoring pipeline. A fuller extension is to use a Rosenblatt chain, i.e., transform each component through sequential conditional CDFs $F(y_t^{(j)}\mid y_t^{(1:j-1)},\mathcal{F}_{t-1})$ so that, under correct joint specification, the transformed sequence is i.i.d.\ uniform. The challenge is that this requires access to the full conditional factorization (or an accurate approximation), which is often unavailable for implicit or high-dimensional models. Second, we aim to improve detection power and changepoint localization under partial distributional shifts. Third, we aim to couple detection with automatic post-alarm recalibration: after an alarm, estimate the post-alarm empirical PIT density $\hat q(z)$ and reweight the predictive density as $\hat f(y) = p(y)\,\hat q(z)^{\lambda(e)}$, where $\lambda(e)$ is a shrinkage weight that decreases with uncertainty and is learned from e-process evidence. This would tie correction strength directly to detected miscalibration severity, yielding conservative updates under weak evidence and stronger recalibration when evidence accumulates. Fourth, a precise characterisation of p-value non-uniformity under $H_1$ --- establishing rigorously that $G \neq F$ guarantees $p_{\tau+k} \not\sim \Unif(0,1)$ for all $k \geq 1$ --- would complete the theoretical picture; the main obstacle is ruling out cases where $G \circ F^{-1}$ matches the moments of $\Unif(0,1)$ up to the degree determined by the reference size.
+Future work has four directions. First, for multivariate outputs, a practical baseline is to reduce each prediction-outcome pair to a scalar PIT and reuse the same monitoring pipeline. A fuller extension is to use a Rosenblatt chain, i.e.\ transform each component through sequential conditional CDFs $F(y_t^{(j)}\mid y_t^{(1:j-1)},\mathcal{F}_{t-1})$ so that, under correct joint specification, the transformed sequence is i.i.d.\ uniform. The challenge is that this requires access to the full conditional factorization (or an accurate approximation), which is often unavailable for implicit or high-dimensional models. Second, we aim to improve detection power and changepoint localization under partial distributional shifts. Third, we aim to couple detection with automatic post-alarm recalibration: after an alarm, estimate the post-alarm empirical PIT density $\hat q(z)$ and reweight the predictive density as $\hat f(y) = p(y)\,\hat q(z)^{\lambda(e)}$, where $\lambda(e)$ is a shrinkage weight that decreases with uncertainty and is learned from e-process evidence. This would tie correction strength directly to detected miscalibration severity, yielding conservative updates under weak evidence and stronger recalibration when evidence accumulates. Fourth, a precise characterisation of p-value non-uniformity under $H_1$ --- establishing rigorously that $G \neq F$ guarantees $p_{\tau+k} \not\sim \Unif(0,1)$ for all $k \geq 1$ --- would complete the theoretical picture; the main obstacle is ruling out cases where $G \circ F^{-1}$ matches the moments of $\Unif(0,1)$ up to the degree determined by the reference size.
 
 \paragraph{Code Availability.} \url{https://github.com/tristan-farran/pitmon}.
 

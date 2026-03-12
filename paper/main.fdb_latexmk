@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex main"] 1773267315.28976 "main.aux" "main.bbl" "main" 1773267747.30546 0
+["bibtex main"] 1773273886.39535 "main.aux" "main.bbl" "main" 1773273947.22867 0
   "./imsart-nameyear.bst" 1772796353.5106 39203 a106d018926600f6d654f6a3e616411e ""
   "./references.bib" 1773178638.57637 11364 a2eda3fac1097148c8fc269b9907573c ""
-  "main.aux" 1773267746.91838 10513 f5615babe39f99ad4702de0f6621c3f8 "pdflatex"
+  "main.aux" 1773273946.84345 10592 5d1db6069b2e6e5fa7883e79fb31c607 "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1773267744.2658 "/Users/tristanfarran/Documents/Code/Pitmon/paper/main.tex" "main.pdf" "main" 1773267747.30565 0
+["pdflatex"] 1773273944.3112 "/Users/tristanfarran/Documents/Code/Pitmon/paper/main.tex" "main.pdf" "main" 1773273947.22887 0
   "../experiment/additional/out/additional_macros.tex" 1772984574.7514 493 3feda5141f624fc5b2962d74f9c12e2d ""
   "../experiment/core/out/experiment_macros.tex" 1772556830.95324 1970 23d885188b02d0bcb780d574720e34a0 ""
   "../experiment/core/out/fig_cp_error_distribution.png" 1772556830.95202 165949 2103483d4df3d9a196df0aee4c7171ef ""
@@ -15,7 +15,7 @@
   "../experiment/core/out/fig_detection_rates.png" 1772556830.04404 179518 8af9ccda9d7e02b75ab246dadfbe3c32 ""
   "../experiment/core/out/fig_single_run_gsg_tw500.png" 1772556832.05483 961791 c62cfbb75e5a4f01656587a217e16d14 ""
   "../experiment/core/out/table_results.tex" 1772845210.98384 1094 861d909cf5aa4f03f5f50141c0dc27e7 ""
-  "/Users/tristanfarran/Documents/Code/Pitmon/paper/main.tex" 1773267744.03936 49671 11a64270d9ab7935fb0bfad7cf1e692c ""
+  "/Users/tristanfarran/Documents/Code/Pitmon/paper/main.tex" 1773273944.09725 50283 9bf9a5ad69194d081f81017c09071f46 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/nimbus15/nimbus15-ec.enc" 1452378523 13514 46bb9e8658b01f201979f9b55112df2b ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/nimbus15/nimbus15-ot1.enc" 1452378523 2083 62f4e1db816c057273644db21f159da0 ""
@@ -178,10 +178,10 @@
   "imsart.cls" 1772796353.50457 5117 d92aa9c197491b362da7b310a48755b6 ""
   "imsart.cnf" 0 -1 0 ""
   "imsart.sty" 1772796353.50758 167632 7945acc34f4bb00f3a738dc02141aa0a ""
-  "main.aux" 1773267746.91838 10513 f5615babe39f99ad4702de0f6621c3f8 "pdflatex"
-  "main.bbl" 1773267315.43231 9665 553a7c898e57e458a68305af624eaef8 "bibtex main"
-  "main.out" 1773267746.91993 2696 cc646a4868b8e4748a37025055a6849f "pdflatex"
-  "main.tex" 1773267744.03936 49671 11a64270d9ab7935fb0bfad7cf1e692c ""
+  "main.aux" 1773273946.84345 10592 5d1db6069b2e6e5fa7883e79fb31c607 "pdflatex"
+  "main.bbl" 1773273886.5522 9665 553a7c898e57e458a68305af624eaef8 "bibtex main"
+  "main.out" 1773273946.84454 2696 cc646a4868b8e4748a37025055a6849f "pdflatex"
+  "main.tex" 1773273944.09725 50283 9bf9a5ad69194d081f81017c09071f46 ""
   (generated)
   "main.aux"
   "main.log"

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.9.19)  12 MAR 2026 21:57
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.9.19)  12 MAR 2026 22:25
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1043,25 +1043,25 @@ LaTeX Font Info:    Font shape `U/ntxexa/m/n' will be
 <../experiment/core/out/fig_detection_rates.png, id=256, 547.5657pt x 363.759pt>
 File: ../experiment/core/out/fig_detection_rates.png Graphic file (type png)
 <use ../experiment/core/out/fig_detection_rates.png>
-Package pdftex.def Info: ../experiment/core/out/fig_detection_rates.png  used on input line 397.
+Package pdftex.def Info: ../experiment/core/out/fig_detection_rates.png  used on input line 399.
 (pdftex.def)             Requested size: 406.0pt x 269.7103pt.
 
 
 LaTeX Font Warning: Font shape `T1/NimbusSerif/m/scit' undefined
-(Font)              using `T1/NimbusSerif/m/sc' instead on input line 398.
+(Font)              using `T1/NimbusSerif/m/sc' instead on input line 400.
 
 <../experiment/core/out/fig_single_run_gsg_tw500.png, id=258, 516.7305pt x 381.1038pt>
 File: ../experiment/core/out/fig_single_run_gsg_tw500.png Graphic file (type png)
 <use ../experiment/core/out/fig_single_run_gsg_tw500.png>
-Package pdftex.def Info: ../experiment/core/out/fig_single_run_gsg_tw500.png  used on input line 404.
+Package pdftex.def Info: ../experiment/core/out/fig_single_run_gsg_tw500.png  used on input line 406.
 (pdftex.def)             Requested size: 406.0pt x 299.44044pt.
 
 LaTeX Font Warning: Font shape `T1/NimbusSerif/m/scit' undefined
-(Font)              using `T1/NimbusSerif/m/sc' instead on input line 405.
+(Font)              using `T1/NimbusSerif/m/sc' instead on input line 407.
 
 
 LaTeX Font Warning: Font shape `T1/NimbusSerif/m/scit' undefined
-(Font)              using `T1/NimbusSerif/m/sc' instead on input line 405.
+(Font)              using `T1/NimbusSerif/m/sc' instead on input line 407.
 
 
 
@@ -1069,22 +1069,22 @@ LaTeX Font Warning: Font shape `T1/NimbusSerif/m/scit' undefined
 pdfTeX warning (ext4): destination with the same identifier (name{table.1}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.411 
+l.413 
       
 pdfTeX warning (ext4): destination with the same identifier (name{figure.1}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.411 
+l.413 
        <../experiment/core/out/fig_detection_rates.png>]
 <../experiment/core/out/fig_delay_distributions.png, id=270, 755.4624pt x 420.3705pt>
 File: ../experiment/core/out/fig_delay_distributions.png Graphic file (type png)
 <use ../experiment/core/out/fig_delay_distributions.png>
-Package pdftex.def Info: ../experiment/core/out/fig_delay_distributions.png  used on input line 423.
+Package pdftex.def Info: ../experiment/core/out/fig_delay_distributions.png  used on input line 425.
 (pdftex.def)             Requested size: 406.0pt x 225.91908pt.
 
 
 LaTeX Font Warning: Font shape `T1/NimbusSerif/m/scit' undefined
-(Font)              using `T1/NimbusSerif/m/sc' instead on input line 424.
+(Font)              using `T1/NimbusSerif/m/sc' instead on input line 426.
 
 
 
@@ -1092,17 +1092,17 @@ LaTeX Font Warning: Font shape `T1/NimbusSerif/m/scit' undefined
 pdfTeX warning (ext4): destination with the same identifier (name{figure.2}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.430 
+l.432 
        <../experiment/core/out/fig_single_run_gsg_tw500.png>]
 <../experiment/core/out/fig_cp_error_distribution.png, id=281, 675.0018pt x 251.2587pt>
 File: ../experiment/core/out/fig_cp_error_distribution.png Graphic file (type png)
 <use ../experiment/core/out/fig_cp_error_distribution.png>
-Package pdftex.def Info: ../experiment/core/out/fig_cp_error_distribution.png  used on input line 433.
+Package pdftex.def Info: ../experiment/core/out/fig_cp_error_distribution.png  used on input line 435.
 (pdftex.def)             Requested size: 406.0pt x 151.12442pt.
 
 
 LaTeX Font Warning: Font shape `T1/NimbusSerif/m/scit' undefined
-(Font)              using `T1/NimbusSerif/m/sc' instead on input line 434.
+(Font)              using `T1/NimbusSerif/m/sc' instead on input line 436.
 
 
 
@@ -1110,12 +1110,12 @@ LaTeX Font Warning: Font shape `T1/NimbusSerif/m/scit' undefined
 pdfTeX warning (ext4): destination with the same identifier (name{figure.3}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.441 
+l.443 
       
 pdfTeX warning (ext4): destination with the same identifier (name{figure.4}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.441 
+l.443 
        <../experiment/core/out/fig_delay_distributions.png> <../experiment/core/out/fig_cp_error_distribution.png>]
 
 [12] (./main.bbl
@@ -1143,7 +1143,7 @@ Here is how much of TeX's memory you used:
  1141 hyphenation exceptions out of 8191
  103i,9n,107p,1116b,637s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/NewTXMI.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/NewTXMI5.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/NewTXMI7.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/txexas.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/txexs.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/txmiaX.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/txsym.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/txsys.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/nimbus15/zco-Regular.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/nimbus15/ztm-Med.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/nimbus15/ztm-MedIta.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/nimbus15/ztm-Reg.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/nimbus15/ztm-RegIta.pfb>
-Output written on main.pdf (14 pages, 1749049 bytes).
+Output written on main.pdf (14 pages, 1749317 bytes).
 PDF statistics:
  419 PDF objects out of 1000 (max. 8388607)
  359 compressed objects within 4 object streams

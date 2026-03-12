@@ -226,7 +226,8 @@ $$
 \qquad
 \delta := \sum_{b=1}^B \theta_b^2 - \frac{1}{B},
 $$
-where $\gamma$ measures the alignment of $\theta$ with the pre-shift prior (with $\gamma=0$ if $\hat q_b=1/B$), and $\delta$ measures shift intensity (with $\delta=0$ iff $\theta \sim \Unif(0,1)$). Conditioning on pre-shift counts,
+where $\gamma$ measures the alignment of $\theta$ with the pre-shift prior (with $\gamma=0$ if $\hat q_b=1/B$ for all $b$, i.e.\ a uniform prior), and $\delta$ measures shift intensity (with $\delta=0$ iff $\theta \sim \Unif(0,1)$). Conditioning on pre-shift counts,
+
 \begin{equation}
 \label{eq:finite_gain}
 \E[e_t\mid A] = 1 + \frac{B+m}{B+m+n}\,\gamma + \frac{n}{B+m+n}\,B\delta.
@@ -258,8 +259,6 @@ When $\gamma \ge 0$, the prior is aligned and $\E[e_t\mid A]>1$ immediately; if 
 \end{equation}
 This warmup length grows with the prior misalignment $|\gamma|$ and decreases with shift intensity $\delta$ (a larger shift overwhelms a bad prior faster). Since $|\gamma|\le m/(B+m)$, the worst-case warmup is bounded by $m/(B\delta)$, which itself shrinks as $\delta$ grows.
 
-\newpage
-
 \noindent One important caveat is that Proposition~\ref{prop:finite_time} assumes post-change p-values are i.i.d.\ with fixed bin probabilities, but as discussed in Section~\ref{sec:pvals}, p-values drift back toward uniformity over time, and since the histogram is updated with these same p-values, it learns a progressively weaker signal. Detection must therefore occur within a finite window before the signal erodes. Nonetheless, the qualitative conclusions are useful: under $H_1$, the e-process grows after a warmup period whose length decreases with shift intensity and increases with null history length, with prior alignment yielding immediate growth before the histogram has adapted.
 
 \subsection{The Mixture E-process}
@@ -277,7 +276,7 @@ The mixture e-process satisfies:
 \end{equation}
 \end{proposition}
 \begin{proof}
-Expand the definition:
+The recursion is initialized with $M_0 = 0$. For $t \ge 1$, expand the definition:
 \begin{align*}
 M_t &= \sum_{\tau=1}^{t} w_\tau \cdot M_t^{(\tau)} \\
 &= \sum_{\tau=1}^{t-1} w_\tau \cdot e_t \cdot M_{t-1}^{(\tau)} + w_t \cdot e_t \\
@@ -288,7 +287,7 @@ M_t &= \sum_{\tau=1}^{t} w_\tau \cdot M_t^{(\tau)} \\
 
 \noindent The weights also govern detection sensitivity; since $M_t \ge w_\tau M_t^{(\tau)}$ for any $\tau \le t$, the mixture fires an alarm whenever any component $M_t^{(\tau)}$ reaches the scaled threshold $\tau(\tau+1)/\alpha$, with processes starting at later times requiring proportionally stronger evidence to trigger an alarm.
 
-\subsection{Type I Error Control}
+\subsection{Type~I Error Control}
 
 \begin{theorem}[Anytime-Valid False Alarm Control]
 \label{thm:type1}
@@ -326,8 +325,11 @@ so $(\widetilde{M}_t)_{t \ge 0}$ is a nonnegative supermartingale with $\widetil
  + \sum_{\tau=t+1}^{\infty} w_\tau
 = M_t + \sum_{\tau=t+1}^{\infty}\frac{1}{\tau(\tau+1)} = M_t + \frac{1}{t+1}
 \end{align*}
-
-Therefore $\sup_{t \ge 1} M_t \le \sup_{t \ge 1} \widetilde{M}_t$. Applying Ville's inequality,
+Since $\frac{1}{t+1} > 0$ for all $t \geq 1$, we have $M_t \le \widetilde{M}_t$, and therefore 
+$$
+\sup_{t \ge 1} M_t \le \sup_{t \ge 1} \widetilde{M}_t
+$$
+Applying Ville's inequality,
 \begin{equation*}
 \Prob\!\left(\sup_{t\ge1} M_t \ge \frac{1}{\alpha}\right)
 \le
@@ -339,7 +341,7 @@ Therefore $\sup_{t \ge 1} M_t \le \sup_{t \ge 1} \widetilde{M}_t$. Applying Vill
 \subsection{Changepoint Estimation}
 \label{sec:changepoint}
 
-After an alarm at time $T$, we estimate the changepoint location by selecting the split that best explains the post-split p-values as non-uniform. For each candidate $s \in \{1, \ldots, T-1\}$, we evaluate the segment $(p_{s+1}, \ldots, p_T)$ under two hypotheses, following those in Section~\ref{pits}:
+After an alarm at time $T$, we estimate the changepoint location by selecting the split that best explains the post-split p-values as non-uniform. For each candidate $s \in \{1, \ldots, T-1\}$, we evaluate the segment $(p_{s+1}, \ldots, p_T)$ under two hypotheses, analogous to those in Section~\ref{pits}:
 \begin{itemize}
  \item $\mathbf{H_0^{(s)}}$: $p_t \sim \mathrm{Unif}(0,1)$, 
  i.e.\ bin probabilities $\theta = (1/B, \ldots, 1/B)$
@@ -406,7 +408,7 @@ Table~\ref{tab:results} presents the full results; Figure~\ref{fig:detection_rat
 \label{fig:single_run}
 \end{figure}
 
-\paragraph{Type I error control.}
+\paragraph{Type~I error control.}
 PITMonitor achieves FPR of \resPMGRAFPR{} across all scenarios, consistent with the nominal $\alpha = \expAlpha$ guarantee in Theorem~\ref{thm:type1}. In this benchmark, ADWIN obtains a \resADGRAFPR{} empirical FPR on the \expNstable-sample null window, though this number is specific to the chosen horizon and dataset. Among the other baselines, DDM and HDDM\_A achieve \resDDMGRAFPR{} and \resHDDMAGRAFPR{} respectively, while KSWIN, PageHinkley, EDDM, and HDDM\_W all exceed $89\%$.
 
 \paragraph{Global recurring abrupt drift (GRA).}
@@ -453,7 +455,7 @@ PITMonitor targets continuous monitoring of deployed probabilistic models where 
 \begin{enumerate}
  \item \textit{Expanding drift.} PITMonitor detects LEA drift with \resPMLEATPR{} TPR but \resPMLEADelay{} mean delay, reflecting slower evidence accumulation under weaker partial shifts. Changepoint localization is also less precise under sequential expansion since the estimator targets the phase of strongest distributional change, which may lag the true onset (see Appendix~\ref{app:additional_checks}). Although LEA violates our single-changepoint assumption, PITMonitor identifies the dominant shift when multiple are present, which may be sufficient for operational monitoring. Reliable detection and localization of multiple changepoints remains an important direction for future work (Section~\ref{sec:conclusion}).
 
- \item \textit{Calibration improvements.} Because PITMonitor detects any shift in the PIT distribution, it does not distinguish between deterioration and improvement in calibration; a model that becomes better calibrated mid-stream may also trigger an alarm. The direction of drift can be assessed by inspecting the PIT histogram following an alarm. Unlike the \texttt{river} baselines, which expose only a binary flag, PITMonitor's histogram-based localization provides a direct and interpretable link between the alarm and the underlying distributional change. Distinguishing improvements from deteriorations is an important direction for future work (Section~\ref{sec:conclusion}).
+ \item \textit{Calibration improvements.} Because PITMonitor detects any shift in the PIT distribution, it does not distinguish between deterioration and improvement in calibration; a model that becomes better calibrated mid-stream may also trigger an alarm. The direction of drift can be assessed by inspecting the PIT histogram following an alarm. Unlike the \texttt{river} baselines, which expose only a binary flag, PITMonitor's post-alarm histogram provides a direct and interpretable link between the alarm and the underlying distributional change. Distinguishing improvements from deteriorations is an important direction for future work (Section~\ref{sec:conclusion}).
 
  \item \textit{Stationarity assumption.} PITMonitor's validity relies on PITs being i.i.d.\ under the null, so non-stationarity in the data stream or model predictions may inflate long-run false alarm rate. Our FriedmanDrift experiments did not reveal elevated empirical FPR, but this benchmark is stationary pre-drift by design; further evaluation on non-stationary streams is needed.
 

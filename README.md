@@ -1,6 +1,6 @@
 # PITMonitor
 
-An anytime-valid monitor for Probability Integral Transform (PIT) values. Detects and locates changes in model calibration without needing a baseline period, controlling the false alarm probability over the entire monitoring horizon. A stable but miscalibrated model will not trigger alarms — only *changes* in calibration are detected.
+An anytime-valid monitor for Probability Integral Transform (PIT) values. Detects and locates changes in model calibration without needing a baseline period, controlling the false alarm probability over the entire monitoring horizon. A stable but miscalibrated model will not trigger alarms - only *changes* in calibration are detected.
 
 ## Installation
 

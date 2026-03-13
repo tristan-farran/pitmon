@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.9.19)  13 MAR 2026 00:27
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.9.19)  13 MAR 2026 01:07
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1145,7 +1145,7 @@ Here is how much of TeX's memory you used:
  1141 hyphenation exceptions out of 8191
  103i,9n,107p,1229b,637s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/NewTXMI.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/NewTXMI5.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/NewTXMI7.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/txexas.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/txexs.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/txmiaX.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/txsym.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/txsys.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/nimbus15/zco-Regular.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/nimbus15/ztm-Med.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/nimbus15/ztm-MedIta.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/nimbus15/ztm-Reg.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/nimbus15/ztm-RegIta.pfb>
-Output written on main.pdf (15 pages, 1750446 bytes).
+Output written on main.pdf (15 pages, 1750449 bytes).
 PDF statistics:
  423 PDF objects out of 1000 (max. 8388607)
  362 compressed objects within 4 object streams

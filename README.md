@@ -117,9 +117,9 @@ Per-trial flow:
 
 | Key         | Type                    | Description                                                                |
 | ----------- | ----------------------- | -------------------------------------------------------------------------- |
-| `gra_tw0`   | Global Recurring Abrupt | All relevant features change simultaneously                                |
-| `gsg_tw500` | Global Slow Gradual     | Smooth transition over 500 samples                                         |
-| `lea_tw0`   | Local Expanding Abrupt  | Drift starts on a feature subset and expands across 3 evenly spaced phases |
+| `gra_tw0`   | Global Recurring Abrupt | All features change simultaneously                                         |
+| `gsg_tw500` | Global Slow Gradual     | Transition over 500 samples                                                |
+| `lea_tw0`   | Local Expanding Abrupt  | Drift starts on a subset and expands across 3 evenly spaced points         |
 
 ### Reproducing results
 

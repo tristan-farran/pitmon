@@ -335,8 +335,14 @@ INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/newtx/txex-bar.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/vf/public/newtx/ntxmi7.vf
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/newtx/NewTXMI7.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/newtx/stxscr.tfm
+INPUT /usr/local/texlive/2025/texmf-dist/fonts/vf/public/newtx/ntxsy.vf
+INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/newtx/txsys.tfm
+INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/newtx/txex-bar.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/vf/public/newtx/ntxmi.vf
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/newtx/NewTXMI.tfm
+INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/newtx/stxscr.tfm
+INPUT /usr/local/texlive/2025/texmf-dist/fonts/vf/public/newtx/ntxmi7.vf
+INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/newtx/NewTXMI7.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/newtx/stxscr.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/vf/public/newtx/ntxexx.vf
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/newtx/txexs.tfm
@@ -381,9 +387,6 @@ INPUT ../experiment/core/out/fig_delay_distributions.png
 INPUT ../experiment/core/out/fig_delay_distributions.png
 INPUT ../experiment/core/out/fig_delay_distributions.png
 INPUT ../experiment/core/out/fig_delay_distributions.png
-INPUT /usr/local/texlive/2025/texmf-dist/fonts/vf/public/newtx/ntxsy.vf
-INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/newtx/txsys.tfm
-INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/newtx/txex-bar.tfm
 INPUT ../experiment/core/out/fig_cp_error_distribution.png
 INPUT ../experiment/core/out/fig_cp_error_distribution.png
 INPUT ../experiment/core/out/fig_cp_error_distribution.png

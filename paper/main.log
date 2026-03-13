@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.9.19)  13 MAR 2026 01:07
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.9.19)  13 MAR 2026 04:32
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -994,11 +994,11 @@ LaTeX Font Info:    Font shape `OT1/NimbusSerif/b/n' will be
 LaTeX Font Info:    Font shape `OT1/NimbusSerif/b/n' will be
 (Font)              scaled to size 6.1pt on input line 146.
 LaTeX Font Info:    Font shape `OT1/NimbusSerif/b/n' will be
-(Font)              scaled to size 9.0pt on input line 161.
+(Font)              scaled to size 9.0pt on input line 159.
 LaTeX Font Info:    Font shape `OT1/NimbusSerif/b/n' will be
-(Font)              scaled to size 7.6pt on input line 161.
+(Font)              scaled to size 7.6pt on input line 159.
 LaTeX Font Info:    Font shape `OT1/NimbusSerif/b/n' will be
-(Font)              scaled to size 6.0pt on input line 161.
+(Font)              scaled to size 6.0pt on input line 159.
 LaTeX Font Info:    Font shape `U/ntxsym/m/n' will be
 (Font)              scaled to size 11.0pt on input line 165.
 
@@ -1040,7 +1040,7 @@ LaTeX Font Info:    Font shape `U/ntxexa/m/n' will be
 )
 
 [8]
-<../experiment/core/out/fig_detection_rates.png, id=256, 547.5657pt x 363.759pt>
+<../experiment/core/out/fig_detection_rates.png, id=258, 547.5657pt x 363.759pt>
 File: ../experiment/core/out/fig_detection_rates.png Graphic file (type png)
 <use ../experiment/core/out/fig_detection_rates.png>
 Package pdftex.def Info: ../experiment/core/out/fig_detection_rates.png  used on input line 399.
@@ -1050,7 +1050,7 @@ Package pdftex.def Info: ../experiment/core/out/fig_detection_rates.png  used on
 LaTeX Font Warning: Font shape `T1/NimbusSerif/m/scit' undefined
 (Font)              using `T1/NimbusSerif/m/sc' instead on input line 400.
 
-<../experiment/core/out/fig_single_run_gsg_tw500.png, id=258, 516.7305pt x 381.1038pt>
+<../experiment/core/out/fig_single_run_gsg_tw500.png, id=260, 516.7305pt x 381.1038pt>
 File: ../experiment/core/out/fig_single_run_gsg_tw500.png Graphic file (type png)
 <use ../experiment/core/out/fig_single_run_gsg_tw500.png>
 Package pdftex.def Info: ../experiment/core/out/fig_single_run_gsg_tw500.png  used on input line 406.
@@ -1076,7 +1076,7 @@ pdfTeX warning (ext4): destination with the same identifier (name{figure.1}) has
                                                   \__shipout_drop_firstpage_...
 l.413 
        <../experiment/core/out/fig_detection_rates.png>]
-<../experiment/core/out/fig_delay_distributions.png, id=270, 755.4624pt x 420.3705pt>
+<../experiment/core/out/fig_delay_distributions.png, id=272, 755.4624pt x 420.3705pt>
 File: ../experiment/core/out/fig_delay_distributions.png Graphic file (type png)
 <use ../experiment/core/out/fig_delay_distributions.png>
 Package pdftex.def Info: ../experiment/core/out/fig_delay_distributions.png  used on input line 425.
@@ -1094,7 +1094,7 @@ pdfTeX warning (ext4): destination with the same identifier (name{figure.2}) has
                                                   \__shipout_drop_firstpage_...
 l.432 
        <../experiment/core/out/fig_single_run_gsg_tw500.png>]
-<../experiment/core/out/fig_cp_error_distribution.png, id=281, 675.0018pt x 251.2587pt>
+<../experiment/core/out/fig_cp_error_distribution.png, id=284, 675.0018pt x 251.2587pt>
 File: ../experiment/core/out/fig_cp_error_distribution.png Graphic file (type png)
 <use ../experiment/core/out/fig_cp_error_distribution.png>
 Package pdftex.def Info: ../experiment/core/out/fig_cp_error_distribution.png  used on input line 435.
@@ -1137,18 +1137,18 @@ Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: FD33923F6804EBA6AC93E67983FA7073;2347.
  ) 
 Here is how much of TeX's memory you used:
- 15432 strings out of 467797
- 227411 string characters out of 5431803
+ 15435 strings out of 467797
+ 227436 string characters out of 5431803
  630397 words of memory out of 5000000
  43678 multiletter control sequences out of 15000+600000
- 761104 words of font info for 163 fonts, out of 8000000 for 9000
+ 761908 words of font info for 165 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  103i,9n,107p,1229b,637s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/NewTXMI.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/NewTXMI5.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/NewTXMI7.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/txexas.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/txexs.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/txmiaX.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/txsym.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/newtx/txsys.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/nimbus15/zco-Regular.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/nimbus15/ztm-Med.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/nimbus15/ztm-MedIta.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/nimbus15/ztm-Reg.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/nimbus15/ztm-RegIta.pfb>
-Output written on main.pdf (15 pages, 1750449 bytes).
+Output written on main.pdf (15 pages, 1750619 bytes).
 PDF statistics:
- 423 PDF objects out of 1000 (max. 8388607)
- 362 compressed objects within 4 object streams
- 111 named destinations out of 1000 (max. 500000)
+ 425 PDF objects out of 1000 (max. 8388607)
+ 364 compressed objects within 4 object streams
+ 112 named destinations out of 1000 (max. 500000)
  165 words of extra memory for PDF output out of 10000 (max. 10000000)
 

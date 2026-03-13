@@ -128,7 +128,7 @@ Classical calibration metrics include expected calibration error \citep{guo2017c
 Methods for detecting distribution shift include two-sample tests \citep{rabanser2019failing} and domain classifiers \citep{lipton2018detecting}. These methods primarily address changes in the input or label distributions, while our work focuses on the \emph{output} side: identifying when predicted probabilities no longer match outcome frequencies.
 
 \subsubsection*{Sequential Calibration Testing}
-\citet{arnold2023sequentially} proposed e-values for testing forecast calibration, focusing on whether PITs are $\Unif(0,1)$. PITMonitor differs in two ways. First, we test for \emph{changes} in the PIT process rather than absolute uniformity and thus alarm only on shifts in calibration - the more natural null when some level of miscalibration is inevitable. Second, we locate \emph{when} calibration changed, rather than only establishing \emph{whether} the model is miscalibrated.
+\citet{arnold2023sequentially} proposed e-values for testing forecast calibration, focusing on whether PITs are $\Unif(0,1)$. PITMonitor differs in two ways. First, we do not assume a specific PIT distribution and instead test whether the PIT distribution remains stable over time, alarming only on \emph{shifts} in calibration rather than on miscalibration itself. Second, we locate \emph{when} calibration changed, rather than only establishing \emph{whether} the model is miscalibrated.
 
 \subsubsection*{E-values}
 E-values support anytime-valid hypothesis testing under optional stopping \citep{vovk2021values, ramdas2023game, grunwald2024safe, shin2022detectors}. PITMonitor builds on this framework, constructing a mixture e-process to detect shifts in the PIT distribution and inheriting its anytime-valid false-alarm guarantee (Theorem~\ref{thm:type1}).
@@ -156,7 +156,7 @@ To detect distribution shifts sequentially, we employ \emph{conformal p-values f
  R_t = \#\{s \leq t : U_s \leq U_t\}
 \end{equation}
 
-\begin{proposition}[Rank Uniformity Under $H_0$]
+\begin{proposition}[Rank Uniformity Under $H_0$]\footnote{This result holds more generally under exchangeability of $(U_t)$; we assume i.i.d.\ throughout for simplicity.}
 \label{prop:rank}
 If $U_1, \ldots, U_t \overset{i.i.d.}{\sim} F$ with $F$ continuous,\footnote{If $F$ is discretized or rounded, randomized tie-breaking can be used to preserve uniformity.} then $R_t \sim \mathrm{Unif}\{1, \ldots, t\}$.
 \end{proposition}

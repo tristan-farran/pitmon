@@ -9,8 +9,7 @@
 (\byear{2023}).
 \btitle{Sequentially valid tests for forecast calibration}.
 \bjournal{Annals of Applied Statistics}
-\bvolume{17}
-\bpages{1909--1935}.
+\bvolume{17}.
 \end{barticle}
 \endbibitem
 
@@ -19,8 +18,7 @@
 \bauthor{\bsnm{Bifet},~\bfnm{Albert}\binits{A.}} \AND \bauthor{\bsnm{Gavald{\`a}},~\bfnm{Ricard}\binits{R.}}
 (\byear{2007}).
 \btitle{Learning from time-changing data with adaptive windowing}.
-In \bbooktitle{Proceedings of the 7th SIAM International Conference on Data Mining}
-\bpages{443--448}.
+In \bbooktitle{Proceedings of the 7th SIAM International Conference on Data Mining}.
 \bpublisher{Society for Industrial and Applied Mathematics}.
 \end{binproceedings}
 \endbibitem
@@ -31,8 +29,7 @@ In \bbooktitle{Proceedings of the 7th SIAM International Conference on Data Mini
 (\byear{1984}).
 \btitle{Statistical theory: The prequential approach}.
 \bjournal{Journal of the Royal Statistical Society: Series A}
-\bvolume{147}
-\bpages{278--292}.
+\bvolume{147}.
 \end{barticle}
 \endbibitem
 
@@ -42,8 +39,7 @@ In \bbooktitle{Proceedings of the 7th SIAM International Conference on Data Mini
 (\byear{1983}).
 \btitle{The comparison and evaluation of forecasters}.
 \bjournal{Journal of the Royal Statistical Society: Series D}
-\bvolume{32}
-\bpages{12--22}.
+\bvolume{32}.
 \end{barticle}
 \endbibitem
 
@@ -53,8 +49,7 @@ In \bbooktitle{Proceedings of the 7th SIAM International Conference on Data Mini
 (\byear{1998}).
 \btitle{Evaluating density forecasts with applications to financial risk management}.
 \bjournal{International Economic Review}
-\bvolume{39}
-\bpages{863--883}.
+\bvolume{39}.
 \end{barticle}
 \endbibitem
 
@@ -63,7 +58,7 @@ In \bbooktitle{Proceedings of the 7th SIAM International Conference on Data Mini
 \bauthor{\bsnm{Fedorova},~\bfnm{Valentina}\binits{V.}}, \bauthor{\bsnm{Gammerman},~\bfnm{Alex}\binits{A.}}, \bauthor{\bsnm{Nouretdinov},~\bfnm{Ilia}\binits{I.}} \AND \bauthor{\bsnm{Vovk},~\bfnm{Vladimir}\binits{V.}}
 (\byear{2012}).
 \btitle{Plug-in martingales for testing exchangeability on-line}.
-In \bbooktitle{Proceedings of the 29th International Conference on Machine Learning (ICML)}.
+In \bbooktitle{Proc. ICML}.
 \end{binproceedings}
 \endbibitem
 
@@ -73,8 +68,7 @@ In \bbooktitle{Proceedings of the 29th International Conference on Machine Learn
 (\byear{2007}).
 \btitle{Probabilistic Forecasts, Calibration and Sharpness}.
 \bjournal{Journal of the Royal Statistical Society Series B: Statistical Methodology}
-\bvolume{69}
-\bpages{243-268}.
+\bvolume{69}.
 \end{barticle}
 \endbibitem
 
@@ -84,8 +78,7 @@ In \bbooktitle{Proceedings of the 29th International Conference on Machine Learn
 (\byear{2014}).
 \btitle{Probabilistic forecasting}.
 \bjournal{Annual Review of Statistics and Its Application}
-\bvolume{1}
-\bpages{125--151}.
+\bvolume{1}.
 \end{barticle}
 \endbibitem
 
@@ -95,8 +88,7 @@ In \bbooktitle{Proceedings of the 29th International Conference on Machine Learn
 (\byear{2007}).
 \btitle{Strictly proper scoring rules, prediction, and estimation}.
 \bjournal{Journal of the American Statistical Association}
-\bvolume{102}
-\bpages{359--378}.
+\bvolume{102}.
 \end{barticle}
 \endbibitem
 
@@ -106,8 +98,7 @@ In \bbooktitle{Proceedings of the 29th International Conference on Machine Learn
 (\byear{2024}).
 \btitle{Safe testing}.
 \bjournal{Journal of the Royal Statistical Society: Series B}
-\bvolume{86}
-\bpages{1091--1128}.
+\bvolume{86}.
 \end{barticle}
 \endbibitem
 
@@ -116,8 +107,7 @@ In \bbooktitle{Proceedings of the 29th International Conference on Machine Learn
 \bauthor{\bsnm{Guo},~\bfnm{Chuan}\binits{C.}}, \bauthor{\bsnm{Pleiss},~\bfnm{Geoff}\binits{G.}}, \bauthor{\bsnm{Sun},~\bfnm{Yu}\binits{Y.}} \AND \bauthor{\bsnm{Weinberger},~\bfnm{Kilian~Q.}\binits{K.~Q.}}
 (\byear{2017}).
 \btitle{On calibration of modern neural networks}.
-In \bbooktitle{Proceedings of the 34th International Conference on Machine Learning (ICML)}
-\bpages{1321--1330}.
+In \bbooktitle{Proc. ICML}.
 \end{binproceedings}
 \endbibitem
 
@@ -144,19 +134,17 @@ In \bbooktitle{Proceedings of the 34th International Conference on Machine Learn
 \bauthor{\bsnm{Lipton},~\bfnm{Zachary}\binits{Z.}}, \bauthor{\bsnm{Wang},~\bfnm{Yu-Xiang}\binits{Y.-X.}} \AND \bauthor{\bsnm{Smola},~\bfnm{Alex}\binits{A.}}
 (\byear{2018}).
 \btitle{Detecting and correcting for label shift with black box predictors}.
-In \bbooktitle{Proceedings of the 35th International Conference on Machine Learning (ICML)}
-\bpages{3122--3130}.
+In \bbooktitle{Proc. ICML}.
 \end{binproceedings}
 \endbibitem
 
-\bibitem[\protect\citeauthoryear{Montiel et~al.}{2021}]{montiel2021river}
+\bibitem[\protect\citeauthoryear{Montiel and Others}{2021}]{montiel2021river}
 \begin{barticle}[author]
-\bauthor{\bsnm{Montiel},~\bfnm{Jacob}\binits{J.}}, \bauthor{\bsnm{Halford},~\bfnm{Max}\binits{M.}}, \bauthor{\bsnm{Mastelini},~\bfnm{Saulo~Martiello}\binits{S.~M.}}, \bauthor{\bsnm{Bolmier},~\bfnm{Geoffrey}\binits{G.}}, \bauthor{\bsnm{Sourty},~\bfnm{Raphael}\binits{R.}}, \bauthor{\bsnm{Vaysse},~\bfnm{Robin}\binits{R.}}, \bauthor{\bsnm{Zouitine},~\bfnm{Adil}\binits{A.}}, \bauthor{\bsnm{Gomes},~\bfnm{Heitor~Murilo}\binits{H.~M.}}, \bauthor{\bsnm{Read},~\bfnm{Jesse}\binits{J.}}, \bauthor{\bsnm{Abdessalem},~\bfnm{Talel}\binits{T.}} \AND \bauthor{\bsnm{Bifet},~\bfnm{Albert}\binits{A.}}
+\bauthor{\bsnm{Montiel},~\bfnm{Jacob}\binits{J.}} \AND \bauthor{\bsnm{Others}}
 (\byear{2021}).
 \btitle{River: Machine learning for streaming data in {P}ython}.
 \bjournal{Journal of Machine Learning Research}
-\bvolume{22}
-\bpages{1--8}.
+\bvolume{22}.
 \end{barticle}
 \endbibitem
 
@@ -176,8 +164,7 @@ In \bbooktitle{Advances in Neural Information Processing Systems (NeurIPS)}
 (\byear{2023}).
 \btitle{Game-theoretic statistics and safe anytime-valid inference}.
 \bjournal{Statistical Science}
-\bvolume{38}
-\bpages{576--601}.
+\bvolume{38}.
 \end{barticle}
 \endbibitem
 
@@ -187,8 +174,7 @@ In \bbooktitle{Advances in Neural Information Processing Systems (NeurIPS)}
 (\byear{2024}).
 \btitle{E-detectors: A nonparametric framework for sequential change detection}.
 \bjournal{The New England Journal of Statistics in Data Science}
-\bvolume{2}
-\bpages{229--260}.
+\bvolume{2}.
 \end{barticle}
 \endbibitem
 
@@ -216,8 +202,7 @@ In \bbooktitle{Advances in Neural Information Processing Systems (NeurIPS)}
 (\byear{2021}).
 \btitle{E-values: Calibration, combination, and applications}.
 \bjournal{Annals of Statistics}
-\bvolume{49}
-\bpages{1736--1754}.
+\bvolume{49}.
 \end{barticle}
 \endbibitem
 
